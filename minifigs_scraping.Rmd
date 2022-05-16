@@ -1,0 +1,140 @@
+---
+title: "Minifigs Scraping"
+author: "Rose Porta"
+date: "5/15/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rvest)
+library(tidyverse)
+```
+
+# brickset.com
+
+```{r}
+# check permission
+robotstxt::paths_allowed(
+  paths = c("https://brickset.com/minifigs/category-Adventurers")
+)
+```
+
+```{r}
+# read in webpage
+minifigs_adventurers <-
+  rvest::read_html("https://brickset.com/minifigs/category-Adventurers")
+```
+
+Note-- figure out how to replace missing values with NAs
+```{r}
+name <- minifigs_adventurers |> 
+  html_elements(".tags") |> 
+  html_element(".name") |> 
+  html_text()
+name
+```
+
+```{r}
+year <- minifigs_adventurers |> 
+  html_elements(".tags") |> 
+  html_element(".year") |> 
+  html_text() |> 
+  lubridate::as_date(format = "%Y") |> 
+  lubridate::year()
+year
+```
+
+```{r}
+value_used <- minifigs_adventurers |> 
+  html_elements("dd:nth-child(4) .plain") |> 
+  html_text() |> 
+  str_sub(start = 3) |> 
+  as.numeric()
+value_used
+```
+
+```{r}
+value_new <- minifigs_adventurers |> 
+  html_elements(".set:nth-child(1) .plain , .set:nth-child(2) .plain, dd:nth-child(4) .plain") |> 
+  html_text() |> 
+  str_sub(start = 3) |> 
+  as.numeric()
+value_new
+```
+
+
+# bricklink.com
+
+```{r}
+# function to scrape data from one category webpage
+scrape_minifigs_data <- function(url, category) {
+  if (!robotstxt::paths_allowed(paths = c(url))) stop("scraping not allowed, cannot proceed")
+  
+  webpage <- rvest::read_html(url)
+  
+  if(category %in% c("Discovery", "Quatro", "Universe", "Fusion")) {
+    item_number <- webpage |> 
+      rvest::html_elements("#id_divBlock_Main td span span") |> 
+      rvest::html_text()
+    description <- webpage |> 
+      rvest::html_elements("#item-name-title") |> 
+      rvest::html_text()
+  } else {
+    item_number <- webpage |> 
+      rvest::html_elements("font:nth-child(1) a:nth-child(2)") |> 
+      rvest::html_text()
+    description <- webpage |> 
+      rvest::html_elements("#ItemEditForm strong") |> 
+      rvest::html_text()
+  }
+  tibble(item_number, description, category = category)
+}
+```
+
+```{r}
+# example with 4 Juniors Category
+# multiple pages
+data_4juniors1 <- scrape_minifigs_data("https://www.bricklink.com/catalogList.asp?pg=1&catString=516&sortBy=D&sortAsc=A&catType=M&v=1", "4 Juniors")
+
+data_4juniors2 <- scrape_minifigs_data("https://www.bricklink.com/catalogList.asp?pg=2&catString=516&catType=M", "4 Juniors")
+
+data_4juniors <- dplyr::bind_rows(data_4juniors1, data_4juniors2)
+```
+
+
+```{r}
+# scrape category names
+categories <- rvest::read_html("https://www.bricklink.com/catalogTree.asp?itemType=M") |> 
+  rvest::html_elements("b") |> 
+  rvest::html_text()
+```
+
+```{r}
+# scrape links
+links <- rvest::read_html("https://www.bricklink.com/catalogTree.asp?itemType=M") |> 
+  rvest::html_elements("tr a")
+links <- links[str_detect(links, "</b>")] |> 
+  rvest::html_attr("href") %>% 
+  paste0("https://www.bricklink.com", .)
+```
+
+```{r}
+# map function over all categories to scrape all data
+data_all <- purrr::map2(links, categories, scrape_minifigs_data) 
+data_bind <- plyr::ldply(data_all, rbind)
+```
+
+```{r}
+write.csv(data_bind, file = "minifigs_data.csv")
+```
+
+
+```{r}
+# want only for bolded categories -- maybe not necessary?
+lengths <- rvest::read_html("https://www.bricklink.com/catalogTree.asp?itemType=M") |> 
+  rvest::html_elements("tr") |> 
+  rvest::html_elements(".text-color--grey") |> 
+  rvest::html_text()
+```
+
