@@ -92,16 +92,6 @@ scrape_minifigs_data <- function(url, category) {
 }
 ```
 
-```{r}
-# example with 4 Juniors Category
-# multiple pages
-data_4juniors1 <- scrape_minifigs_data("https://www.bricklink.com/catalogList.asp?pg=1&catString=516&sortBy=D&sortAsc=A&catType=M&v=1", "4 Juniors")
-
-data_4juniors2 <- scrape_minifigs_data("https://www.bricklink.com/catalogList.asp?pg=2&catString=516&catType=M", "4 Juniors")
-
-data_4juniors <- dplyr::bind_rows(data_4juniors1, data_4juniors2)
-```
-
 
 ```{r}
 # scrape category names
@@ -120,8 +110,58 @@ links <- links[str_detect(links, "</b>")] |>
 ```
 
 ```{r}
+# function to get number of pages in a category
+get_pages <- function(url) {
+  url_split <- str_split(url, "catType")
+  new_url <- paste0(url_split[[1]][[1]], "pg=10", "&catType", url_split[[1]][[2]])
+  webpage <- read_html(new_url)
+  num_pages <- webpage |> 
+      html_elements(".l-clear-left a") |> 
+      length()
+  if(num_pages == 0L) num_pages <- 1L
+  if(num_pages >=10L) num_pages <- num_pages - 1L
+  num_pages
+}
+```
+
+```{r}
+pages <- map_int(links, get_pages)
+```
+
+```{r}
+# function to create a new url for each additional page beyond the first page
+replace_page <- function(pg, url) {
+  pg_char <- as.character(pg)
+  url_split <- str_split(url, "catType")
+  new_url <- paste0(url_split[[1]][[1]], "pg=", pg_char, "&catType", url_split[[1]][[2]])
+}
+
+# function to create all urls for each category
+generate_page_links <- function(num_pg, url) {
+  if(num_pg == 1L) url_list <- as.list(url)
+  else {
+    pages <- 2L:num_pg
+    url_list <- map(pages, replace_page, url = url)
+    url_list <- c(url, url_list)
+  }
+  url_list
+}
+```
+
+```{r}
+links_all <- map2(pages, links, generate_page_links)
+```
+
+```{r}
+categories_data <- tibble(category = categories, link = links_all, num_pages = pages) |> 
+  tidyr::unnest(cols = c(link)) |> 
+  dplyr::mutate(link = as.character(link))
+write.csv(categories_data, file = "categories.csv")
+```
+
+```{r}
 # map function over all categories to scrape all data
-data_all <- purrr::map2(links, categories, scrape_minifigs_data) 
+data_all <- purrr::map2(categories_data$link, categories_data$category, scrape_minifigs_data) 
 data_bind <- plyr::ldply(data_all, rbind)
 ```
 
@@ -130,11 +170,5 @@ write.csv(data_bind, file = "minifigs_data.csv")
 ```
 
 
-```{r}
-# want only for bolded categories -- maybe not necessary?
-lengths <- rvest::read_html("https://www.bricklink.com/catalogTree.asp?itemType=M") |> 
-  rvest::html_elements("tr") |> 
-  rvest::html_elements(".text-color--grey") |> 
-  rvest::html_text()
-```
+
 
