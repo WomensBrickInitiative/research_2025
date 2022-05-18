@@ -251,3 +251,20 @@ minifigs_data2 <- minifigs_data |>
   mutate(item_link = paste0("bricklink.com/v2/catalog/catalogitem.page?M=", item_number))
 write_csv(minifigs_data2, "minifigs_data.csv")
 ```
+
+```{r}
+# function to scrape release year given item link
+scrape_year <- function(url) {
+  if (!robotstxt::paths_allowed(paths = c(url))) stop("scraping not allowed, cannot proceed")
+  item_page <- rvest::read_html(url)
+  release_year <- item_page |> 
+    html_elements("#yearReleasedSec") |> 
+    html_text()
+  release_year
+}
+```
+
+```{r}
+release_years <- map(minifigs_data[1:200,]$item_link, scrape_year)
+```
+
