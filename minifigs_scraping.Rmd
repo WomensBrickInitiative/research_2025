@@ -126,6 +126,9 @@ get_pages <- function(url) {
 
 ```{r}
 pages <- map_int(links, get_pages)
+pages <- replace(pages, 26, 21L) # Duplo
+pages <- replace(pages, 81, 26L) # Starwars
+pages <- replace(pages, 98, 37L) # Town
 ```
 
 ```{r}
@@ -170,5 +173,55 @@ write.csv(data_bind, file = "minifigs_data.csv")
 ```
 
 
+```{r}
+categories_data <- read.csv("categories.csv")
+
+categories_subset <- categories_data[1:20,]
+data_sub <- purrr::map2(categories_subset$link, categories_subset$category, scrape_minifigs_data) 
+data_bind_s <- plyr::ldply(data_sub, rbind)
+
+categories_subset2 <- categories_data[21:40,]
+data_sub2 <- purrr::map2(categories_subset2$link, categories_subset2$category, scrape_minifigs_data) 
+data_bind_s2 <- plyr::ldply(data_sub2, rbind)
+
+categories_subset3 <- categories_data[41:60,]
+data_sub3 <- purrr::map2(categories_subset3$link, categories_subset3$category, scrape_minifigs_data) 
+data_bind_s3 <- plyr::ldply(data_sub3, rbind)
+
+categories_subset4 <- categories_data[61:100,]
+data_sub4 <- purrr::map2(categories_subset4$link, categories_subset4$category, scrape_minifigs_data) 
+data_bind_s4 <- plyr::ldply(data_sub4, rbind)
+
+categories_subset5 <- categories_data[101:150,]
+data_sub5 <- purrr::map2(categories_subset5$link, categories_subset5$category, scrape_minifigs_data) 
+data_bind_s5 <- plyr::ldply(data_sub5, rbind)
+
+categories_subset6 <- categories_data[151:190,] ## STOPPED HERE
+data_sub6 <- purrr::map2(categories_subset6$link, categories_subset6$category, scrape_minifigs_data) 
+data_bind_s6 <- plyr::ldply(data_sub6, rbind)
+
+categories_subset7 <- categories_data[201:250,]
+data_sub7 <- purrr::map2(categories_subset7$link, categories_subset7$category, scrape_minifigs_data) 
+data_bind_s7 <- plyr::ldply(data_sub7, rbind)
+
+categories_subset8 <- categories_data[251:300,]
+data_sub8 <- purrr::map2(categories_subset8$link, categories_subset8$category, scrape_minifigs_data) 
+data_bind_s8 <- plyr::ldply(data_sub8, rbind)
+
+categories_subset9 <- categories_data[301:325,]
+data_sub8 <- purrr::map2(categories_subset9$link, categories_subset9$category, scrape_minifigs_data) 
+data_bind_s9 <- plyr::ldply(data_sub9, rbind)
+
+map_int(data_sub5, nrow)
+
+data_all_part1 <- list(data_bind_s, data_bind_s2, data_bind_s3, data_bind_s4, data_bind_s5) |> 
+  plyr::ldply(rbind)
+
+write.csv(data_all_part1, file = "part1.csv")
+
+data_all_check <- data_all |> 
+  group_by(category) |> 
+  summarise(count = n())
+```
 
 
