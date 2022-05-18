@@ -28,37 +28,37 @@ minifigs_adventurers <-
 
 Note-- figure out how to replace missing values with NAs
 ```{r}
-name <- minifigs_adventurers |> 
-  html_elements(".tags") |> 
-  html_element(".name") |> 
+name <- minifigs_adventurers |>
+  html_elements(".tags") |>
+  html_element(".name") |>
   html_text()
 name
 ```
 
 ```{r}
-year <- minifigs_adventurers |> 
-  html_elements(".tags") |> 
-  html_element(".year") |> 
-  html_text() |> 
-  lubridate::as_date(format = "%Y") |> 
+year <- minifigs_adventurers |>
+  html_elements(".tags") |>
+  html_element(".year") |>
+  html_text() |>
+  lubridate::as_date(format = "%Y") |>
   lubridate::year()
 year
 ```
 
 ```{r}
-value_used <- minifigs_adventurers |> 
-  html_elements("dd:nth-child(4) .plain") |> 
-  html_text() |> 
-  str_sub(start = 3) |> 
+value_used <- minifigs_adventurers |>
+  html_elements("dd:nth-child(4) .plain") |>
+  html_text() |>
+  str_sub(start = 3) |>
   as.numeric()
 value_used
 ```
 
 ```{r}
-value_new <- minifigs_adventurers |> 
-  html_elements(".set:nth-child(1) .plain , .set:nth-child(2) .plain, dd:nth-child(4) .plain") |> 
-  html_text() |> 
-  str_sub(start = 3) |> 
+value_new <- minifigs_adventurers |>
+  html_elements(".set:nth-child(1) .plain , .set:nth-child(2) .plain, dd:nth-child(4) .plain") |>
+  html_text() |>
+  str_sub(start = 3) |>
   as.numeric()
 value_new
 ```
@@ -70,22 +70,22 @@ value_new
 # function to scrape data from one category webpage
 scrape_minifigs_data <- function(url, category) {
   if (!robotstxt::paths_allowed(paths = c(url))) stop("scraping not allowed, cannot proceed")
-  
+
   webpage <- rvest::read_html(url)
-  
-  if(category %in% c("Discovery", "Quatro", "Universe", "Fusion")) {
-    item_number <- webpage |> 
-      rvest::html_elements("#id_divBlock_Main td span span") |> 
+
+  if (category %in% c("Discovery", "Quatro", "Universe", "Fusion")) {
+    item_number <- webpage |>
+      rvest::html_elements("#id_divBlock_Main td span span") |>
       rvest::html_text()
-    description <- webpage |> 
-      rvest::html_elements("#item-name-title") |> 
+    description <- webpage |>
+      rvest::html_elements("#item-name-title") |>
       rvest::html_text()
   } else {
-    item_number <- webpage |> 
-      rvest::html_elements("font:nth-child(1) a:nth-child(2)") |> 
+    item_number <- webpage |>
+      rvest::html_elements("font:nth-child(1) a:nth-child(2)") |>
       rvest::html_text()
-    description <- webpage |> 
-      rvest::html_elements("#ItemEditForm strong") |> 
+    description <- webpage |>
+      rvest::html_elements("#ItemEditForm strong") |>
       rvest::html_text()
   }
   tibble(item_number, description, category = category)
@@ -95,17 +95,17 @@ scrape_minifigs_data <- function(url, category) {
 
 ```{r}
 # scrape category names
-categories <- rvest::read_html("https://www.bricklink.com/catalogTree.asp?itemType=M") |> 
-  rvest::html_elements("b") |> 
+categories <- rvest::read_html("https://www.bricklink.com/catalogTree.asp?itemType=M") |>
+  rvest::html_elements("b") |>
   rvest::html_text()
 ```
 
 ```{r}
 # scrape links
-links <- rvest::read_html("https://www.bricklink.com/catalogTree.asp?itemType=M") |> 
+links <- rvest::read_html("https://www.bricklink.com/catalogTree.asp?itemType=M") |>
   rvest::html_elements("tr a")
-links <- links[str_detect(links, "</b>")] |> 
-  rvest::html_attr("href") %>% 
+links <- links[str_detect(links, "</b>")] |>
+  rvest::html_attr("href") %>%
   paste0("https://www.bricklink.com", .)
 ```
 
@@ -115,11 +115,11 @@ get_pages <- function(url) {
   url_split <- str_split(url, "catType")
   new_url <- paste0(url_split[[1]][[1]], "pg=10", "&catType", url_split[[1]][[2]])
   webpage <- read_html(new_url)
-  num_pages <- webpage |> 
-      html_elements(".l-clear-left a") |> 
-      length()
-  if(num_pages == 0L) num_pages <- 1L
-  if(num_pages >=10L) num_pages <- num_pages - 1L
+  num_pages <- webpage |>
+    html_elements(".l-clear-left a") |>
+    length()
+  if (num_pages == 0L) num_pages <- 1L
+  if (num_pages >= 10L) num_pages <- num_pages - 1L
   num_pages
 }
 ```
@@ -141,8 +141,9 @@ replace_page <- function(pg, url) {
 
 # function to create all urls for each category
 generate_page_links <- function(num_pg, url) {
-  if(num_pg == 1L) url_list <- as.list(url)
-  else {
+  if (num_pg == 1L) {
+    url_list <- as.list(url)
+  } else {
     pages <- 2L:num_pg
     url_list <- map(pages, replace_page, url = url)
     url_list <- c(url, url_list)
@@ -156,8 +157,8 @@ links_all <- map2(pages, links, generate_page_links)
 ```
 
 ```{r}
-categories_data <- tibble(category = categories, link = links_all, num_pages = pages) |> 
-  tidyr::unnest(cols = c(link)) |> 
+categories_data <- tibble(category = categories, link = links_all, num_pages = pages) |>
+  tidyr::unnest(cols = c(link)) |>
   dplyr::mutate(link = as.character(link))
 write.csv(categories_data, file = "categories.csv")
 ```
@@ -165,7 +166,7 @@ write.csv(categories_data, file = "categories.csv")
 ```{r}
 # map function over all categories to scrape all data
 # theoretically should work, but does not because of quota limits, see below
-data_all <- purrr::map2(categories_data$link, categories_data$category, scrape_minifigs_data) 
+data_all <- purrr::map2(categories_data$link, categories_data$category, scrape_minifigs_data)
 data_bind <- plyr::ldply(data_all, rbind)
 # write.csv(data_bind, file = "minifigs_data.csv")
 ```
@@ -175,46 +176,46 @@ data_bind <- plyr::ldply(data_all, rbind)
 # split categories data into subsets and run separately so that we don't max out on the quota limit
 categories_data <- read.csv("categories.csv")
 
-categories_subset <- categories_data[1:20,]
-data_sub <- purrr::map2(categories_subset$link, categories_subset$category, scrape_minifigs_data) 
+categories_subset <- categories_data[1:20, ]
+data_sub <- purrr::map2(categories_subset$link, categories_subset$category, scrape_minifigs_data)
 data_bind_s <- plyr::ldply(data_sub, rbind)
 
-categories_subset2 <- categories_data[21:40,]
-data_sub2 <- purrr::map2(categories_subset2$link, categories_subset2$category, scrape_minifigs_data) 
+categories_subset2 <- categories_data[21:40, ]
+data_sub2 <- purrr::map2(categories_subset2$link, categories_subset2$category, scrape_minifigs_data)
 data_bind_s2 <- plyr::ldply(data_sub2, rbind)
 
-categories_subset3 <- categories_data[41:60,]
-data_sub3 <- purrr::map2(categories_subset3$link, categories_subset3$category, scrape_minifigs_data) 
+categories_subset3 <- categories_data[41:60, ]
+data_sub3 <- purrr::map2(categories_subset3$link, categories_subset3$category, scrape_minifigs_data)
 data_bind_s3 <- plyr::ldply(data_sub3, rbind)
 
-categories_subset4 <- categories_data[61:100,]
-data_sub4 <- purrr::map2(categories_subset4$link, categories_subset4$category, scrape_minifigs_data) 
+categories_subset4 <- categories_data[61:100, ]
+data_sub4 <- purrr::map2(categories_subset4$link, categories_subset4$category, scrape_minifigs_data)
 data_bind_s4 <- plyr::ldply(data_sub4, rbind)
 
-categories_subset5 <- categories_data[101:150,]
-data_sub5 <- purrr::map2(categories_subset5$link, categories_subset5$category, scrape_minifigs_data) 
+categories_subset5 <- categories_data[101:150, ]
+data_sub5 <- purrr::map2(categories_subset5$link, categories_subset5$category, scrape_minifigs_data)
 data_bind_s5 <- plyr::ldply(data_sub5, rbind)
 
-data_all_part1 <- list(data_bind_s, data_bind_s2, data_bind_s3, data_bind_s4, data_bind_s5) |> 
+data_all_part1 <- list(data_bind_s, data_bind_s2, data_bind_s3, data_bind_s4, data_bind_s5) |>
   plyr::ldply(rbind)
 
 write.csv(data_all_part1, file = "part1.csv")
 
-categories_subset6 <- categories_data[151:200,]
-data_sub6 <- purrr::map2(categories_subset6$link, categories_subset6$category, scrape_minifigs_data) 
+categories_subset6 <- categories_data[151:200, ]
+data_sub6 <- purrr::map2(categories_subset6$link, categories_subset6$category, scrape_minifigs_data)
 data_bind_s6 <- plyr::ldply(data_sub6, rbind)
 
-categories_subset7 <- categories_data[201:250,]
-data_sub7 <- purrr::map2(categories_subset7$link, categories_subset7$category, scrape_minifigs_data) 
+categories_subset7 <- categories_data[201:250, ]
+data_sub7 <- purrr::map2(categories_subset7$link, categories_subset7$category, scrape_minifigs_data)
 data_bind_s7 <- plyr::ldply(data_sub7, rbind)
 
-data_all_part2 <- list(data_bind_s6, data_bind_s7) |> 
+data_all_part2 <- list(data_bind_s6, data_bind_s7) |>
   plyr::ldply(rbind)
 
 write.csv(data_all_part2, file = "part2.csv")
 
-categories_subset8 <- categories_data[251:325,]  
-data_sub8 <- purrr::map2(categories_subset8$link, categories_subset8$category, scrape_minifigs_data) 
+categories_subset8 <- categories_data[251:325, ]
+data_sub8 <- purrr::map2(categories_subset8$link, categories_subset8$category, scrape_minifigs_data)
 data_bind_s8 <- plyr::ldply(data_sub8, rbind)
 
 write.csv(data_bind_s8, file = "part3.csv")
@@ -227,15 +228,15 @@ part1 <- read_csv("part1.csv")
 part2 <- read_csv("part2.csv")
 part3 <- read_csv("part3.csv")
 
-data_all <- list(part1, part2, part3) |> 
-  plyr::ldply(rbind) |> 
+data_all <- list(part1, part2, part3) |>
+  plyr::ldply(rbind) |>
   dplyr::select(item_number, description, category)
 
 write.csv(data_all, file = "minifigs_data.csv")
 
 # check that number of figures match number on website for each category
-data_all_check <- data_all |> 
-  group_by(category) |> 
+data_all_check <- data_all |>
+  group_by(category) |>
   summarise(count = n())
 
 categories_counts <- tibble(category = categories, num_pages = pages, num_figs = data_all_check$count, link = links)
@@ -243,3 +244,10 @@ categories_counts <- tibble(category = categories, num_pages = pages, num_figs =
 write.csv(categories_counts, file = "category_counts.csv")
 ```
 
+```{r}
+# add links to each item to minifigs data
+minifigs_data <- read_csv("minifigs_data.csv")
+minifigs_data2 <- minifigs_data |>
+  mutate(item_link = paste0("bricklink.com/v2/catalog/catalogitem.page?M=", item_number))
+write_csv(minifigs_data2, "minifigs_data.csv")
+```
