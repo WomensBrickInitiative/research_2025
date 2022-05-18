@@ -248,7 +248,7 @@ write.csv(categories_counts, file = "category_counts.csv")
 # add links to each item to minifigs data
 minifigs_data <- read_csv("minifigs_data.csv")
 minifigs_data2 <- minifigs_data |>
-  mutate(item_link = paste0("bricklink.com/v2/catalog/catalogitem.page?M=", item_number))
+  mutate(item_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?M=", item_number))
 write_csv(minifigs_data2, "minifigs_data.csv")
 ```
 
