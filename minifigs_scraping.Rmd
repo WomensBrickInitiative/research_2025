@@ -196,7 +196,7 @@ categories_subset5 <- categories_data[101:150,]
 data_sub5 <- purrr::map2(categories_subset5$link, categories_subset5$category, scrape_minifigs_data) 
 data_bind_s5 <- plyr::ldply(data_sub5, rbind)
 
-categories_subset6 <- categories_data[151:190,] ## STOPPED HERE
+categories_subset6 <- categories_data[151:200,]
 data_sub6 <- purrr::map2(categories_subset6$link, categories_subset6$category, scrape_minifigs_data) 
 data_bind_s6 <- plyr::ldply(data_sub6, rbind)
 
@@ -204,7 +204,7 @@ categories_subset7 <- categories_data[201:250,]
 data_sub7 <- purrr::map2(categories_subset7$link, categories_subset7$category, scrape_minifigs_data) 
 data_bind_s7 <- plyr::ldply(data_sub7, rbind)
 
-categories_subset8 <- categories_data[251:300,]
+categories_subset8 <- categories_data[251:300,]  ## STOPPED HERE
 data_sub8 <- purrr::map2(categories_subset8$link, categories_subset8$category, scrape_minifigs_data) 
 data_bind_s8 <- plyr::ldply(data_sub8, rbind)
 
@@ -212,16 +212,62 @@ categories_subset9 <- categories_data[301:325,]
 data_sub8 <- purrr::map2(categories_subset9$link, categories_subset9$category, scrape_minifigs_data) 
 data_bind_s9 <- plyr::ldply(data_sub9, rbind)
 
-map_int(data_sub5, nrow)
+map_int(data_sub8, nrow)
 
 data_all_part1 <- list(data_bind_s, data_bind_s2, data_bind_s3, data_bind_s4, data_bind_s5) |> 
   plyr::ldply(rbind)
 
 write.csv(data_all_part1, file = "part1.csv")
 
+data_all_part2 <- list(data_bind_s6, data_bind_s7) |> 
+  plyr::ldply(rbind)
+
+write.csv(data_all_part2, file = "part2.csv")
+
 data_all_check <- data_all |> 
   group_by(category) |> 
   summarise(count = n())
 ```
 
+```{r}
+## RUN THIS
+library(rvest)
+library(tidyverse)
+
+# function to scrape data from one category webpage
+scrape_minifigs_data <- function(url, category) {
+  if (!robotstxt::paths_allowed(paths = c(url))) stop("scraping not allowed, cannot proceed")
+  
+  webpage <- rvest::read_html(url)
+  
+  if(category %in% c("Discovery", "Quatro", "Universe", "Fusion")) {
+    item_number <- webpage |> 
+      rvest::html_elements("#id_divBlock_Main td span span") |> 
+      rvest::html_text()
+    description <- webpage |> 
+      rvest::html_elements("#item-name-title") |> 
+      rvest::html_text()
+  } else {
+    item_number <- webpage |> 
+      rvest::html_elements("font:nth-child(1) a:nth-child(2)") |> 
+      rvest::html_text()
+    description <- webpage |> 
+      rvest::html_elements("#ItemEditForm strong") |> 
+      rvest::html_text()
+  }
+  tibble(item_number, description, category = category)
+}
+
+categories_data <- read.csv("categories.csv")
+
+categories_subset8 <- categories_data[251:325,]  
+data_sub8 <- purrr::map2(categories_subset8$link, categories_subset8$category, scrape_minifigs_data) 
+
+map_int(data_sub8, nrow) ## CHECK TO SEE THAT THERE ARE NO ZEROS HERE
+
+data_bind_s8 <- plyr::ldply(data_sub8, rbind)
+
+write.csv(data_bind_s8, file = "part3.csv")
+
+```
 
