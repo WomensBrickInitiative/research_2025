@@ -265,6 +265,23 @@ scrape_year <- function(url) {
 ```
 
 ```{r}
-release_years <- map(minifigs_data[1:200,]$item_link, scrape_year)
+# doesn't work bc timeout
+release_years <- map(minifigs_data$item_link, scrape_year)
+```
+
+```{r}
+# sample 100 rows of minifigs data
+minifigs_data_sample <- dplyr::sample_n(minifigs_data, 100)
+
+# scrape release years and add as column to sample data frame
+release_year <- map(minifigs_data_sample$item_link, scrape_year)
+release_year <- release_year |> 
+  as.character() %>% 
+  ifelse(. == "character(0)", "NA", .)
+
+minifigs_data_sample <- minifigs_data_sample |> 
+  mutate(release_year = release_year)
+
+write_csv(minifigs_data_sample, file = "minifigs_sample.csv")
 ```
 
