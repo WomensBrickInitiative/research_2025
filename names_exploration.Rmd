@@ -1,0 +1,72 @@
+---
+title: "Name Exploration"
+author: "Rose Porta"
+date: '2022-05-25'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+minifigs_data <- read_csv("minifigs_data.csv")
+
+minifigs_data2 <- minifigs_data |> 
+  filter(str_detect(description, "Diva") | 
+           str_detect(description, "Lady") |
+           str_detect(description, "Girl") |
+           str_detect(description, "Female") |
+           str_detect(description, "Woman") |
+           str_detect(description, "Maiden") |
+           str_detect(description, "Starlet")
+           )
+
+# top 5 categories containing explicity defined women/girl minifigs
+minifigs_data2_counts <- minifigs_data2 |> 
+  group_by(category) |> 
+  summarize(count = n()) |> 
+  top_n(n = 5)
+
+ggplot(minifigs_data2_counts, aes(x = reorder(category, count), fill = category, y = count)) +
+  geom_col() +
+  coord_flip()
+```
+
+```{r}
+scrape_year <- function(url) {
+  if (!robotstxt::paths_allowed(paths = c(url))) stop("scraping not allowed, cannot proceed")
+  item_page <- rvest::read_html(url)
+  release_year <- item_page |> 
+    html_elements("#yearReleasedSec") |> 
+    html_text()
+  release_year
+}
+```
+
+```{r}
+year <- map(minifigs_data2$item_link, scrape_year)
+year <- year |> 
+  as.character() %>% 
+  ifelse(. == "character(0)", "NA", .) |> 
+  as.numeric()
+
+minifigs_data2 <- minifigs_data2 |> 
+  mutate(year = year)
+
+write_csv(minifigs_data2, file = "female.csv")
+```
+
+```{r}
+minifigs_data2_year <- minifigs_data2 |> 
+  filter(!is.na(year)) |> 
+  group_by(year) |> 
+  summarize(count = n())
+
+ggplot(minifigs_data2_year, aes(x = year, y = count)) +
+  geom_line() +
+  labs(title = "Number of Female-Specified Minifigs by Year",
+       y = "Number of Female-Specified Minifigs Released")
+```
+
