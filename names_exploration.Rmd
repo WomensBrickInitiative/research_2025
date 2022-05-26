@@ -70,3 +70,47 @@ ggplot(minifigs_data2_year, aes(x = year, y = count)) +
        y = "Number of Female-Specified Minifigs Released")
 ```
 
+# Starwars
+
+```{r}
+minifigs_starwars <- minifigs_data |> 
+  filter(category == "Star Wars")
+minifig_characters <- tolower(minifigs_starwars$description)
+movie_characters <- tolower(starwars$name)
+
+num_minifigs <- map_int(movie_characters, ~sum(str_detect(minifig_characters, .x)))
+
+starwars_minifigs_compare <- starwars |> 
+  select(name, sex, species, films) |> 
+  mutate(num_minifigs = num_minifigs,
+         num_films = map_int(films, length),
+         ratio = num_minifigs/num_films
+         )
+
+```
+
+```{r}
+ggplot(starwars_minifigs_compare,
+       aes(x = num_films, y = num_minifigs, color = sex)) +
+  geom_point() +
+  geom_jitter() +
+  scale_color_wbi() +
+  labs(title = "Relationship between Number of Films and Number of Minifigs by Sex")
+```
+
+```{r}
+sw_mf2 <- starwars_minifigs_compare |> 
+  group_by(sex) |> 
+  summarize(mean_films = mean(num_films), mean_minifigs = mean(num_minifigs)) |> 
+  filter(!is.na(sex)) |> 
+  pivot_longer(
+    cols = c(mean_films, mean_minifigs), names_to = "comp", values_to = "average_num")
+
+ggplot(sw_mf2, aes(x = reorder(sex, desc(average_num)), y = average_num, fill = comp)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_wbi() +
+  labs(title = "Comparison of Films and Minifigs by Sex",
+       x = "sex")
+  
+```
+
