@@ -114,3 +114,17 @@ ggplot(sw_mf2, aes(x = reorder(sex, desc(average_num)), y = average_num, fill = 
   
 ```
 
+```{r}
+sw_mf_ratio <- starwars_minifigs_compare |> 
+  group_by(sex) |> 
+  summarize(mean_ratio = mean(ratio)) |> 
+  filter(!is.na(sex)) |> 
+  filter(mean_ratio > 0)
+
+ggplot(sw_mf_ratio, aes(x = reorder(sex, desc(mean_ratio)), y = mean_ratio, fill = sex)) +
+  geom_col() +
+  scale_fill_wbi() +
+  labs(title = "Ratio of Number of Minifigs to Number of Films by Sex",
+       x = "sex")
+```
+
