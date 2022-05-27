@@ -21,6 +21,16 @@ scale_y_continuous_wbi <- function(...){
   )
 }
 
+# function to add logo and socials to plot
+add_logo <- function(plot) {
+  logo <- magick::image_read("logo.png")
+  socials <- magick::image_read("socials.png")
+  cowplot::ggdraw() +
+    cowplot::draw_plot(plot, x = 0, y = 0.15, width = 1, height = 0.85) +
+    cowplot::draw_image(logo, x = 0.85, y = 0, width = 0.15, height = 0.15) +
+    cowplot::draw_image(socials, x = 0, y = 0, width = 0.15, height = 0.15)
+}
+
 ## test examples
 ggplot(
   starwars,
