@@ -1,0 +1,87 @@
+---
+title: "lugbulk parts"
+author: "Rose Porta"
+date: '2022-05-27'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+source("wbi_colors.R")
+```
+
+```{r}
+data <- read_csv("lugbulk_parts.csv")
+
+data_wigs <- data |> 
+  janitor::clean_names() |> 
+  mutate(price_usd = as.numeric(substr(usd, 2, 5))) |>
+  filter(category == "FIGURE, WIGS") |> 
+  select(item_id, item_description, brick_link_color, category, subcategory, price_usd, brick_set)
+
+data_wigs_gender <- data_wigs |> 
+  group_by(subcategory) |> 
+  summarize(count = n(), avg_price = round(mean(price_usd),2),
+            median_price = median(price_usd))
+
+data_wigs_gender_color <- data_wigs |> 
+  group_by(subcategory, brick_link_color) |> 
+  summarize(count = n(), avg_price = round(mean(price_usd),2),
+            median_price = median(price_usd))
+
+data_wigs_color <- data_wigs |>
+  group_by(brick_link_color) |> 
+  summarize(count = n(), average_cost = round(mean(price_usd), 2),
+            median_price = median(price_usd))
+
+data_gc_filtered <- data_wigs_gender_color |> 
+  group_by(brick_link_color) |> 
+  mutate(count = n()) |> 
+  filter(count > 1)
+
+data_gc_filtered2 <- data_wigs_gender_color |> 
+  group_by(brick_link_color) |> 
+  mutate(count = n()) |> 
+  filter(count == 1)
+
+ggplot(data_gc_filtered, aes(x = reorder(brick_link_color, median_price), y = median_price, fill = subcategory)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  labs(title = "Price Disparities of Wigs by Gender and Color",
+       x = "Color",
+       y = "Median Price (usd)",
+       fill = "Gender") +
+  scale_fill_wbi()
+
+ggplot(data_wigs_color, aes(x = count, y = average_cost)) +
+  geom_point() +
+  labs(title = "Relationship between Count and Average Cost of Wigs")
+
+ggplot(data_wigs_gender, aes(x = subcategory, y = count, fill = subcategory)) +
+  geom_col() +
+  labs(title = "Total Number of Female Versus Male Wigs",
+       x = "Gender", 
+       fill = "Gender") +
+  scale_fill_wbi()
+
+data_gender_long <- data_wigs_gender |> 
+  pivot_longer(cols = c(avg_price, median_price), names_to = "type", values_to = "value")
+
+ggplot(data_gender_long, aes(x = subcategory, y = value, fill = type)) +
+  geom_col(position = "dodge") +
+  labs(title = "Mean and Median Price of Female Versus Male Wigs",
+       x = "Gender", 
+       fill = "Mean/Median",
+       y = "Value (usd)") +
+  scale_fill_wbi()
+
+ggplot(data_wigs_color, aes(x = reorder(brick_link_color, median_price), y = median_price)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Median Price by Color",
+       x = "Color",
+       y = "Median Price (usd)")
+
+```
+
