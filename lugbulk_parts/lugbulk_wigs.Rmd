@@ -6,13 +6,12 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-source("wbi_colors.R")
+source(here::here("wbi_colors.R"))
 ```
 
 ```{r}
-data <- read_csv("lugbulk_parts.csv")
+data <- read_csv(here::here("data","lugbulk_parts.csv"))
 
 data_wigs <- data |> 
   janitor::clean_names() |> 
