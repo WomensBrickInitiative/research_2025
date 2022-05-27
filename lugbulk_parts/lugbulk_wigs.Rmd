@@ -66,7 +66,7 @@ add_logo(p1)
 # scatter plot count vs. average cost by color
 p2 <- ggplot(data_wigs_color, aes(x = count, y = average_cost)) +
   geom_point() +
-  labs(title = "Relationship between Count and Average Cost of Wigs")
+  labs(title = "Relationship between Count and Average Cost of Wigs by Color")
 
 add_logo(p2)
 
