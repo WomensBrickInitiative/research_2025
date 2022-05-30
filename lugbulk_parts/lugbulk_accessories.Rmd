@@ -1,0 +1,54 @@
+---
+title: "Accessories"
+author: "Rose Porta"
+date: '2022-05-30'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+# read in parts data
+data <- read_csv(here::here("data","lugbulk_parts.csv")) |> 
+  janitor::clean_names() |> 
+  mutate(price_usd = as.numeric(substr(usd, 2, 5)))
+```
+
+```{r}
+# parts of interest?
+data2 <- data |> 
+  filter(parts_of_interest_the_short_list)
+
+# accessories data exploration
+data_accessories <- data |> 
+  filter(category == "FIGURE ACCESSORIES I" | category == "FIGURE ACCESSORIES,")
+
+data_girls_equiptment <- data_accessories |> 
+  filter(subcategory == "GIRLS EQUIPMENT")
+
+unique(data_girls_equiptment$item_description)
+```
+
+"Girls Equipment" Subcategory -- 19 items
+
+"LIPSTICK"                          
+"BAG, BASKET"                      
+"BAG, SPORT"                        
+"FEEDING BOTTLE W. 3,2 SHAFT"      
+"HAIR BRUSH"                        
+"HEART W/ Ø3,2 SHAFT"              
+"KEY W/ 3.2 SHAFT NO. 2"            
+"MAGIC WAND"                       
+"STAR SYMBOL W/ TUBE AND HOLE Ø1.5"
+
+This entire category seems very sexist because why are these items labeled as for girls only?? Especially the feeding bottle?? Dads can't feed their babies?!
+
+```{r}
+# clothing and armor subcategory -- mostly armor
+data_clothing <- data_accessories |> 
+  filter(subcategory == "CLOTHING AND ARMOUR" | subcategory == "CLOTHING AND ARMOR F")
+```
+
