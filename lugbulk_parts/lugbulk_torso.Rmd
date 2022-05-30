@@ -1,0 +1,79 @@
+---
+title: "lugbulk parts"
+author: "Rose Porta, Yutong Zhang"
+date: '2022-05-27'
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(rvest)
+source(here::here("wbi_colors.R")) # file containing functions to customize colors
+```
+
+```{r}
+# read in parts data
+data <- read_csv(here::here("data","lugbulk_parts.csv"))
+
+# filter to just wigs
+data_torso <- data |> 
+  janitor::clean_names() |> 
+  mutate(price_usd = as.numeric(substr(usd, 2, 5))) |>
+  filter(subcategory == "MINI FIGURE UPPER PA") |> 
+  select(item_id, bl_part_id, brick_link_color, price_usd, brick_set) |>
+  mutate(brick_link_url = paste0("https://www.bricklink.com/v2/catalog/catalogitem.page?P=", bl_part_id))
+
+```
+
+```{r}
+get_description <- function(url){
+  page <- read_html(url)
+description <- page |>
+  html_elements("#item-name-title") |>
+  html_text()
+description
+}
+```
+
+```{r}
+descriptions <- map(data_torso$brick_link_url, get_description)
+descriptions <- descriptions |>
+  as.character() %>%
+  ifelse(.=="character(0)", "NA", .)
+```
+
+```{r}
+data_torso <- data_torso |>
+  mutate(description=descriptions) |>
+  filter(description != "NA") |>
+  separate(description, c("torso", "arms", "hands"), "/")
+```
+```{r}
+data_torso <- data_torso |>
+  mutate(female=str_detect(torso, "Female")) |>
+  mutate(plain=str_detect(torso, "Plain"))
+
+data_torso_female <- data_torso |>
+  filter(female)
+
+data_torso_hands <- data_torso |>
+  group_by(hands) |>
+  summarise(count=n())
+
+g1 <- ggplot(data_torso_hands, aes(x = reorder(hands, count), y = count)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Count by Hand Color",
+       x = "Hand Color",
+       y = "Count")
+g1
+```
+
+```{r}
+data_torso_plain <- data_torso |>
+  group_by(plain) |>
+  summarise(median_price = median(price_usd), mean_price = mean(price_usd))
+```
+
