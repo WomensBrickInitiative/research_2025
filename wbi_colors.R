@@ -1,4 +1,3 @@
-#Small change that I'll try to push
 # functions to create custom color palettes with WBI colors
 scale_color_wbi <- function(...) {
   ggplot2::scale_color_manual(
