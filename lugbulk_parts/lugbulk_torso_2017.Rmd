@@ -1,0 +1,19 @@
+---
+title: "Lugbulk 2021"
+author: "Rose Porta"
+date: '2022-05-30'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+
+```{r}
+data_2017 <- read_csv(here::here("data", "lugbulk_parts2017.csv")) |> 
+  janitor::clean_names()
+```
+
+
