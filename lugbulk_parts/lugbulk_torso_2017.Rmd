@@ -3,6 +3,8 @@ title: "Lugbulk 2021"
 author: "Rose Porta"
 date: '2022-05-30'
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -13,7 +15,73 @@ library(tidyverse)
 
 ```{r}
 data_2017 <- read_csv(here::here("data", "lugbulk_parts2017.csv")) |> 
-  janitor::clean_names()
+  janitor::clean_names() |>
+  mutate(price_usd = as.numeric(substr(bl_price, 2, 5))) |>
+  #filter(group == "FIGURE PARTS") |>
+  select(element_id, bl_id, bl_color, item_description, group, price_usd, number_of_people_ordering, total_ordered_qt_of_50_25, bl_url)
+  #mutate(brick_link_url = paste0("https://www.bricklink.com/v2/catalog/catalogitem.page?P=", bl_id))
 ```
 
+```{r}
+data_2017_torso <- data_2017 |>
+  filter(str_detect(item_description, "MINI UPPER PART"))
+  
+```
 
+```{r}
+get_description_2017 <- function(url) {
+  page <- read_html(url)
+  description <- page |>
+    html_elements("#text") |>
+    html_text()
+  #if(length(description>1)) description <- description[[2]]
+  description
+}
+
+get_description_2017("https://www.bricklink.com/catalogPG.asp?P=6190&colorID=85")
+```
+
+```{r}
+descriptions <- map(data_2017_torso$bl_url, get_description_2017)
+descriptions <- descriptions |>
+  as.character() %>%
+  ifelse(. == "character(0)", "NA", .)
+```
+
+```{r}
+data_2017_torso <- data_2017_torso |>
+  mutate(description = descriptions) |>
+  filter(description != "NA") |> 
+  mutate(brick_link_url = paste0("https://www.bricklink.com/v2/catalog/catalogitem.page?P=", bl_id))
+  #separate(description, c("torso", "arms", "hands"), "/")
+```
+
+```{r}
+data_2017_accessories <- data_2017 |> 
+  filter(group == "FIGURE ACCESSORIES I" | group == "FIGURE ACCESSORIES,") |> mutate(brick_link_url = paste0("https://www.bricklink.com/v2/catalog/catalogitem.page?P=", bl_id)) 
+```
+
+```{r}
+#define get_description function
+get_description <- function(url) {
+  page <- read_html(url)
+  description <- page |>
+    html_elements("#item-name-title") |>
+    html_text()
+  description
+}
+```
+
+```{r}
+descriptions <- map(data_2017_accessories$brick_link_url, get_description)
+descriptions <- descriptions |>
+  as.character() %>%
+  ifelse(. == "character(0)", "NA", .)
+```
+
+```{r}
+# add description column
+data_2017_accessories <- data_2017_accessories |>
+  mutate(description = descriptions) |>
+  filter(description != "NA")
+```

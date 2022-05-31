@@ -49,6 +49,7 @@ data_torso <- data_torso |>
   filter(description != "NA") |>
   separate(description, c("torso", "arms", "hands"), "/")
 ```
+
 ```{r}
 data_torso <- data_torso |>
   mutate(female = str_detect(torso, "Female")) |>
@@ -69,6 +70,7 @@ g1 <- ggplot(data_torso_hands, aes(x = reorder(hands, count), y = count)) +
     x = "Hand Color",
     y = "Count"
   )
+#add_logo(g1)
 g1
 ```
 
