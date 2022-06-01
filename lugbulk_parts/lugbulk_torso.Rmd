@@ -47,7 +47,8 @@ descriptions <- descriptions |>
 data_torso <- data_torso |>
   mutate(description = descriptions) |>
   filter(description != "NA") |>
-  separate(description, c("torso", "arms", "hands"), "/")
+  separate(description, c("torso", "arms", "hands"), "/") |> 
+  mutate(torso = str_trim(torso), arms = str_trim(arms), hands = str_trim(hands))
 ```
 
 ```{r}
@@ -59,9 +60,10 @@ data_torso_female <- data_torso |>
   filter(female)
 
 data_torso_hands <- data_torso |>
+  filter(hands != "Same Color Hands", hands != "Bright Light Orange Arm Right", hands != "Dark Green Arms") |> 
   group_by(hands) |>
   summarise(count = n())
-
+  
 g1 <- ggplot(data_torso_hands, aes(x = reorder(hands, count), y = count)) +
   geom_col() +
   coord_flip() +
@@ -69,9 +71,9 @@ g1 <- ggplot(data_torso_hands, aes(x = reorder(hands, count), y = count)) +
     title = "Count by Hand Color",
     x = "Hand Color",
     y = "Count"
-  )
-#add_logo(g1)
-g1
+  ) +
+  geom_text(aes(label = count), hjust = -0.2)
+add_logo(g1)
 ```
 
 ```{r}
