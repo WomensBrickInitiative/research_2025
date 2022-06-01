@@ -92,15 +92,8 @@ data_subcategories <- data_heads |>
     median_price = median(price_usd)
   )
 
-# only mini fig data
-data_mini_fig <- data_heads %>% filter(subcategory == "MINI FIGURE HEADS")
-summarize(
-  count = n(), avg_price = round(mean(price_usd), 2),
-  median_price = median(price_usd)
-)
-
 # minifigs by color only
-data_mini_fig_color <- data_mini_fig |>
+data_mini_fig_color <- data_heads |>
   group_by(brick_link_color) |>
   summarize(
     count = n(), avg_price = round(mean(price_usd), 2),
@@ -133,4 +126,4 @@ p2 <- ggplot(data_mini_fig_count,
     y = "Count"
   )
 
-p2
+add_logo(p2)
