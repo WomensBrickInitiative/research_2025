@@ -93,7 +93,7 @@ p_type_human_prop <- ggplot(data_type_human, aes(x = reorder(type, prop), y = pr
        y = "Proportion",
        fill = "Category") +
   geom_text(aes(label = prop), hjust = 1)
-#add_logo(p_type_human)
+add_logo(p_type_human_prop)
 p_type_human_prop
 
 
@@ -128,6 +128,6 @@ p2 <- ggplot(data_mini_fig_count,
     y = "Count"
   )
 
-# add_logo(p2)
+add_logo(p2)
 p2
 
