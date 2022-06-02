@@ -75,15 +75,16 @@ p_type <- ggplot(data_type, aes(x = reorder(type, count), y = count)) +
 p_type
 
 p_type_human <- ggplot(data_type_human, aes(x = reorder(type, count), y = count, fill = type)) +
-  geom_col() +
+  geom_col(show.legend = FALSE) +
   coord_flip() +
   scale_fill_wbi() +
   labs(title = "Head Count by Category (Humans with Faces Only)",
        x = "Category",
        y = "Count",
        fill = "Category") +
-  geom_text(aes(label = count), hjust = 1)
+  geom_text(aes(label = count), hjust = -0.4)
 add_logo(p_type_human)
+
 # subcategories (mini figs, various)
 data_subcategories <- data_heads |>
   group_by(subcategory) |>
@@ -102,7 +103,8 @@ data_mini_fig_color <- data_heads |>
 
 # minifig count
 data_mini_fig_count <- data_mini_fig_color |>
-  filter(count > 1)
+  filter(count > 1) |>
+  filter(brick_link_color %in% skin_colors)
 
 # barchart median price by color
 p1 <- ggplot(data_mini_fig_color, aes(x = reorder(brick_link_color, median_price), y = median_price)) +
@@ -117,9 +119,11 @@ p1 <- ggplot(data_mini_fig_color, aes(x = reorder(brick_link_color, median_price
 # add_logo(p1)
 
 p2 <- ggplot(data_mini_fig_count,
-             aes(reorder(brick_link_color, count), y = count)) +
-  geom_col() +
+             aes(reorder(brick_link_color, count), y = count, fill = brick_link_color)) +
+  geom_col(show.legend = FALSE) +
   coord_flip() +
+  scale_fill_skintones() +
+  geom_text(aes(label = count), hjust = -0.4) +
   labs(
     title = "Head Counts by Color 2022",
     x = "Color",

@@ -33,6 +33,21 @@ add_logo <- function(plot) {
     cowplot::draw_image(socials, x = 0, y = 0, width = 0.15, height = 0.15)
 }
 
+# create named vector assigning skin tone colors to hex code colors
+skin_colors <- c("Dark Brown", "Dark Orange", "Dark Tan", "Light Nougat", "Medium Nougat", "Nougat",
+            "Reddish Brown", "Tan", "White", "Yellow")
+hexcodes <- c("#300000", "#ad5300", "#8d744e", "#faccae", "#dd9f55", "#f8ae79", "#843419", "#dbc69a", "#ffffff", "#f3d000")
+
+skin_tones <- setNames(hexcodes, skin_colors)
+
+# function to create custom color/fill palette for skin tones
+scale_fill_skintones <- function(...) {
+  ggplot2::scale_fill_manual(
+    ...,
+    values = skin_tones
+  )
+}
+
 ## test examples
 ggplot(
   starwars,
