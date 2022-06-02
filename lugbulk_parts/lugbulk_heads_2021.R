@@ -67,10 +67,6 @@ data_type_human <- data_2021_head |>
   filter(type != "no face") |>
   mutate(total_count=sum(count),prop=round(count/total_count,2))
 
-data_neutral <- data_2021_head |>
-  filter(type == "neutral")
-
-
 p_type <- ggplot(data_type, aes(x = reorder(type, count), y = count)) +
   geom_col() +
   coord_flip()
@@ -85,14 +81,14 @@ p_type_human <- ggplot(data_type_human, aes(x = reorder(type, count), y = count,
        y = "Count",
        fill = "Category") +
   geom_text(aes(label = count), hjust = -0.4)
-#add_logo(p_type_human)
+add_logo(p_type_human)
 p_type_human
 
 p_type_human_prop <- ggplot(data_type_human, aes(x = reorder(type, prop), y = prop, fill = type)) +
   geom_col(show.legend = FALSE) +
   coord_flip() +
   scale_fill_wbi() +
-  labs(title = "Head props by Category 2021 (Humans with Faces Only)",
+  labs(title = "Head Proportions by Category 2021 (Humans with Faces Only)",
        x = "Category",
        y = "Proportion",
        fill = "Category") +

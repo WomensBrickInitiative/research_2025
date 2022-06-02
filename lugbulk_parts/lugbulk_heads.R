@@ -68,7 +68,7 @@ data_type_human <- data_heads2 |>
   summarize(count = n()) |>
   filter(type != "non human") |>
   filter(type != "no face") |>
-  mutate(total_count=sum(count),prop=round(count/total_count,2))
+  mutate(total_count=sum(count), prop=round(count/total_count,2))
 
 p_type <- ggplot(data_type, aes(x = reorder(type, count), y = count)) +
   geom_col() +
@@ -79,7 +79,7 @@ p_type_human <- ggplot(data_type_human, aes(x = reorder(type, count), y = count,
   geom_col(show.legend = FALSE) +
   coord_flip() +
   scale_fill_wbi() +
-  labs(title = "Head Count by Category (Humans with Faces Only)",
+  labs(title = "Head Count by Category 2022 (Humans with Faces Only)",
        x = "Category",
        y = "Count",
        fill = "Category") +
@@ -90,12 +90,12 @@ p_type_human_prop <- ggplot(data_type_human, aes(x = reorder(type, prop), y = pr
   geom_col(show.legend = FALSE) +
   coord_flip() +
   scale_fill_wbi() +
-  labs(title = "Head props by Category 2022 (Humans with Faces Only)",
+  labs(title = "Head Proportions by Category 2022 (Humans with Faces Only)",
        x = "Category",
        y = "Proportion",
        fill = "Category") +
   geom_text(aes(label = prop), hjust = 1)
-#add_logo(p_type_human)
+add_logo(p_type_human_prop)
 p_type_human_prop
 
 # subcategories (mini figs, various)

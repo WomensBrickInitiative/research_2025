@@ -5,7 +5,6 @@ source(here::here("wbi_colors.R")) # file containing functions to customize colo
 data_2017 <- read_csv(here::here("data", "lugbulk_parts2017.csv")) |>
   janitor::clean_names() |>
   mutate(price_usd = as.numeric(substr(bl_price, 2, 5))) |>
-  #filter(group == "FIGURE PARTS") |>
   select(element_id, bl_id, bl_color, item_description, group, price_usd, number_of_people_ordering, total_ordered_qt_of_50_25, bl_url)
 #mutate(brick_link_url = paste0("https://www.bricklink.com/v2/catalog/catalogitem.page?P=", bl_id))
 
@@ -22,7 +21,7 @@ data_mini_fig_color <- data_2017_head |>
 
 # minifig count
 data_mini_fig_count <- data_mini_fig_color |>
-  filter(count > 1) |>
+  # filter(count > 1) |>
   mutate(bl_color=ifelse(bl_color=="Light Flesh", "Light Nougat", bl_color)) |>
   filter(bl_color %in% skin_colors)
 
@@ -38,6 +37,6 @@ p2 <- ggplot(data_mini_fig_count,
     y = "Count"
   )
 
-# add_logo(p2)
+add_logo(p2)
 p2
 
