@@ -18,18 +18,16 @@ data <- read_csv(here::here("data","lugbulk_parts.csv")) |>
 ```
 
 ```{r}
-# parts of interest?
-data2 <- data |> 
-  filter(parts_of_interest_the_short_list)
-
 # accessories data exploration
 data_accessories <- data |> 
   filter(category == "FIGURE ACCESSORIES I" | category == "FIGURE ACCESSORIES,")
 
-data_girls_equiptment <- data_accessories |> 
+unique(data_accessories$subcategory)
+
+data_girls_equipment <- data_accessories |> 
   filter(subcategory == "GIRLS EQUIPMENT")
 
-unique(data_girls_equiptment$item_description)
+unique(data_girls_equipment$item_description)
 ```
 
 "Girls Equipment" Subcategory -- 19 items
