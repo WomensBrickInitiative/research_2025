@@ -138,33 +138,8 @@ data_all <- list(heads_2015, heads_2016, heads_2017, heads_2018, heads_2019, hea
 heads_all <- data_all |>
   mutate(price_usd = as.numeric(substr(usd, 2, 5))) |>
   mutate(brick_link_url = paste0("https://www.bricklink.com/v2/catalog/catalogitem.page?P=", bl_part_id)) |>
-  mutate(description = map_chr(brick_link_url, get_descriptions)) |>
-  mutate(is_female = str_detect(tolower(description), "female"),
-         is_male = str_detect(tolower(description), " male") |
-           str_detect(tolower(description), "beard") |
-           str_detect(tolower(description), "goatee") |
-           str_detect(tolower(description), "sideburns") |
-           str_detect(tolower(description), "moustache") |
-           str_detect(tolower(description), "stubble"),
-         is_child = str_detect(tolower(description), "child"),
-         is_dual_sided = str_detect(tolower(description), "dual sided"),
-         is_plain = str_detect(tolower(description), "plain"),
-         is_nonhuman = str_detect(tolower(description), "pineapple") |
-           str_detect(tolower(description), "cobra") |
-           str_detect(tolower(description), "skull") |
-           str_detect(tolower(description), "ghost") |
-           str_detect(tolower(description), "alien") |
-           str_detect(tolower(description), "clock") |
-           str_detect(tolower(description), "headphones"),
-         type = case_when(
-           is_female ~ "female",
-           is_male ~ "male",
-           is_child ~ "child",
-           is_plain ~ "no face",
-           is_nonhuman ~ "non human",
-           !(is_female | is_male | is_child | is_plain | is_nonhuman) ~ "neutral"
-         )
-  )d
+  mutate(description = map_chr(brick_link_url, get_descriptions))
+
 
 write_csv(heads_all, "heads_all.csv")
 
@@ -246,4 +221,103 @@ p5 <- ggplot(color_counts_yvf, aes(x = year, y = count)) +
        color = "")
 add_logo(p5)
 plotly::ggplotly(p5)
+
+
+
+heads_all <- heads_all |>
+  mutate(na_description = ifelse(is.na(description), TRUE, FALSE)) |>
+  mutate(description2 = ifelse(na_description, "NA", description)) |>
+  group_by(item_id) |>
+  mutate(description = min(description2)) |>
+  filter(brick_link_color != "White") |>
+  mutate(is_female = str_detect(tolower(description), "female"),
+         is_male = str_detect(tolower(description), " male") |
+           str_detect(tolower(description), "beard") |
+           str_detect(tolower(description), "goatee") |
+           str_detect(tolower(description), "sideburns") |
+           str_detect(tolower(description), "moustache") |
+           str_detect(tolower(description), "stubble"),
+         is_child = str_detect(tolower(description), "child"),
+         is_dual_sided = str_detect(tolower(description), "dual sided"),
+         is_plain = str_detect(tolower(description), "plain"),
+         is_nonhuman = str_detect(tolower(description), "pineapple") |
+           str_detect(tolower(description), "cobra") |
+           str_detect(tolower(description), "skull") |
+           str_detect(tolower(description), "ghost") |
+           str_detect(tolower(description), "alien") |
+           str_detect(tolower(description), "clock") |
+           str_detect(tolower(description), "headphones"),
+         type = case_when(
+           is_female ~ "female",
+           is_male ~ "male",
+           is_child ~ "child",
+           is_plain ~ "no face",
+           is_nonhuman ~ "non human",
+           !(is_female | is_male | is_child | is_plain | is_nonhuman) ~ "neutral"
+         )
+  )
+
+heads_human <- heads_all |>
+  filter(type != "non human", type != "no face") |>
+  mutate(search_link = paste0("https://www.bricklink.com/v2/search.page?q=", item_id, "#T=A"))
+
+na_d <- heads_human |>
+  filter(description == "NA")
+d <- heads_human |>
+  filter(description != "NA")
+
+write_csv(na_d, file = "na_heads.csv")
+
+na_completed <- read_csv(here::here("data", "lugbulk_data", "na_heads_completed.csv")) |>
+  rename(description = `...9`) |>
+  mutate(bl_part_id = as.character(bl_part_id))
+
+heads_completed <- bind_rows(d, na_completed) |>
+  filter(!is.na(description)) |>
+  mutate(is_female = str_detect(tolower(description), "female"),
+         is_male = str_detect(tolower(description), " male") |
+           str_detect(tolower(description), "beard") |
+           str_detect(tolower(description), "goatee") |
+           str_detect(tolower(description), "sideburns") |
+           str_detect(tolower(description), "moustache") |
+           str_detect(tolower(description), "stubble"),
+         is_child = str_detect(tolower(description), "child"),
+         is_dual_sided = str_detect(tolower(description), "dual sided"),
+         is_plain = str_detect(tolower(description), "plain"),
+         is_nonhuman = str_detect(tolower(description), "pineapple") |
+           str_detect(tolower(description), "cobra") |
+           str_detect(tolower(description), "skull") |
+           str_detect(tolower(description), "ghost") |
+           str_detect(tolower(description), "alien") |
+           str_detect(tolower(description), "clock") |
+           str_detect(tolower(description), "headphones") |
+           str_detect(tolower(description), "globe"),
+         type = case_when(
+           is_female ~ "female",
+           is_male ~ "male",
+           is_child ~ "child",
+           is_plain ~ "no face",
+           is_nonhuman ~ "non human",
+           !(is_female | is_male | is_child | is_plain | is_nonhuman) ~ "neutral"
+         )
+  ) |>
+  filter(type != "non human", type != "no face")
+
+gender_counts <- heads_completed |>
+  group_by(year, type) |>
+  summarize(count = n()) |>
+  group_by(year) |>
+  mutate(total = sum(count), prop = round(count/total, 2))
+
+p6 <- ggplot(gender_counts, aes(x = year, y = prop)) +
+  geom_line(aes(color = type)) +
+  geom_point(aes(color = type)) +
+  labs(title = "Proportion of Category of Heads Over Time",
+       x = "Year",
+       y = "Proportion",
+       color = "") +
+  scale_color_wbi()
+add_logo(p6)
+plotly::ggplotly(p6)
+
 
