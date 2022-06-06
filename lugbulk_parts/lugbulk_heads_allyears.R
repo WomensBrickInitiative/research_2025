@@ -164,7 +164,7 @@ heads_all <- data_all |>
            is_nonhuman ~ "non human",
            !(is_female | is_male | is_child | is_plain | is_nonhuman) ~ "neutral"
          )
-  )
+  )d
 
 write_csv(heads_all, "heads_all.csv")
 
@@ -172,4 +172,78 @@ na <- heads_all |>
   group_by(year) |>
   mutate(is_na = description != "NA") |>
   summarise(count = sum(is_na))
+
+
+heads_all <- read_csv(here::here("data", "lugbulk_data", "heads_all.csv"))
+
+heads_color <- heads_all |>
+  filter(brick_link_color != "White") |>
+  mutate(yellow_vs_flesh = ifelse(brick_link_color == "Yellow", "Yellow", "Flesh"))
+
+color_counts <- heads_color |>
+  group_by(year, brick_link_color) |>
+  summarize(count = n()) |>
+  group_by(year) |>
+  mutate(total = sum(count), prop = round(count/total, 2))
+
+p1 <- ggplot(color_counts, aes(x = reorder(brick_link_color, prop), y = prop, fill = brick_link_color)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~year) +
+  coord_flip() +
+  scale_fill_skintones() +
+  labs(title = "Head Color Proportions by Year",
+       x = "Color",
+       y = "Proportion")
+add_logo(p1)
+
+color_counts_flesh <- color_counts |>
+  filter(brick_link_color != "Yellow")
+
+p2 <- ggplot(color_counts_flesh, aes(x = reorder(brick_link_color, prop), y = prop, fill = brick_link_color)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~year) +
+  coord_flip() +
+  scale_fill_skintones() +
+  labs(title = "Head Color Proportions by Year (flesh tones only)",
+       x = "Color",
+       y = "Proportion")
+add_logo(p2)
+
+p3 <- ggplot(color_counts_flesh, aes(x = reorder(brick_link_color, count), y = count, fill = brick_link_color)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~year) +
+  coord_flip() +
+  scale_fill_skintones() +
+  labs(title = "Head Color Counts by Year (flesh tones only)",
+       x = "Color",
+       y = "Count")
+add_logo(p3)
+
+color_counts_yvf <- heads_color |>
+  group_by(year, yellow_vs_flesh) |>
+  summarize(count = n()) |>
+  group_by(year) |>
+  mutate(total = sum(count), prop = round(count/total, 2))
+
+p4 <- ggplot(color_counts_yvf, aes(x = year, y = prop)) +
+  geom_line(aes(color = yellow_vs_flesh)) +
+  geom_point(aes(color = yellow_vs_flesh)) +
+  scale_color_manual(values = c("#f8ae79","#f3d000")) +
+  labs(title = "Proportion of Yellow Vs. Flesh Heads Over Time",
+       x = "Year",
+       y = "Proportion",
+       color = "")
+add_logo(p4)
+plotly::ggplotly(p4)
+
+p5 <- ggplot(color_counts_yvf, aes(x = year, y = count)) +
+  geom_line(aes(color = yellow_vs_flesh)) +
+  geom_point(aes(color = yellow_vs_flesh)) +
+  scale_color_manual(values = c("#f8ae79","#f3d000")) +
+  labs(title = "Counts of Yellow Vs. Flesh Heads Over Time",
+       x = "Year",
+       y = "Count",
+       color = "")
+add_logo(p5)
+plotly::ggplotly(p5)
 
