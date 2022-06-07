@@ -292,6 +292,7 @@ town_links <- generate_page_links(62, "https://www.bricklink.com/catalogList.asp
   as.character()
 town_data <- tibble(category = "Town", link = town_links, num_pages = 62L)
 town_data_scraped <- purrr::map2(town_data$link, town_data$category, scrape_minifigs_data)
-data_bind <- plyr::ldply(data_all, rbind)
+data_bind_town <- plyr::ldply(town_data_scraped, rbind)
+write_csv(data_bind_town, file = "town_minifig.csv")
 ```
 

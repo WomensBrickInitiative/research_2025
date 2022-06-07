@@ -11,13 +11,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
-prof_data <- read_csv(here::here("data","minifigs_data.csv"))
+#prof_data <- read_csv(here::here("data","minifigs_data.csv"))
+prof_data <- read_csv(here::here("minifigs","town_minifig.csv"))
 source(here::here("wbi_colors.R"))
 ```
 
 ```{r}
 town_data <- prof_data |> 
-  filter(category=="Town") |> 
+  #filter(category=="Town") |> 
   mutate(gender=case_when(
     str_detect(description, "Male") |
       str_detect(tolower(description), "beard") |
@@ -58,7 +59,7 @@ g1 <- ggplot(doctor, aes(x=reorder(gender,desc(count)),y=count,fill=gender)) +
   geom_text(aes(label=count)) +
   scale_fill_wbi()
 
-g1
+add_logo(g1)
 
 # Bar chart of doctor proportions
 g2 <- ggplot(doctor, aes(x=reorder(gender,desc(prop)),y=prop,fill=gender)) +
@@ -71,7 +72,7 @@ g2 <- ggplot(doctor, aes(x=reorder(gender,desc(prop)),y=prop,fill=gender)) +
   geom_text(aes(label=prop)) +
   scale_fill_wbi()
 
-g2
+add_logo(g2)
 ```
 
 ```{r}
@@ -94,7 +95,7 @@ g3 <- ggplot(police, aes(x=reorder(gender,desc(count)),y=count,fill=gender)) +
   geom_text(aes(label=count)) +
   scale_fill_wbi()
 
-g3
+add_logo(g3)
 
 # Bar chart of police proportions
 g4 <- ggplot(police, aes(x=reorder(gender,desc(prop)),y=prop,fill=gender)) +
@@ -107,7 +108,7 @@ g4 <- ggplot(police, aes(x=reorder(gender,desc(prop)),y=prop,fill=gender)) +
   geom_text(aes(label=prop)) +
   scale_fill_wbi()
 
-g4
+add_logo(g4)
 ```
 
 ```{r}
@@ -128,7 +129,7 @@ g5 <- ggplot(business, aes(x=reorder(gender,desc(count)),y=count,fill=gender)) +
   geom_text(aes(label=count)) +
   scale_fill_wbi()
 
-g5
+add_logo(g5)
 
 # Bar chart of businessperson proportions
 g6 <- ggplot(business, aes(x=reorder(gender,desc(prop)),y=prop,fill=gender)) +
@@ -141,7 +142,7 @@ g6 <- ggplot(business, aes(x=reorder(gender,desc(prop)),y=prop,fill=gender)) +
   geom_text(aes(label=prop)) +
   scale_fill_wbi()
 
-g6
+add_logo(g6)
 ```
 
 ```{r}
@@ -162,7 +163,7 @@ g7 <- ggplot(scientist, aes(x=reorder(gender,desc(count)),y=count,fill=gender)) 
   geom_text(aes(label=count)) +
   scale_fill_wbi()
 
-g7
+add_logo(g7)
 
 # Bar chart of scientist proportions
 g8 <- ggplot(scientist, aes(x=reorder(gender,desc(prop)),y=prop,fill=gender)) +
@@ -175,7 +176,7 @@ g8 <- ggplot(scientist, aes(x=reorder(gender,desc(prop)),y=prop,fill=gender)) +
   geom_text(aes(label=prop)) +
   scale_fill_wbi()
 
-g8
+add_logo(g8)
 ```
 
 ```{r}
@@ -186,29 +187,97 @@ astronaut <- town_data |>
   summarize(count=n(),prop=round(count/total,2)) |> 
   distinct()
 
-# Bar chart of scientist counts
-g7 <- ggplot(scientist, aes(x=reorder(gender,desc(count)),y=count,fill=gender)) +
+# Bar chart of astronaut counts
+g9 <- ggplot(astronaut, aes(x=reorder(gender,desc(count)),y=count,fill=gender)) +
   geom_col(show.legend = FALSE) +
-  labs(title="Scientist",
+  labs(title="Astronaut",
        x = "Gender",
        y = "Count",
        fill = "Gender") +
   geom_text(aes(label=count)) +
   scale_fill_wbi()
 
-g7
+add_logo(g9)
 
-# Bar chart of scientist proportions
-g8 <- ggplot(scientist, aes(x=reorder(gender,desc(prop)),y=prop,fill=gender)) +
+# Bar chart of astronaut proportions
+g10 <- ggplot(astronaut, aes(x=reorder(gender,desc(prop)),y=prop,fill=gender)) +
   geom_col(show.legend = FALSE) +
-  labs(title="Scientist",
-       subtitle = paste("Out of", as.character(sum(scientist$count)), "total"),
+  labs(title="Astronaut",
+       subtitle = paste("Out of", as.character(sum(astronaut$count)), "total"),
        x = "Gender",
        y = "Proportion",
        fill = "Gender") +
   geom_text(aes(label=prop)) +
   scale_fill_wbi()
 
-g8
+add_logo(g10)
 ```
 
+```{r}
+chef <- town_data |> 
+  filter(str_detect(tolower(description), "chef")) |> 
+  mutate(total=n()) |> 
+  group_by(gender) |> 
+  summarize(count=n(),prop=round(count/total,2)) |> 
+  distinct()
+
+# Bar chart of chef counts
+g11 <- ggplot(chef, aes(x=reorder(gender,desc(count)),y=count,fill=gender)) +
+  geom_col(show.legend = FALSE) +
+  labs(title="Chef",
+       x = "Gender",
+       y = "Count",
+       fill = "Gender") +
+  geom_text(aes(label=count)) +
+  scale_fill_wbi()
+
+add_logo(g11)
+
+# Bar chart of chef proportions
+g12 <- ggplot(chef, aes(x=reorder(gender,desc(prop)),y=prop,fill=gender)) +
+  geom_col(show.legend = FALSE) +
+  labs(title="Chef",
+       subtitle = paste("Out of", as.character(sum(chef$count)), "total"),
+       x = "Gender",
+       y = "Proportion",
+       fill = "Gender") +
+  geom_text(aes(label=prop)) +
+  scale_fill_wbi()
+
+add_logo(g12)
+```
+
+```{r}
+pilot <- town_data |> 
+  filter(str_detect(tolower(description), "pilot"),
+         !str_detect(tolower(description), "police")) |> 
+  mutate(total=n()) |> 
+  group_by(gender) |> 
+  summarize(count=n(),prop=round(count/total,2)) |> 
+  distinct()
+
+# Bar chart of pilot counts
+g13 <- ggplot(pilot, aes(x=reorder(gender,desc(count)),y=count,fill=gender)) +
+  geom_col(show.legend = FALSE) +
+  labs(title="Pilot",
+       x = "Gender",
+       y = "Count",
+       fill = "Gender") +
+  geom_text(aes(label=count)) +
+  scale_fill_wbi()
+
+add_logo(g13)
+
+# Bar chart of pilot proportions
+g14 <- ggplot(pilot, aes(x=reorder(gender,desc(prop)),y=prop,fill=gender)) +
+  geom_col(show.legend = FALSE) +
+  labs(title="Pilot",
+       subtitle = paste("Out of", as.character(sum(pilot$count)), "total"),
+       x = "Gender",
+       y = "Proportion",
+       fill = "Gender") +
+  geom_text(aes(label=prop)) +
+  scale_fill_wbi()
+
+add_logo(g14)
+```
