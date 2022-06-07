@@ -111,21 +111,17 @@ links <- links[str_detect(links, "</b>")] |>
 
 ```{r}
 # function to get number of pages in a category
-get_pages <- function(url) {
-  url_split <- str_split(url, "catType")
-  new_url <- paste0(url_split[[1]][[1]], "pg=10", "&catType", url_split[[1]][[2]])
-  webpage <- read_html(new_url)
+get_pages <- function(url){
+  webpage <- read_html(url)
   num_pages <- webpage |>
-    html_elements(".l-clear-left a") |>
-    length()
-  if (num_pages == 0L) num_pages <- 1L
-  if (num_pages >= 10L) num_pages <- num_pages - 1L
+    html_elements("b:nth-child(3)") |> 
+    html_text()
   num_pages
 }
 ```
 
 ```{r}
-pages <- map_int(links, get_pages)
+pages <- map(links, get_pages)
 pages <- replace(pages, 26, 21L) # Duplo
 pages <- replace(pages, 81, 26L) # Starwars
 pages <- replace(pages, 98, 37L) # Town
@@ -283,5 +279,19 @@ minifigs_data_sample <- minifigs_data_sample |>
   mutate(release_year = release_year)
 
 write_csv(minifigs_data_sample, file = "minifigs_sample.csv")
+```
+
+```{r}
+categories <- read_csv(here::here("data", "categories.csv"))
+categories_town <- categories |> 
+  filter(category == "Town")
+```
+
+```{r}
+town_links <- generate_page_links(62, "https://www.bricklink.com/catalogList.asp?catType=M&catString=67") |> 
+  as.character()
+town_data <- tibble(category = "Town", link = town_links, num_pages = 62L)
+town_data_scraped <- purrr::map2(town_data$link, town_data$category, scrape_minifigs_data)
+data_bind <- plyr::ldply(data_all, rbind)
 ```
 
