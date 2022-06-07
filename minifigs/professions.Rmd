@@ -11,8 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
-# prof_data <- read_csv(here::here("data","minifigs_data.csv"))
-prof_data <- read_csv(here::here("minifigs", "town_minifig.csv"))
+prof_data <- read_csv(here::here("data", "town_minifig.csv"))
 source(here::here("wbi_colors.R"))
 ```
 

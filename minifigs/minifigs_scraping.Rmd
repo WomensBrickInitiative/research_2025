@@ -110,6 +110,10 @@ links <- links[str_detect(links, "</b>")] |>
 ```
 
 ```{r}
+## NEW get pages function-- needs some work to get it to fully work, but prob better than 
+# previous one if we ever want to run this again-- look in github history to find old one if 
+# can't get this to work
+
 # function to get number of pages in a category
 get_pages <- function(url){
   webpage <- read_html(url)
@@ -294,5 +298,17 @@ town_data <- tibble(category = "Town", link = town_links, num_pages = 62L)
 town_data_scraped <- purrr::map2(town_data$link, town_data$category, scrape_minifigs_data)
 data_bind_town <- plyr::ldply(town_data_scraped, rbind)
 write_csv(data_bind_town, file = "town_minifig.csv")
+```
+
+```{r}
+# correct Town data to have all pages, save new csv
+data <- read_csv(here::here("data", "minifigs_data.csv")) |> 
+  filter(category != "Town") |> 
+  select(-`...1`)
+town_data <- read_csv(here::here("data", "town_minifig.csv")) |> 
+  mutate(item_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?M=", item_number))
+
+data_corrected <- bind_rows(data, town_data)
+write_csv(data_corrected, "minifigs_data.csv")
 ```
 
