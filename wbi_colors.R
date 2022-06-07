@@ -1,5 +1,3 @@
-# this is a change
-
 # functions to create custom color palettes with WBI colors
 scale_color_wbi <- function(...) {
   ggplot2::scale_color_manual(
@@ -35,8 +33,8 @@ add_logo <- function(plot) {
 
 # create named vector assigning skin tone colors to hex code colors
 skin_colors <- c("Dark Brown", "Dark Orange", "Dark Tan", "Light Nougat", "Medium Nougat", "Nougat",
-            "Reddish Brown", "Tan", "White", "Yellow")
-hexcodes <- c("#300000", "#ad5300", "#8d744e", "#faccae", "#dd9f55", "#f8ae79", "#843419", "#dbc69a", "#ffffff", "#f3d000")
+            "Reddish Brown", "Tan", "Yellow")
+hexcodes <- c("#300000", "#ad5300", "#8d744e", "#faccae", "#dd9f55", "#f8ae79", "#843419", "#dbc69a", "#f3d000")
 
 skin_tones <- setNames(hexcodes, skin_colors)
 
@@ -47,24 +45,3 @@ scale_fill_skintones <- function(...) {
     values = skin_tones
   )
 }
-
-## test examples
-ggplot(
-  starwars,
-  aes(x = height, y = mass, color = sex)) +
-  geom_point() +
-  scale_color_wbi()
-
-starwars2 <- starwars %>%
-  filter(species %in% c("Human", "Droid", "Gungan", "Kaminoan")) %>%
-  group_by(species) %>%
-  summarise(count = n())
-ggplot(
-  starwars2,
-  aes(x = reorder(species, desc(count)), y = count, fill = species)) +
-  geom_col() +
-  scale_fill_wbi()
-
-ggplot(starwars, aes(x = mass, y = height, color = birth_year )) +
-  geom_point() +
-  scale_y_continuous_wbi()
