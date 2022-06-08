@@ -438,7 +438,7 @@ p1 <- ggplot(police2_graph, aes(x = reorder(gender2, desc(count)), y = count, fi
   geom_text(aes(label = count)) +
   scale_fill_wbi()
 p1
-#p1 <- add_logo(p1)
+p1 <- add_logo(p1)
 
 # Bar chart of police2 proportions
 p2 <- ggplot(police2_graph, aes(x = reorder(gender2, desc(prop)), y = prop, fill = gender2)) +
@@ -453,7 +453,7 @@ p2 <- ggplot(police2_graph, aes(x = reorder(gender2, desc(prop)), y = prop, fill
   geom_text(aes(label = prop)) +
   scale_fill_wbi()
 p2
-#p2 <- add_logo(p2)
+p2 <- add_logo(p2)
 
 # Histogram of police2 counts
 p3 <- ggplot(police2, aes(x = release_year, fill=gender2)) +
@@ -467,7 +467,7 @@ p3 <- ggplot(police2, aes(x = release_year, fill=gender2)) +
   facet_wrap(~gender2) +
   scale_fill_wbi()
 p3
-#p3 <- add_logo(p3)
+p3 <- add_logo(p3)
 ```
 
 ```{r}
@@ -476,7 +476,5 @@ plots <- list(p1, p2, p3)
 
 map2(names, plots, ggsave)
 
-write_csv(police2, "police2.csv")
-write_csv(police2_graph, "police2_graph.csv")
 ```
 
