@@ -45,3 +45,11 @@ scale_fill_skintones <- function(...) {
     values = skin_tones
   )
 }
+
+# function to create custom color palette for skin tones
+scale_color_skintones <- function(...) {
+  ggplot2::scale_color_manual(
+    ...,
+    values = skin_tones
+  )
+}

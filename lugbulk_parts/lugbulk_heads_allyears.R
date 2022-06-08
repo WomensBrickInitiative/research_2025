@@ -173,8 +173,8 @@ p1 <- ggplot(color_counts, aes(x = reorder(brick_link_color, prop), y = prop, fi
     x = "Color",
     y = "Proportion"
   )
-add_logo(p1)
-
+#add_logo(p1)
+p1
 # filter out yellow heads
 color_counts_flesh <- color_counts |>
   filter(brick_link_color != "Yellow")
@@ -239,6 +239,63 @@ p5 <- ggplot(color_counts_yvf, aes(x = year, y = count)) +
   )
 add_logo(p5)
 plotly::ggplotly(p5)
+
+p1a <- ggplot(color_counts, aes(x = year, y = prop, fill = brick_link_color)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~brick_link_color) +
+  #coord_flip() +
+  scale_fill_skintones() +
+  labs(
+    title = "Head Color Proportions Over Time",
+    x = "Year",
+    y = "Proportion"
+  )
+#add_logo(p1a)
+p1a
+
+# without yellow
+p2a <- ggplot(color_counts_flesh, aes(x = year, y = prop, fill = brick_link_color)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~brick_link_color) +
+  #coord_flip() +
+  scale_fill_skintones() +
+  labs(
+    title = "Head Color Proportions Over Time",
+    x = "Year",
+    y = "Proportion"
+  )
+#add_logo(p2a)
+p2a
+
+# faceted barchart-- color counts by year for only flesh tones
+p3a <- ggplot(color_counts_flesh, aes(x = year, y = count, fill = brick_link_color)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~brick_link_color) +
+  #coord_flip() +
+  scale_fill_skintones() +
+  labs(
+    title = "Head Color Counts Over Time (flesh tones only)",
+    x = "Color",
+    y = "Count"
+  )
+#add_logo(p3a)
+p3a
+
+# faceted line graph-- color counts by year for only flesh tones
+p3b <- ggplot(color_counts_flesh, aes(x = year, y = count, color = brick_link_color)) +
+  geom_line(show.legend = FALSE) +
+  geom_point() +
+  facet_wrap(~brick_link_color) +
+  #coord_flip() +
+  scale_color_skintones() +
+  labs(
+    title = "Head Color Counts Over Time (flesh tones only)",
+    x = "Color",
+    y = "Count"
+  )
+#add_logo(p3b)
+p3b
+
 
 ###### Gender Analysis
 

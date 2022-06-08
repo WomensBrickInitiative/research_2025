@@ -319,3 +319,164 @@ plots <- list(g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12, g13, g14)
 
 map2(names, plots, ggsave)
 ```
+
+```{r}
+# function to scrape release year given item link
+scrape_year <- function(url) {
+  if (!robotstxt::paths_allowed(paths = c(url))) stop("scraping not allowed, cannot proceed")
+  item_page <- rvest::read_html(url)
+  release_year <- item_page |> 
+    html_elements("#yearReleasedSec") |> 
+    html_text()
+  release_year
+}
+
+# function to scrape parts description given item link
+scrape_parts_description <- function(url){
+  item_page <- rvest::read_html(url)
+  parts_description <- item_page |> 
+    html_elements(".IV_ITEM td:nth-child(4) b") |> 
+    html_text()
+  parts_description
+}
+```
+
+```{r}
+# filter to only police and add links to items (minifigs) and parts
+police_release_year <- town_data |>
+  filter(
+    str_detect(tolower(description), "police"),
+    !str_detect(tolower(description), "jail"),
+    !str_detect(tolower(description), "crook")
+  ) |> 
+  mutate(item_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?M=", item_number)) |>
+  mutate(parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", item_number))
+```
+
+```{r}
+# Filter to "no tag" only
+police_notag <- police_release_year |> 
+  filter(gender=="no tag")
+
+# Scrape parts descriptions for no-tag items/minifigs
+parts_descriptions <- map(police_notag$parts_link, scrape_parts_description)
+
+# Add parts descriptions as a column to dataframe
+# Combine all parts' descriptions to one string for each minifig (temp)
+# Re-categorize gender based on parts descriptions (gender2)
+police_notag <- police_notag |> 
+  mutate(parts_description = parts_descriptions) |> 
+  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+  mutate(gender2 = case_when(
+    str_detect(temp, "Male") |
+      str_detect(tolower(temp), "beard") |
+      str_detect(tolower(temp), "goatee") |
+      str_detect(tolower(temp), "sideburns") |
+      str_detect(tolower(temp), "moustache") |
+      str_detect(tolower(temp), "stubble") |
+      str_detect(temp, "Man") |
+      str_detect(tolower(temp), "businessman")
+    ~ "male",
+      str_detect(temp, "Female") |
+      str_detect(tolower(temp), "eyelashes") |
+      str_detect(tolower(temp), "ponytail") |
+      str_detect(tolower(temp), "pigtails") |
+      str_detect(tolower(temp), "lips") |
+      str_detect(tolower(temp), "girl") |
+      str_detect(tolower(temp), "woman")
+    ~ "female",
+    TRUE ~ "no tag"
+  )) |> 
+  select(-parts_description) # get rid of parts_description column for bind_rows
+```
+
+```{r}
+# Create new police dataframe with re-categorized gender (police2)
+police2 <- police |> 
+  filter(gender != "no tag") |> 
+  mutate(item_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?M=", item_number)) |>
+  mutate(parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", item_number)) |> 
+  mutate(temp="NA", gender2=gender) |> 
+  bind_rows(police_notag)
+
+# Scrape release_year
+release_year <- map(police2$item_link, scrape_year)
+release_year <- release_year |> 
+  as.character() %>% 
+  ifelse(. == "character(0)", "NA", .)
+
+# Add release_year column to police2 dataframe and convert to numeric
+police2 <- police2 |> 
+  mutate(release_year=release_year) |> 
+  filter(release_year != "NA") |> 
+  mutate(release_year=as.numeric(release_year))
+
+# Filter to only female
+policewomen <- police2 |> 
+  filter(gender2=="female") |> 
+  filter(release_year != "NA") |> 
+  mutate(release_year=as.numeric(release_year))
+
+# Summarize counts and props by gender2 for graphing
+police2_graph <- police2 |> 
+  mutate(total=n()) |> 
+  group_by(gender2) |> 
+  summarize(count=n(),prop=round(count/total,2)) |> 
+  distinct()
+```
+
+```{r}
+# Bar chart of police2 counts
+p1 <- ggplot(police2_graph, aes(x = reorder(gender2, desc(count)), y = count, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Police Corrected",
+    x = "Gender",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = count)) +
+  scale_fill_wbi()
+p1
+#p1 <- add_logo(p1)
+
+# Bar chart of police2 proportions
+p2 <- ggplot(police2_graph, aes(x = reorder(gender2, desc(prop)), y = prop, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Police Corrected",
+    subtitle = paste("Out of", as.character(sum(police2_graph$count)), "total"),
+    x = "Gender",
+    y = "Proportion",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = prop)) +
+  scale_fill_wbi()
+p2
+#p2 <- add_logo(p2)
+
+# Histogram of police2 counts
+p3 <- ggplot(police2, aes(x = release_year, fill=gender2)) +
+  geom_histogram(show.legend = FALSE, binwidth = 5) +
+  labs(
+    title = "Distribution of Release Year by Gender for Police Minifigs",
+    x = "Release Year",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  facet_wrap(~gender2) +
+  scale_fill_wbi()
+p3
+#p3 <- add_logo(p3)
+```
+
+```{r}
+names <- c("p1.png", "p2.png", "p3.png")
+plots <- list(p1, p2, p3)
+
+map2(names, plots, ggsave)
+
+write_csv(police2, "police2.csv")
+write_csv(police2_graph, "police2_graph.csv")
+```
+
