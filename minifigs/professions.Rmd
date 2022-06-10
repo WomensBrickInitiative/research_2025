@@ -37,7 +37,9 @@ town_data <- prof_data |>
       str_detect(tolower(description), "woman")
     ~ "female",
     TRUE ~ "no tag"
-  ))
+  )) |> 
+  mutate(item_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?M=", item_number)) |>
+  mutate(parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", item_number))
 ```
 
 ```{r}
@@ -49,7 +51,7 @@ doctor <- town_data |>
   distinct()
 
 # Bar chart of doctor counts
-g1 <- ggplot(doctor, aes(x = reorder(gender, desc(count)), y = count, fill = gender)) +
+g1 <- ggplot(doctor, aes(x = gender, y = count, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Doctor",
@@ -59,11 +61,11 @@ g1 <- ggplot(doctor, aes(x = reorder(gender, desc(count)), y = count, fill = gen
   ) +
   geom_text(aes(label = count)) +
   scale_fill_wbi()
-
+g1
 g1 <- add_logo(g1)
 
 # Bar chart of doctor proportions
-g2 <- ggplot(doctor, aes(x = reorder(gender, desc(prop)), y = prop, fill = gender)) +
+g2 <- ggplot(doctor, aes(x = gender, y = prop, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Doctor",
@@ -74,7 +76,7 @@ g2 <- ggplot(doctor, aes(x = reorder(gender, desc(prop)), y = prop, fill = gende
   ) +
   geom_text(aes(label = prop)) +
   scale_fill_wbi()
-
+g2
 g2 <- add_logo(g2)
 ```
 
@@ -91,7 +93,7 @@ police <- town_data |>
   distinct()
 
 # Bar chart of police counts
-g3 <- ggplot(police, aes(x = reorder(gender, desc(count)), y = count, fill = gender)) +
+g3 <- ggplot(police, aes(x = gender, y = count, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Police",
@@ -101,11 +103,11 @@ g3 <- ggplot(police, aes(x = reorder(gender, desc(count)), y = count, fill = gen
   ) +
   geom_text(aes(label = count)) +
   scale_fill_wbi()
-
+g3
 g3 <- add_logo(g3)
 
 # Bar chart of police proportions
-g4 <- ggplot(police, aes(x = reorder(gender, desc(prop)), y = prop, fill = gender)) +
+g4 <- ggplot(police, aes(x = gender, y = prop, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Police",
@@ -116,7 +118,7 @@ g4 <- ggplot(police, aes(x = reorder(gender, desc(prop)), y = prop, fill = gende
   ) +
   geom_text(aes(label = prop)) +
   scale_fill_wbi()
-
+g4
 g4 <- add_logo(g4)
 ```
 
@@ -129,7 +131,7 @@ business <- town_data |>
   distinct()
 
 # Bar chart of businessperson counts
-g5 <- ggplot(business, aes(x = reorder(gender, desc(count)), y = count, fill = gender)) +
+g5 <- ggplot(business, aes(x = gender, y = count, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Businessperson",
@@ -139,11 +141,11 @@ g5 <- ggplot(business, aes(x = reorder(gender, desc(count)), y = count, fill = g
   ) +
   geom_text(aes(label = count)) +
   scale_fill_wbi()
-
+g5
 g5 <- add_logo(g5)
 
 # Bar chart of businessperson proportions
-g6 <- ggplot(business, aes(x = reorder(gender, desc(prop)), y = prop, fill = gender)) +
+g6 <- ggplot(business, aes(x = gender, y = prop, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Businessperson",
@@ -154,7 +156,7 @@ g6 <- ggplot(business, aes(x = reorder(gender, desc(prop)), y = prop, fill = gen
   ) +
   geom_text(aes(label = prop)) +
   scale_fill_wbi()
-
+g6
 g6 <- add_logo(g6)
 ```
 
@@ -167,7 +169,7 @@ scientist <- town_data |>
   distinct()
 
 # Bar chart of scientist counts
-g7 <- ggplot(scientist, aes(x = reorder(gender, desc(count)), y = count, fill = gender)) +
+g7 <- ggplot(scientist, aes(x = gender, y = count, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Scientist",
@@ -177,11 +179,11 @@ g7 <- ggplot(scientist, aes(x = reorder(gender, desc(count)), y = count, fill = 
   ) +
   geom_text(aes(label = count)) +
   scale_fill_wbi()
-
+g7
 g7 <- add_logo(g7)
 
 # Bar chart of scientist proportions
-g8 <- ggplot(scientist, aes(x = reorder(gender, desc(prop)), y = prop, fill = gender)) +
+g8 <- ggplot(scientist, aes(x = gender, y = prop, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Scientist",
@@ -192,7 +194,7 @@ g8 <- ggplot(scientist, aes(x = reorder(gender, desc(prop)), y = prop, fill = ge
   ) +
   geom_text(aes(label = prop)) +
   scale_fill_wbi()
-
+g8
 g8 <- add_logo(g8)
 ```
 
@@ -205,7 +207,7 @@ astronaut <- town_data |>
   distinct()
 
 # Bar chart of astronaut counts
-g9 <- ggplot(astronaut, aes(x = reorder(gender, desc(count)), y = count, fill = gender)) +
+g9 <- ggplot(astronaut, aes(x = gender, y = count, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Astronaut",
@@ -215,11 +217,11 @@ g9 <- ggplot(astronaut, aes(x = reorder(gender, desc(count)), y = count, fill = 
   ) +
   geom_text(aes(label = count)) +
   scale_fill_wbi()
-
+g9
 g9 <- add_logo(g9)
 
 # Bar chart of astronaut proportions
-g10 <- ggplot(astronaut, aes(x = reorder(gender, desc(prop)), y = prop, fill = gender)) +
+g10 <- ggplot(astronaut, aes(x = gender, y = prop, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Astronaut",
@@ -230,7 +232,7 @@ g10 <- ggplot(astronaut, aes(x = reorder(gender, desc(prop)), y = prop, fill = g
   ) +
   geom_text(aes(label = prop)) +
   scale_fill_wbi()
-
+g10
 g10 <- add_logo(g10)
 ```
 
@@ -243,7 +245,7 @@ chef <- town_data |>
   distinct()
 
 # Bar chart of chef counts
-g11 <- ggplot(chef, aes(x = reorder(gender, desc(count)), y = count, fill = gender)) +
+g11 <- ggplot(chef, aes(x = gender, y = count, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Chef",
@@ -253,11 +255,11 @@ g11 <- ggplot(chef, aes(x = reorder(gender, desc(count)), y = count, fill = gend
   ) +
   geom_text(aes(label = count)) +
   scale_fill_wbi()
-
+g11
 g11 <- add_logo(g11)
 
 # Bar chart of chef proportions
-g12 <- ggplot(chef, aes(x = reorder(gender, desc(prop)), y = prop, fill = gender)) +
+g12 <- ggplot(chef, aes(x = gender, y = prop, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Chef",
@@ -268,7 +270,7 @@ g12 <- ggplot(chef, aes(x = reorder(gender, desc(prop)), y = prop, fill = gender
   ) +
   geom_text(aes(label = prop)) +
   scale_fill_wbi()
-
+g12
 g12 <- add_logo(g12)
 ```
 
@@ -284,7 +286,7 @@ pilot <- town_data |>
   distinct()
 
 # Bar chart of pilot counts
-g13 <- ggplot(pilot, aes(x = reorder(gender, desc(count)), y = count, fill = gender)) +
+g13 <- ggplot(pilot, aes(x = gender, y = count, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Pilot",
@@ -294,11 +296,11 @@ g13 <- ggplot(pilot, aes(x = reorder(gender, desc(count)), y = count, fill = gen
   ) +
   geom_text(aes(label = count)) +
   scale_fill_wbi()
-
+g13
 g13 <- add_logo(g13)
 
 # Bar chart of pilot proportions
-g14 <- ggplot(pilot, aes(x = reorder(gender, desc(prop)), y = prop, fill = gender)) +
+g14 <- ggplot(pilot, aes(x = gender, y = prop, fill = gender)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Pilot",
@@ -309,7 +311,7 @@ g14 <- ggplot(pilot, aes(x = reorder(gender, desc(prop)), y = prop, fill = gende
   ) +
   geom_text(aes(label = prop)) +
   scale_fill_wbi()
-
+g14
 g14 <- add_logo(g14)
 ```
 
@@ -478,3 +480,1001 @@ map2(names, plots, ggsave)
 
 ```
 
+### Chef
+
+```{r}
+# filter to only chef and add links to items (minifigs) and parts
+chef_release_year <- town_data |>
+  filter(str_detect(tolower(description), "chef"))
+```
+
+```{r}
+# Filter to "no tag" only
+chef_notag <- chef_release_year |> 
+  filter(gender=="no tag")
+
+# Scrape parts descriptions for no-tag items/minifigs
+parts_descriptions <- map(chef_notag$parts_link, scrape_parts_description)
+
+# Add parts descriptions as a column to dataframe
+# Combine all parts' descriptions to one string for each minifig (temp)
+# Re-categorize gender based on parts descriptions (gender2)
+chef_notag <- chef_notag |> 
+  mutate(parts_description = parts_descriptions) |> 
+  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+  mutate(gender2 = case_when(
+    str_detect(temp, "Male") |
+      str_detect(tolower(temp), "beard") |
+      str_detect(tolower(temp), "goatee") |
+      str_detect(tolower(temp), "sideburns") |
+      str_detect(tolower(temp), "moustache") |
+      str_detect(tolower(temp), "stubble") |
+      str_detect(temp, "Man") |
+      str_detect(tolower(temp), "businessman")
+    ~ "male",
+      str_detect(temp, "Female") |
+      str_detect(tolower(temp), "eyelashes") |
+      str_detect(tolower(temp), "ponytail") |
+      str_detect(tolower(temp), "pigtails") |
+      str_detect(tolower(temp), "lips") |
+      str_detect(tolower(temp), "girl") |
+      str_detect(tolower(temp), "woman")
+    ~ "female",
+    TRUE ~ "no tag"
+  )) |> 
+  select(-parts_description) # get rid of parts_description column for bind_rows
+```
+
+```{r}
+# Create new police dataframe with re-categorized gender (police2)
+chef2 <- chef_release_year |> 
+  filter(gender != "no tag") |> 
+  mutate(temp="NA", gender2=gender) |> 
+  bind_rows(chef_notag)
+
+# Scrape release_year
+release_year <- map(chef2$item_link, scrape_year)
+release_year <- release_year |> 
+  as.character() %>% 
+  ifelse(. == "character(0)", "NA", .)
+
+# Add release_year column to chef2 dataframe and convert to numeric
+chef2 <- chef2 |> 
+  mutate(release_year=release_year) |> 
+  filter(release_year != "NA") |> 
+  mutate(release_year=as.numeric(release_year)) |> 
+  mutate(gender2=ifelse(release_year<1998, "male", gender2))
+
+# Summarize counts and props by gender2 for graphing
+chef2_graph <- chef2 |> 
+  mutate(total=n()) |> 
+  group_by(gender2) |> 
+  summarize(count=n(),prop=round(count/total,2)) |> 
+  distinct()
+```
+
+```{r}
+# Bar chart of chef2 counts
+c1 <- ggplot(chef2_graph, aes(x = gender2, y = count, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Chef Corrected",
+    x = "Gender",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = count)) +
+  scale_fill_wbi()
+c1
+c1 <- add_logo(c1)
+
+# Bar chart of chef2 proportions
+c2 <- ggplot(chef2_graph, aes(x = gender2, y = prop, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Chef Corrected",
+    subtitle = paste("Out of", as.character(sum(chef2_graph$count)), "total"),
+    x = "Gender",
+    y = "Proportion",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = prop)) +
+  scale_fill_wbi()
+c2
+c2 <- add_logo(c2)
+
+# Histogram of chef2 counts
+c3 <- ggplot(chef2, aes(x = release_year, fill=gender2)) +
+  geom_histogram(show.legend = FALSE, binwidth = 5) +
+  labs(
+    title = "Distribution of Release Year by Gender for Chef Minifigs",
+    x = "Release Year",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  facet_wrap(~gender2) +
+  scale_fill_wbi()
+c3
+c3 <- add_logo(c3)
+```
+
+```{r}
+names <- c("c1.png", "c2.png", "c3.png")
+plots <- list(c1, c2, c3)
+
+map2(names, plots, ggsave)
+
+```
+
+### Diver
+
+```{r}
+# filter to only diver and add links to items (minifigs) and parts
+diver <- town_data |>
+  filter(str_detect(tolower(description), "diver"))
+```
+
+```{r}
+# Filter to "no tag" only
+diver_notag <- diver |> 
+  filter(gender=="no tag")
+
+# Scrape parts descriptions for no-tag items/minifigs
+parts_descriptions <- map(diver_notag$parts_link, scrape_parts_description)
+
+# Add parts descriptions as a column to dataframe
+# Combine all parts' descriptions to one string for each minifig (temp)
+# Re-categorize gender based on parts descriptions (gender2)
+diver_notag <- diver_notag |> 
+  mutate(parts_description = parts_descriptions) |> 
+  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+  mutate(gender2 = case_when(
+    str_detect(temp, "Male") |
+      str_detect(tolower(temp), "beard") |
+      str_detect(tolower(temp), "goatee") |
+      str_detect(tolower(temp), "sideburns") |
+      str_detect(tolower(temp), "moustache") |
+      str_detect(tolower(temp), "stubble") |
+      str_detect(temp, "Man") |
+      str_detect(tolower(temp), "businessman")
+    ~ "male",
+      str_detect(temp, "Female") |
+      str_detect(tolower(temp), "eyelashes") |
+      str_detect(tolower(temp), "ponytail") |
+      str_detect(tolower(temp), "pigtails") |
+      str_detect(tolower(temp), "lips") |
+      str_detect(tolower(temp), "girl") |
+      str_detect(tolower(temp), "woman")
+    ~ "female",
+    TRUE ~ "no tag"
+  )) |> 
+  select(-parts_description) # get rid of parts_description column for bind_rows
+```
+
+```{r}
+# Create new police dataframe with re-categorized gender (diver2)
+diver2 <- diver |> 
+  filter(gender != "no tag") |> 
+  mutate(temp="NA", gender2=gender) |> 
+  bind_rows(diver_notag)
+
+# Scrape release_year
+release_year <- map(diver2$item_link, scrape_year)
+release_year <- release_year |> 
+  as.character() %>% 
+  ifelse(. == "character(0)", "NA", .)
+
+# Add release_year column to diver2 dataframe and convert to numeric
+diver2 <- diver2 |> 
+  mutate(release_year=release_year) |> 
+  filter(release_year != "NA") |> 
+  mutate(release_year=as.numeric(release_year)) |> 
+  mutate(gender2=ifelse(release_year<1998, "male", gender2))
+
+# Summarize counts and props by gender for graphing
+diver_graph <- diver |> 
+  mutate(total=n()) |> 
+  group_by(gender) |> 
+  summarize(count=n(),prop=round(count/total,2)) |> 
+  distinct()
+
+# Summarize counts and props by gender2 for graphing
+diver2_graph <- diver2 |> 
+  mutate(total=n()) |> 
+  group_by(gender2) |> 
+  summarize(count=n(),prop=round(count/total,2)) |> 
+  distinct()
+```
+
+```{r}
+# Bar chart of diver2 counts
+d0 <- ggplot(diver_graph, aes(x = gender, y = count, fill = gender)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Diver",
+    x = "Gender",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = count)) +
+  scale_fill_wbi()
+d0
+d0 <- add_logo(d0)
+
+d1 <- ggplot(diver2_graph, aes(x = gender2, y = count, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Diver Corrected",
+    x = "Gender",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = count)) +
+  scale_fill_wbi()
+d1
+d1 <- add_logo(d1)
+
+# Bar chart of chef2 proportions
+d0b <- ggplot(diver_graph, aes(x = gender, y = prop, fill = gender)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Diver",
+    subtitle = paste("Out of", as.character(sum(diver2_graph$count)), "total"),
+    x = "Gender",
+    y = "Proportion",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = prop)) +
+  scale_fill_wbi()
+d0b
+d0b <- add_logo(d0b)
+
+d2 <- ggplot(diver2_graph, aes(x = gender2, y = prop, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Diver Corrected",
+    subtitle = paste("Out of", as.character(sum(diver2_graph$count)), "total"),
+    x = "Gender",
+    y = "Proportion",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = prop)) +
+  scale_fill_wbi()
+d2
+d2 <- add_logo(d2)
+
+# Histogram of diver2 counts
+d3 <- ggplot(diver2, aes(x = release_year, fill=gender2)) +
+  geom_histogram(show.legend = FALSE, binwidth = 5) +
+  labs(
+    title = "Distribution of Release Year by Gender for Diver Minifigs",
+    x = "Release Year",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  facet_wrap(~gender2) +
+  scale_fill_wbi()
+d3
+d3 <- add_logo(d3)
+```
+
+```{r}
+names <- c("d0.png", "d1.png", "d0b.png", "d2.png", "d3.png")
+plots <- list(d0, d1, d0b, d2, d3)
+
+map2(names, plots, ggsave)
+
+```
+
+### Driver
+
+```{r}
+# filter to only driver and add links to items (minifigs) and parts
+driver <- town_data |>
+  filter(str_detect(tolower(description), "driver"))
+```
+
+```{r}
+# Filter to "no tag" only
+driver_notag <- driver |> 
+  filter(gender=="no tag")
+
+# Scrape parts descriptions for no-tag items/minifigs
+parts_descriptions <- map(driver_notag$parts_link, scrape_parts_description)
+
+# Add parts descriptions as a column to dataframe
+# Combine all parts' descriptions to one string for each minifig (temp)
+# Re-categorize gender based on parts descriptions (gender2)
+driver_notag <- driver_notag |> 
+  mutate(parts_description = parts_descriptions) |> 
+  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+  mutate(gender2 = case_when(
+    str_detect(temp, "Male") |
+      str_detect(tolower(temp), "beard") |
+      str_detect(tolower(temp), "goatee") |
+      str_detect(tolower(temp), "sideburns") |
+      str_detect(tolower(temp), "moustache") |
+      str_detect(tolower(temp), "stubble") |
+      str_detect(temp, "Man") |
+      str_detect(tolower(temp), "businessman")
+    ~ "male",
+      str_detect(temp, "Female") |
+      str_detect(tolower(temp), "eyelashes") |
+      str_detect(tolower(temp), "ponytail") |
+      str_detect(tolower(temp), "pigtails") |
+      str_detect(tolower(temp), "lips") |
+      str_detect(tolower(temp), "girl") |
+      str_detect(tolower(temp), "woman")
+    ~ "female",
+    TRUE ~ "no tag"
+  )) |> 
+  select(-parts_description) # get rid of parts_description column for bind_rows
+```
+
+```{r}
+# Create new police dataframe with re-categorized gender (diver2)
+driver2 <- driver |> 
+  filter(gender != "no tag") |> 
+  mutate(temp="NA", gender2=gender) |> 
+  bind_rows(driver_notag)
+
+# Scrape release_year
+release_year <- map(driver2$item_link, scrape_year)
+release_year <- release_year |> 
+  as.character() %>% 
+  ifelse(. == "character(0)", "NA", .)
+
+# Add release_year column to diver2 dataframe and convert to numeric
+driver2 <- driver2 |> 
+  mutate(release_year=release_year) |> 
+  filter(release_year != "NA") |> 
+  mutate(release_year=as.numeric(release_year)) |> 
+  mutate(gender2=ifelse(release_year<2000, "male", gender2))
+
+# Summarize counts and props by gender for graphing
+driver_graph <- driver |> 
+  mutate(total=n()) |> 
+  group_by(gender) |> 
+  summarize(count=n(),prop=round(count/total,2)) |> 
+  distinct()
+
+# Summarize counts and props by gender2 for graphing
+driver2_graph <- driver2 |> 
+  mutate(total=n()) |> 
+  group_by(gender2) |> 
+  summarize(count=n(),prop=round(count/total,2)) |> 
+  distinct()
+```
+
+```{r}
+# Bar chart of driver counts
+dr0 <- ggplot(driver_graph, aes(x = gender, y = count, fill = gender)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Driver",
+    x = "Gender",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = count)) +
+  scale_fill_wbi()
+dr0
+dr0 <- add_logo(d0)
+
+dr1 <- ggplot(driver2_graph, aes(x = gender2, y = count, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Driver Corrected",
+    x = "Gender",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = count)) +
+  scale_fill_wbi()
+dr1
+dr1 <- add_logo(dr1)
+
+# Bar chart of driver2 proportions
+dr0b <- ggplot(driver_graph, aes(x = gender, y = prop, fill = gender)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Driver",
+    subtitle = paste("Out of", as.character(sum(driver2_graph$count)), "total"),
+    x = "Gender",
+    y = "Proportion",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = prop)) +
+  scale_fill_wbi()
+dr0b
+dr0b <- add_logo(dr0b)
+
+dr2 <- ggplot(driver2_graph, aes(x = gender2, y = prop, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Driver Corrected",
+    subtitle = paste("Out of", as.character(sum(driver2_graph$count)), "total"),
+    x = "Gender",
+    y = "Proportion",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = prop)) +
+  scale_fill_wbi()
+dr2
+dr2 <- add_logo(dr2)
+
+# Histogram of driver2 counts
+dr3 <- ggplot(driver2, aes(x = release_year, fill=gender2)) +
+  geom_histogram(show.legend = FALSE, binwidth = 5) +
+  labs(
+    title = "Distribution of Release Year by Gender for Driver Minifigs",
+    x = "Release Year",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  facet_wrap(~gender2) +
+  scale_fill_wbi()
+dr3
+dr3 <- add_logo(dr3)
+```
+
+```{r}
+names <- c("dr0.png", "dr1.png", "dr0b.png", "dr2.png", "dr3.png")
+plots <- list(dr0, dr1, dr0b, dr2, dr3)
+
+map2(names, plots, ggsave)
+
+```
+
+### Doctor
+
+```{r}
+# filter to only doctor and add links to items (minifigs) and parts
+doctor <- town_data |>
+  filter(str_detect(tolower(description), "doctor"))
+```
+
+```{r}
+# Filter to "no tag" only
+doctor_notag <- doctor |> 
+  filter(gender=="no tag")
+
+# Scrape parts descriptions for no-tag items/minifigs
+parts_descriptions <- map(doctor_notag$parts_link, scrape_parts_description)
+
+# Add parts descriptions as a column to dataframe
+# Combine all parts' descriptions to one string for each minifig (temp)
+# Re-categorize gender based on parts descriptions (gender2)
+doctor_notag <- doctor_notag |> 
+  mutate(parts_description = parts_descriptions) |> 
+  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+  mutate(gender2 = case_when(
+    str_detect(temp, "Male") |
+      str_detect(tolower(temp), "beard") |
+      str_detect(tolower(temp), "goatee") |
+      str_detect(tolower(temp), "sideburns") |
+      str_detect(tolower(temp), "moustache") |
+      str_detect(tolower(temp), "stubble") |
+      str_detect(temp, "Man") |
+      str_detect(tolower(temp), "businessman")
+    ~ "male",
+      str_detect(temp, "Female") |
+      str_detect(tolower(temp), "eyelashes") |
+      str_detect(tolower(temp), "ponytail") |
+      str_detect(tolower(temp), "pigtails") |
+      str_detect(tolower(temp), "lips") |
+      str_detect(tolower(temp), "girl") |
+      str_detect(tolower(temp), "woman")
+    ~ "female",
+    TRUE ~ "no tag"
+  )) |> 
+  select(-parts_description) # get rid of parts_description column for bind_rows
+```
+
+```{r}
+# Create new doctor dataframe with re-categorized gender (doctor2)
+doctor2 <- doctor |> 
+  filter(gender != "no tag") |> 
+  mutate(temp="NA", gender2=gender) |> 
+  bind_rows(doctor_notag)
+
+# Scrape release_year
+release_year <- map(doctor2$item_link, scrape_year)
+release_year <- release_year |> 
+  as.character() %>% 
+  ifelse(. == "character(0)", "NA", .)
+
+# Add release_year column to chef2 dataframe and convert to numeric
+doctor2 <- doctor2 |> 
+  mutate(release_year=release_year) |> 
+  filter(release_year != "NA") |> 
+  mutate(release_year=as.numeric(release_year))
+
+# Summarize counts and props by gender2 for graphing
+doctor2_graph <- doctor2 |> 
+  mutate(total=n()) |> 
+  group_by(gender2) |> 
+  summarize(count=n(),prop=round(count/total,2)) |> 
+  distinct()
+```
+
+```{r}
+# Bar chart of doctor2 counts
+doc1 <- ggplot(doctor2_graph, aes(x = gender2, y = count, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Doctor Corrected",
+    x = "Gender",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = count)) +
+  scale_fill_wbi()
+doc1
+doc1 <- add_logo(doc1)
+
+# Bar chart of chef2 proportions
+doc2 <- ggplot(doctor2_graph, aes(x = gender2, y = prop, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Doctor Corrected",
+    subtitle = paste("Out of", as.character(sum(doctor2_graph$count)), "total"),
+    x = "Gender",
+    y = "Proportion",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = prop)) +
+  scale_fill_wbi()
+doc2
+doc2 <- add_logo(doc2)
+
+# Histogram of chef2 counts
+doc3 <- ggplot(doctor2, aes(x = release_year, fill=gender2)) +
+  geom_histogram(show.legend = FALSE, binwidth = 5) +
+  labs(
+    title = "Distribution of Release Year by Gender for Doctor Minifigs",
+    x = "Release Year",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  facet_wrap(~gender2) +
+  scale_fill_wbi()
+doc3
+doc3 <- add_logo(doc3)
+```
+
+```{r}
+names <- c("doc1.png", "doc2.png", "doc3.png")
+plots <- list(doc1, doc2, doc3)
+
+map2(names, plots, ggsave)
+
+```
+
+### Astronaut
+
+```{r}
+# filter to only chef and add links to items (minifigs) and parts
+astronaut <- town_data |>
+  filter(str_detect(tolower(description), "astronaut"))
+```
+
+```{r}
+# Filter to "no tag" only
+astronaut_notag <- astronaut |> 
+  filter(gender=="no tag")
+
+# Scrape parts descriptions for no-tag items/minifigs
+parts_descriptions <- map(astronaut_notag$parts_link, scrape_parts_description)
+
+# Add parts descriptions as a column to dataframe
+# Combine all parts' descriptions to one string for each minifig (temp)
+# Re-categorize gender based on parts descriptions (gender2)
+astronaut_notag <- astronaut_notag |> 
+  mutate(parts_description = parts_descriptions) |> 
+  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+  mutate(gender2 = case_when(
+    str_detect(temp, "Male") |
+      str_detect(tolower(temp), "beard") |
+      str_detect(tolower(temp), "goatee") |
+      str_detect(tolower(temp), "sideburns") |
+      str_detect(tolower(temp), "moustache") |
+      str_detect(tolower(temp), "stubble") |
+      str_detect(temp, "Man") |
+      str_detect(tolower(temp), "businessman")
+    ~ "male",
+      str_detect(temp, "Female") |
+      str_detect(tolower(temp), "eyelashes") |
+      str_detect(tolower(temp), "ponytail") |
+      str_detect(tolower(temp), "pigtails") |
+      str_detect(tolower(temp), "lips") |
+      str_detect(tolower(temp), "girl") |
+      str_detect(tolower(temp), "woman")
+    ~ "female",
+    TRUE ~ "no tag"
+  )) |> 
+  select(-parts_description) # get rid of parts_description column for bind_rows
+```
+
+```{r}
+# Create new police dataframe with re-categorized gender (astronaut2)
+astronaut2 <- astronaut |> 
+  filter(gender != "no tag") |> 
+  mutate(temp="NA", gender2=gender) |> 
+  bind_rows(astronaut_notag)
+
+# Scrape release_year
+release_year <- map(astronaut2$item_link, scrape_year)
+release_year <- release_year |> 
+  as.character() %>% 
+  ifelse(. == "character(0)", "NA", .)
+
+# Add release_year column to astronaut2 dataframe and convert to numeric
+astronaut2 <- astronaut2 |> 
+  mutate(release_year=release_year) |> 
+  filter(release_year != "NA") |> 
+  mutate(release_year=as.numeric(release_year)) |> 
+  mutate(gender2=ifelse(release_year<1999, "male", gender2))
+
+# Summarize counts and props by gender2 for graphing
+astronaut2_graph <- astronaut2 |> 
+  mutate(total=n()) |> 
+  group_by(gender2) |> 
+  summarize(count=n(),prop=round(count/total,2)) |> 
+  distinct()
+```
+
+```{r}
+# Bar chart of astronaut2 counts
+a1 <- ggplot(astronaut2_graph, aes(x = gender2, y = count, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Astronaut Corrected",
+    x = "Gender",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = count)) +
+  scale_fill_wbi()
+a1
+a1 <- add_logo(a1)
+
+# Bar chart of astronaut2 proportions
+a2 <- ggplot(astronaut2_graph, aes(x = gender2, y = prop, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Astronaut Corrected",
+    subtitle = paste("Out of", as.character(sum(astronaut2_graph$count)), "total"),
+    x = "Gender",
+    y = "Proportion",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = prop)) +
+  scale_fill_wbi()
+a2
+a2 <- add_logo(a2)
+
+# Histogram of astronaut2 counts
+a3 <- ggplot(astronaut2, aes(x = release_year, fill=gender2)) +
+  geom_histogram(show.legend = FALSE, binwidth = 5) +
+  labs(
+    title = "Distribution of Release Year by Gender for Astronaut Minifigs",
+    x = "Release Year",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  facet_wrap(~gender2) +
+  scale_fill_wbi()
+a3
+a3 <- add_logo(a3)
+```
+
+```{r}
+names <- c("a1.png", "a2.png", "a3.png")
+plots <- list(a1, a2, a3)
+
+map2(names, plots, ggsave)
+
+```
+
+### Businessperson
+
+```{r}
+# filter to only business and add links to items (minifigs) and parts
+business <- town_data |>
+  filter(str_detect(tolower(description), "business"))
+```
+
+```{r}
+# Filter to "no tag" only
+business_notag <- business |> 
+  filter(gender=="no tag")
+
+# Scrape parts descriptions for no-tag items/minifigs
+parts_descriptions <- map(business_notag$parts_link, scrape_parts_description)
+
+# Add parts descriptions as a column to dataframe
+# Combine all parts' descriptions to one string for each minifig (temp)
+# Re-categorize gender based on parts descriptions (gender2)
+business_notag <- business_notag |> 
+  mutate(parts_description = parts_descriptions) |> 
+  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+  mutate(gender2 = case_when(
+    str_detect(temp, "Male") |
+      str_detect(tolower(temp), "beard") |
+      str_detect(tolower(temp), "goatee") |
+      str_detect(tolower(temp), "sideburns") |
+      str_detect(tolower(temp), "moustache") |
+      str_detect(tolower(temp), "stubble") |
+      str_detect(temp, "Man") |
+      str_detect(tolower(temp), "businessman")
+    ~ "male",
+      str_detect(temp, "Female") |
+      str_detect(tolower(temp), "eyelashes") |
+      str_detect(tolower(temp), "ponytail") |
+      str_detect(tolower(temp), "pigtails") |
+      str_detect(tolower(temp), "lips") |
+      str_detect(tolower(temp), "girl") |
+      str_detect(tolower(temp), "woman")
+    ~ "female",
+    TRUE ~ "no tag"
+  )) |> 
+  select(-parts_description) # get rid of parts_description column for bind_rows
+```
+
+```{r}
+# Create new police dataframe with re-categorized gender (police2)
+business2 <- business |> 
+  filter(gender != "no tag") |> 
+  mutate(temp="NA", gender2=gender) |> 
+  bind_rows(business_notag)
+
+# Scrape release_year
+release_year <- map(business2$item_link, scrape_year)
+release_year <- release_year |> 
+  as.character() %>% 
+  ifelse(. == "character(0)", "NA", .)
+
+# Add release_year column to chef2 dataframe and convert to numeric
+business2 <- business2 |> 
+  mutate(release_year=release_year) |> 
+  filter(release_year != "NA") |> 
+  mutate(release_year=as.numeric(release_year))
+
+# No changes, so no new graphs
+```
+
+### Scientist
+
+```{r}
+# filter to only scientist and add links to items (minifigs) and parts
+scientist <- town_data |>
+  filter(str_detect(tolower(description), "scientist"))
+```
+
+```{r}
+# Filter to "no tag" only
+scientist_notag <- scientist |> 
+  filter(gender=="no tag")
+
+# Scrape parts descriptions for no-tag items/minifigs
+parts_descriptions <- map(scientist_notag$parts_link, scrape_parts_description)
+
+# Add parts descriptions as a column to dataframe
+# Combine all parts' descriptions to one string for each minifig (temp)
+# Re-categorize gender based on parts descriptions (gender2)
+scientist_notag <- scientist_notag |> 
+  mutate(parts_description = parts_descriptions) |> 
+  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+  mutate(gender2 = case_when(
+    str_detect(temp, "Male") |
+      str_detect(tolower(temp), "beard") |
+      str_detect(tolower(temp), "goatee") |
+      str_detect(tolower(temp), "sideburns") |
+      str_detect(tolower(temp), "moustache") |
+      str_detect(tolower(temp), "stubble") |
+      str_detect(temp, "Man") |
+      str_detect(tolower(temp), "businessman")
+    ~ "male",
+      str_detect(temp, "Female") |
+      str_detect(tolower(temp), "eyelashes") |
+      str_detect(tolower(temp), "ponytail") |
+      str_detect(tolower(temp), "pigtails") |
+      str_detect(tolower(temp), "lips") |
+      str_detect(tolower(temp), "girl") |
+      str_detect(tolower(temp), "woman")
+    ~ "female",
+    TRUE ~ "no tag"
+  )) |> 
+  select(-parts_description) # get rid of parts_description column for bind_rows
+```
+
+```{r}
+# Create new police dataframe with re-categorized gender (scientist2)
+scientist2 <- scientist |> 
+  filter(gender != "no tag") |> 
+  mutate(temp="NA", gender2=gender) |> 
+  bind_rows(scientist_notag)
+
+# Scrape release_year
+release_year <- map(scientist2$item_link, scrape_year)
+release_year <- release_year |> 
+  as.character() %>% 
+  ifelse(. == "character(0)", "NA", .)
+
+# Add release_year column to scientist2 dataframe and convert to numeric
+scientist2 <- scientist2 |> 
+  mutate(release_year=release_year) |> 
+  filter(release_year != "NA") |> 
+  mutate(release_year=as.numeric(release_year))
+
+# Summarize counts and props by gender2 for graphing
+scientist2_graph <- scientist2 |> 
+  mutate(total=n()) |> 
+  group_by(gender2) |> 
+  summarize(count=n(),prop=round(count/total,2)) |> 
+  distinct()
+```
+
+```{r}
+# Bar chart of scientist2 counts
+s1 <- ggplot(scientist2_graph, aes(x = gender2, y = count, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Scientist Corrected",
+    x = "Gender",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = count)) +
+  scale_fill_wbi()
+s1
+s1 <- add_logo(s1)
+
+# Bar chart of scientist2 proportions
+s2 <- ggplot(scientist2_graph, aes(x = gender2, y = prop, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Scientist Corrected",
+    subtitle = paste("Out of", as.character(sum(scientist2_graph$count)), "total"),
+    x = "Gender",
+    y = "Proportion",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = prop)) +
+  scale_fill_wbi()
+s2
+s2 <- add_logo(s2)
+
+# Histogram of scientist2 counts
+s3 <- ggplot(scientist2, aes(x = release_year, fill=gender2)) +
+  geom_histogram(show.legend = FALSE, binwidth = 5) +
+  labs(
+    title = "Distribution of Release Year by Gender for Scientist Minifigs",
+    x = "Release Year",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  facet_wrap(~gender2) +
+  scale_fill_wbi()
+s3
+s3 <- add_logo(s3)
+```
+
+### Pilot
+
+```{r}
+# filter to only pilot and add links to items (minifigs) and parts
+pilot <- town_data |>
+  filter(str_detect(tolower(description), "pilot"))
+```
+
+```{r}
+# Filter to "no tag" only
+pilot_notag <- pilot |> 
+  filter(gender=="no tag")
+
+# Scrape parts descriptions for no-tag items/minifigs
+parts_descriptions <- map(pilot_notag$parts_link, scrape_parts_description)
+
+# Add parts descriptions as a column to dataframe
+# Combine all parts' descriptions to one string for each minifig (temp)
+# Re-categorize gender based on parts descriptions (gender2)
+pilot_notag <- pilot_notag |> 
+  mutate(parts_description = parts_descriptions) |> 
+  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+  mutate(gender2 = case_when(
+    str_detect(temp, "Male") |
+      str_detect(tolower(temp), "beard") |
+      str_detect(tolower(temp), "goatee") |
+      str_detect(tolower(temp), "sideburns") |
+      str_detect(tolower(temp), "moustache") |
+      str_detect(tolower(temp), "stubble") |
+      str_detect(temp, "Man") |
+      str_detect(tolower(temp), "businessman")
+    ~ "male",
+      str_detect(temp, "Female") |
+      str_detect(tolower(temp), "eyelashes") |
+      str_detect(tolower(temp), "ponytail") |
+      str_detect(tolower(temp), "pigtails") |
+      str_detect(tolower(temp), "lips") |
+      str_detect(tolower(temp), "girl") |
+      str_detect(tolower(temp), "woman")
+    ~ "female",
+    TRUE ~ "no tag"
+  )) |> 
+  select(-parts_description) # get rid of parts_description column for bind_rows
+```
+
+```{r}
+# Create new police dataframe with re-categorized gender (pilot2)
+pilot2 <- pilot |> 
+  filter(gender != "no tag") |> 
+  mutate(temp="NA", gender2=gender) |> 
+  bind_rows(pilot_notag)
+
+# Scrape release_year
+release_year <- map(pilot2$item_link, scrape_year)
+release_year <- release_year |> 
+  as.character() %>% 
+  ifelse(. == "character(0)", "NA", .)
+
+# Add release_year column to chef2 dataframe and convert to numeric
+pilot2 <- pilot2 |> 
+  mutate(release_year=release_year) |> 
+  filter(release_year != "NA") |> 
+  mutate(release_year=as.numeric(release_year)) |> 
+  mutate(gender2=ifelse(release_year<1996, "male", gender2))
+
+# Summarize counts and props by gender2 for graphing
+pilot2_graph <- pilot2 |> 
+  mutate(total=n()) |> 
+  group_by(gender2) |> 
+  summarize(count=n(),prop=round(count/total,2)) |> 
+  distinct()
+```
+
+```{r}
+# Bar chart of pilot2 counts
+pl1 <- ggplot(pilot2_graph, aes(x = gender2, y = count, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Pilot Corrected",
+    x = "Gender",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = count)) +
+  scale_fill_wbi()
+pl1
+pl1 <- add_logo(pl1)
+
+# Bar chart of pilot2 proportions
+pl2 <- ggplot(pilot2_graph, aes(x = gender2, y = prop, fill = gender2)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Pilot Corrected",
+    subtitle = paste("Out of", as.character(sum(pilot2_graph$count)), "total"),
+    x = "Gender",
+    y = "Proportion",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = prop)) +
+  scale_fill_wbi()
+pl2
+pl2 <- add_logo(pl2)
+
+# Histogram of pilot2 counts
+pl3 <- ggplot(pilot2, aes(x = release_year, fill=gender2)) +
+  geom_histogram(show.legend = FALSE, binwidth = 5) +
+  labs(
+    title = "Distribution of Release Year by Gender for Pilot Minifigs",
+    x = "Release Year",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  facet_wrap(~gender2) +
+  scale_fill_wbi()
+pl3
+pl3 <- add_logo(pl3)
+```
