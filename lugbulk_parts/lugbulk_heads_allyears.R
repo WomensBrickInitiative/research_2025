@@ -397,3 +397,12 @@ p6 <- ggplot(gender_counts, aes(x = year, y = prop)) +
   scale_color_wbi()
 add_logo(p6)
 plotly::ggplotly(p6)
+
+heads <- read_csv(here::here("data", "lugbulk_data", "heads_completed.csv"))
+
+# look at overlap from year to year
+heads_summarized <- heads |>
+  group_by(item_id) |>
+  summarize(count = n()) |>
+  group_by(count) |>
+  summarize(count = n())
