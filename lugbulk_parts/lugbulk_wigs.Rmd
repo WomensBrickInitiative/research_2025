@@ -12,56 +12,73 @@ source(here::here("wbi_colors.R")) # file containing functions to customize colo
 
 ```{r}
 # read in parts data
-data <- read_csv(here::here("data","lugbulk_parts.csv"))
+data <- read_csv(here::here("data", "lugbulk_data", "lugbulk_2022.csv"))
 
 # filter to just wigs
-data_wigs <- data |> 
-  janitor::clean_names() |> 
+data_wigs <- data |>
+  janitor::clean_names() |>
   mutate(price_usd = as.numeric(substr(usd, 2, 5))) |>
-  filter(category == "FIGURE, WIGS") |> 
+  filter(category == "FIGURE, WIGS") |>
+  filter(!str_detect(item_description, "DOLL")) |>
   select(item_id, item_description, brick_link_color, category, subcategory, price_usd, brick_set)
 
-# by gender
-data_wigs_gender <- data_wigs |> 
-  group_by(subcategory) |> 
-  summarize(count = n(), avg_price = round(mean(price_usd),2),
-            median_price = median(price_usd))
+# no hats
+wigs_nohats <- data_wigs |>
+  filter(
+    !str_detect(item_description, "HAT"),
+    !str_detect(item_description, "ACCESSORY"),
+    !str_detect(item_description, "HELMET")
+  )
 
-# by gender and color
-data_wigs_gender_color <- data_wigs |> 
-  group_by(subcategory, brick_link_color) |> 
-  summarize(count = n(), avg_price = round(mean(price_usd),2),
-            median_price = median(price_usd))
+# by gender
+data_wigs_gender <- data_wigs |>
+  group_by(subcategory) |>
+  summarize(
+    count = n(), avg_price = round(mean(price_usd), 2),
+    median_price = median(price_usd)
+  )
+
+# by gender and color (no hats)
+data_wigs_gender_color <- wigs_nohats |>
+  group_by(subcategory, brick_link_color) |>
+  summarize(
+    count = n(), avg_price = round(mean(price_usd), 2),
+    median_price = median(price_usd)
+  )
 
 # by color only
 data_wigs_color <- data_wigs |>
-  group_by(brick_link_color) |> 
-  summarize(count = n(), average_cost = round(mean(price_usd), 2),
-            median_price = median(price_usd))
+  group_by(brick_link_color) |>
+  summarize(
+    count = n(), average_cost = round(mean(price_usd), 2),
+    median_price = median(price_usd)
+  )
 
 # filter to only colors that have both male and female wigs
-data_gc_filtered <- data_wigs_gender_color |> 
-  group_by(brick_link_color) |> 
-  mutate(count = n()) |> 
-  filter(count > 1)
+data_gc_filtered <- data_wigs_gender_color |>
+  group_by(brick_link_color) |>
+  mutate(count2 = n()) |>
+  filter(count2 > 1)
 
 # filter to colors that have only female or male wigs
-data_gc_filtered2 <- data_wigs_gender_color |> 
-  group_by(brick_link_color) |> 
-  mutate(count = n()) |> 
+data_gc_filtered2 <- data_wigs_gender_color |>
+  group_by(brick_link_color) |>
+  mutate(count = n()) |>
   filter(count == 1)
 
 # barchart median price by gender and color
 p1 <- ggplot(data_gc_filtered, aes(x = reorder(brick_link_color, median_price), y = median_price, fill = subcategory)) +
   geom_col(position = "dodge") +
   coord_flip() +
-  labs(title = "Price Disparities of Wigs by Gender and Color",
-       x = "Color",
-       y = "Median Price (usd)",
-       fill = "Gender") +
-  scale_fill_wbi() 
+  labs(
+    title = "Price Disparities of Wigs by Gender and Color",
+    x = "Color",
+    y = "Median Price (usd)",
+    fill = "Gender"
+  ) +
+  scale_fill_wbi()
 
-add_logo(p1)
+p1 <- add_logo(p1)
 
 # scatter plot count vs. average cost by color
 p2 <- ggplot(data_wigs_color, aes(x = count, y = average_cost)) +
@@ -73,37 +90,72 @@ add_logo(p2)
 # barchart count female vs male
 p3 <- ggplot(data_wigs_gender, aes(x = subcategory, y = count, fill = subcategory)) +
   geom_col() +
-  labs(title = "Total Number of Female Versus Male Wigs",
-       x = "Gender", 
-       fill = "Gender") +
+  labs(
+    title = "Total Number of Female Versus Male Wigs",
+    x = "Gender",
+    fill = "Gender"
+  ) +
+  geom_text(aes(label = count)) +
   scale_fill_wbi()
 
-add_logo(p3)
+p3 <- add_logo(p3)
 
 # pivot to long format to make side by side barchart median vs. mean
-data_gender_long <- data_wigs_gender |> 
+data_gender_long <- data_wigs_gender |>
   pivot_longer(cols = c(avg_price, median_price), names_to = "type", values_to = "value")
 
 # barchart mean and median price female vs. male
 p4 <- ggplot(data_gender_long, aes(x = subcategory, y = value, fill = type)) +
   geom_col(position = "dodge") +
-  labs(title = "Mean and Median Price of Female Versus Male Wigs",
-       x = "Gender", 
-       fill = "Mean/Median",
-       y = "Value (usd)") +
+  labs(
+    title = "Mean and Median Price of Female Versus Male Wigs",
+    x = "Gender",
+    fill = "Mean/Median",
+    y = "Value (usd)"
+  ) +
+  geom_text(aes(label = value)) +
   scale_fill_wbi()
 
-add_logo(p4)
+p4 <- add_logo(p4)
 
 # barchart median price by color
 p5 <- ggplot(data_wigs_color, aes(x = reorder(brick_link_color, median_price), y = median_price)) +
   geom_col() +
   coord_flip() +
-  labs(title = "Median Price by Color",
-       x = "Color",
-       y = "Median Price (usd)")
+  labs(
+    title = "Median Price by Color",
+    x = "Color",
+    y = "Median Price (usd)"
+  )
 
 add_logo(p5)
 
+# boxplot of prices by gender all
+p6 <- ggplot(data_wigs, aes(x = subcategory, y = price_usd, fill = subcategory)) +
+  geom_boxplot(show.legend = FALSE) +
+  scale_fill_wbi() +
+  labs(
+    x = "Gender",
+    y = "Price (usd)",
+    title = "Price Distributions for Male Vs. Female Wigs"
+  )
+p6 <- add_logo(p6)
+
+# boxplot of prices by gender no hats
+p7 <- ggplot(wigs_nohats, aes(x = subcategory, y = price_usd, fill = subcategory)) +
+  geom_boxplot(show.legend = FALSE) +
+  scale_fill_wbi() +
+  labs(
+    x = "Gender",
+    y = "Price (usd)",
+    title = "Price Distributions for Male Vs. Female Wigs (No Hats)"
+  )
+p7 <- add_logo(p7)
 ```
 
+```{r}
+names <- c("p1.png", "p3.png", "p4.png", "p6.png", "p7.png")
+plots <- list(p1, p3, p4, p6, p7)
+
+map2(names, plots, ggsave)
+```

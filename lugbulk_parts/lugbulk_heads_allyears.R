@@ -240,32 +240,33 @@ p5 <- ggplot(color_counts_yvf, aes(x = year, y = count)) +
 add_logo(p5)
 plotly::ggplotly(p5)
 
+## Reformat to facet by color instead of year
+# proportions
 p1a <- ggplot(color_counts, aes(x = year, y = prop, fill = brick_link_color)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~brick_link_color) +
-  #coord_flip() +
   scale_fill_skintones() +
   labs(
     title = "Head Color Proportions Over Time",
     x = "Year",
     y = "Proportion"
   )
-#add_logo(p1a)
-p1a
+p1a <- add_logo(p1a)
 
-# without yellow
+
+# proportions without yellow
 p2a <- ggplot(color_counts_flesh, aes(x = year, y = prop, fill = brick_link_color)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~brick_link_color) +
   #coord_flip() +
   scale_fill_skintones() +
   labs(
-    title = "Head Color Proportions Over Time",
+    title = "Head Color Proportions Over Time (flesh tones only)",
     x = "Year",
     y = "Proportion"
   )
-#add_logo(p2a)
-p2a
+p2a <- add_logo(p2a)
+
 
 # faceted barchart-- color counts by year for only flesh tones
 p3a <- ggplot(color_counts_flesh, aes(x = year, y = count, fill = brick_link_color)) +
@@ -278,24 +279,7 @@ p3a <- ggplot(color_counts_flesh, aes(x = year, y = count, fill = brick_link_col
     x = "Color",
     y = "Count"
   )
-#add_logo(p3a)
-p3a
-
-# faceted line graph-- color counts by year for only flesh tones
-p3b <- ggplot(color_counts_flesh, aes(x = year, y = count, color = brick_link_color)) +
-  geom_line(show.legend = FALSE) +
-  geom_point() +
-  facet_wrap(~brick_link_color) +
-  #coord_flip() +
-  scale_color_skintones() +
-  labs(
-    title = "Head Color Counts Over Time (flesh tones only)",
-    x = "Color",
-    y = "Count"
-  )
-#add_logo(p3b)
-p3b
-
+p3a <- add_logo(p3a)
 
 ###### Gender Analysis
 
@@ -413,3 +397,12 @@ p6 <- ggplot(gender_counts, aes(x = year, y = prop)) +
   scale_color_wbi()
 add_logo(p6)
 plotly::ggplotly(p6)
+
+heads <- read_csv(here::here("data", "lugbulk_data", "heads_completed.csv"))
+
+# look at overlap from year to year
+heads_summarized <- heads |>
+  group_by(item_id) |>
+  summarize(count = n()) |>
+  group_by(count) |>
+  summarize(count = n())
