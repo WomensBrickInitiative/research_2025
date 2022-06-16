@@ -394,7 +394,7 @@ police_notag <- police_notag |>
 
 ```{r}
 # Create new police dataframe with re-categorized gender (police2)
-police2 <- police |> 
+police2 <- police_release_year |> 
   filter(gender != "no tag") |> 
   mutate(item_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?M=", item_number)) |>
   mutate(parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", item_number)) |> 
@@ -429,7 +429,7 @@ police2_graph <- police2 |>
 
 ```{r}
 # Bar chart of police2 counts
-p1 <- ggplot(police2_graph, aes(x = reorder(gender2, desc(count)), y = count, fill = gender2)) +
+p1 <- ggplot(police2_graph, aes(x = gender2, y = count, fill = gender2)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Police Corrected",
@@ -443,7 +443,7 @@ p1
 p1 <- add_logo(p1)
 
 # Bar chart of police2 proportions
-p2 <- ggplot(police2_graph, aes(x = reorder(gender2, desc(prop)), y = prop, fill = gender2)) +
+p2 <- ggplot(police2_graph, aes(x = gender2, y = prop, fill = gender2)) +
   geom_col(show.legend = FALSE) +
   labs(
     title = "Police Corrected",
