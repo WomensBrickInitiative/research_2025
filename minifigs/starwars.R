@@ -48,10 +48,6 @@ starwars_minifigs_compare <- starwars |>
   ) |>
   filter(species == "Human")
 
-# filter to only female
-starwars_female <- starwars_minifigs_compare |>
-  filter(sex == "female")
-
 # filter to only Princess Leia minifigs
 leia <- minifigs_starwars |>
   filter(str_detect(description, "Leia")) |>
@@ -100,6 +96,31 @@ g1 <- ggplot(leia_heads_summarized, aes(x = reorder(parts_id, count), y = as.int
 g1 <- add_logo(g1)
 g1
 
+# Analysis of Female Representation
+# filter to only female
+starwars_female <- starwars_minifigs_compare |>
+  filter(sex == "female")
+
+num_minifigs_female <- c(26, 1, 1, 0, 0, 0, 0, 4, 5)
+num_films_corrected <- c(7, 3, 2, 2, 1, 1, 1, 3, 3)
+
+starwars_female <- starwars_female |>
+  mutate(num_minifigs = num_minifigs_female, num_films = num_films_corrected)
+
+starwars_female_long <- starwars_female |>
+  mutate(num_minifigs = num_minifigs_female) |>
+  pivot_longer(names_to = "minifigs_or_films", values_to = "value", cols = c(num_minifigs, num_films))
+
+g2 <- ggplot(starwars_female_long, aes(x = reorder(name, value), y = value, fill = minifigs_or_films)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  geom_text(aes(label = value), position = position_dodge(width = 1), inherit.aes = TRUE, hjust = -0.2) +
+  scale_fill_wbi() +
+  labs(title = "Number of Minifigs Versus Number of Films: Female Characters",
+       x = "Character Name",
+       y = "Count",
+       fill = "Count")
+add_logo(g2)
 
 ### other random graphs
 
