@@ -228,4 +228,44 @@ rey_heads_summarized <- rey_heads2 |>
   group_by(parts_id, head_year) |>
   summarise(count = n())
 
+## Analysis of repetition of Poe Dameron heads
+
+# filter to only Poe minifigs
+poe <- minifigs_starwars |>
+  filter(str_detect(description, "Poe Dameron")) |>
+  mutate(parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", item_number))
+
+# Vector to store scraped parts ids and descriptions in a list of dataframe
+parts_data <- map(poe$parts_link, scrape_parts_description)
+
+# data for heads of Poe minifigs
+poe_heads <- poe |>
+  mutate(parts_info = parts_data) |>
+  unnest(cols = parts_info) |>
+  filter(str_detect(parts_description, "Minifigure, Head ")) |>
+  mutate(head_link = paste0("https://www.bricklink.com/v2/catalog/catalogitem.page?P=", parts_id))
+
+# Scrape release_year
+minifig_year <- map(poe_heads$item_link, scrape_year)
+minifig_year <- minifig_year |>
+  as.character() %>%
+  ifelse(. == "character(0)", "NA", .)
+
+# Scrape release_year head
+head_year <- map(poe_heads$head_link, scrape_year)
+head_year <- head_year |>
+  as.character() %>%
+  ifelse(. == "character(0)", "NA", .)
+
+# add release year for head and minifig
+poe_heads2 <- poe_heads |>
+  mutate(minifig_year = as.numeric(minifig_year), head_year = as.numeric(head_year))
+
+# summarise count of minifigs per unique head
+poe_heads_summarized <- poe_heads2 |>
+  group_by(parts_id, head_year) |>
+  summarise(count = n())
+
+
+
 
