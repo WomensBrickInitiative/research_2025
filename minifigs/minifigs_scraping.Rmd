@@ -312,3 +312,55 @@ data_corrected <- bind_rows(data, town_data)
 write_csv(data_corrected, "minifigs_data.csv")
 ```
 
+```{r}
+# ninjago data for cultural minifigs
+data <- read_csv(here::here("data", "minifigs_data.csv"))
+ninjago <- data |> 
+  filter(category == "Ninjago")
+pg6_8 <- ninjago[239:380,]
+
+year <- map(pg6_8$item_link, scrape_year)
+year <- year |> 
+  as.character() %>% 
+  ifelse(. == "character(0)", "NA", .)
+
+pg6_8 <- pg6_8 |> 
+  mutate(year = as.numeric(year), 
+         culture_represented = "Japanese", 
+         inspiration = "Ninjago",
+         sets_link = paste0("https://www.bricklink.com/catalogItemIn.asp?M=", item_number, "&in=S"))
+
+# function to scrape set ids given sets url
+scrape_sets_id <- function(url) {
+  item_page <- rvest::read_html(url)
+  sets_id <- item_page |>
+    html_elements("td:nth-child(3) a:nth-child(1)") |>
+    html_text()
+  sets_id
+}
+
+# function to scrape set description given sets url
+scrape_sets_description <- function(url){
+  item_page <- rvest::read_html(url)
+  sets_description <- item_page |>
+    html_elements("td:nth-child(4) font b") |>
+    html_text()
+  sets_description
+}
+
+set_id <- map(pg6_8$sets_link, scrape_sets_id)
+set_description <- map(pg6_8$sets_link, scrape_sets_description)
+
+pg6_8 <- pg6_8 |> 
+  mutate(set_id = set_id, 
+         set_description = set_description,
+         set_id2 = map_chr(set_id, ~paste(.x, sep=", ", collapse=", ")),
+         set_description2 = map_chr(set_description, ~paste(.x, sep=", ", collapse=", ")),
+         image = "",
+         gender = ""
+         ) |> 
+  select(image, item_number, description, culture_represented, set_id = set_id2, set_description = set_description2, category, gender, year, inspiration, link = item_link)
+  
+write_csv(pg6_8, "ninjago6-8.csv")
+```
+
