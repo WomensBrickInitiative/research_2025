@@ -228,11 +228,64 @@ rey_heads_summarized <- rey_heads2 |>
   group_by(parts_id, head_year) |>
   summarise(count = n())
 
+## Analysis of repetition of Ben Solo/Kylo Ren heads
+
+# filter to only Kylo Ren minifigs
+kylo<- minifigs_starwars |>
+  filter(str_detect(description, "Kylo Ren")) |>
+  mutate(parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", item_number))
+
+# Vector to store scraped parts ids and descriptions in a list of dataframe
+parts_data <- map(kylo$parts_link, scrape_parts_description)
+
+# data for heads of Poe minifigs
+kylo_heads <- kylo |>
+  mutate(parts_info = parts_data) |>
+  unnest(cols = parts_info) |>
+  filter(str_detect(parts_description, "Minifigure, Head ")) |>
+  mutate(head_link = paste0("https://www.bricklink.com/v2/catalog/catalogitem.page?P=", parts_id))
+
+# Scrape release_year
+minifig_year <- map(kylo_heads$item_link, scrape_year)
+minifig_year <- minifig_year |>
+  as.character() %>%
+  ifelse(. == "character(0)", "NA", .)
+
+# Scrape release_year head
+head_year <- map(kylo_heads$head_link, scrape_year)
+head_year <- head_year |>
+  as.character() %>%
+  ifelse(. == "character(0)", "NA", .)
+
+# add release year for head and minifig
+kylo_heads2 <- kylo_heads |>
+  mutate(minifig_year = as.numeric(minifig_year), head_year = as.numeric(head_year))
+
+# summarise count of minifigs per unique head
+kylo_heads_summarized <- kylo_heads2 |>
+  group_by(parts_id, head_year) |>
+  summarise(count = n()) |>
+  mutate(is_repeated = FALSE)
+
+# barchart of number of minifigs per unique head
+g4 <- ggplot(kylo_heads_summarized, aes(x = reorder(parts_id, count), y = as.integer(count), fill = is_repeated)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(breaks = 1:12, labels = as.character(1:12), limits = c(0,6)) +
+  geom_text(aes(label = paste0(count, " | ", head_year)), hjust = 0) +
+  scale_fill_wbi() +
+  labs(title = "Number of Minifigs Per Unique Kylo Ren Head",
+       x = "Part ID",
+       y = "Count",
+       fill = "Head used in a character other than Kylo Ren?")
+g4 <- add_logo(g4)
+g4
+
 ## Analysis of repetition of Poe Dameron heads
 
 # filter to only Poe minifigs
 poe <- minifigs_starwars |>
-  filter(str_detect(description, "Poe Dameron")) |>
+  filter(str_detect(description, "Poe")) |>
   mutate(parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", item_number))
 
 # Vector to store scraped parts ids and descriptions in a list of dataframe
@@ -264,8 +317,21 @@ poe_heads2 <- poe_heads |>
 # summarise count of minifigs per unique head
 poe_heads_summarized <- poe_heads2 |>
   group_by(parts_id, head_year) |>
-  summarise(count = n())
+  summarise(count = n()) |>
+  mutate(is_repeated = FALSE)
 
-
+# barchart of number of minifigs per unique head
+g4 <- ggplot(kylo_heads_summarized, aes(x = reorder(parts_id, count), y = as.integer(count), fill = is_repeated)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(breaks = 1:12, labels = as.character(1:12), limits = c(0,6)) +
+  geom_text(aes(label = paste0(count, " | ", head_year)), hjust = 0) +
+  scale_fill_wbi() +
+  labs(title = "Number of Minifigs Per Unique Kylo Ren Head",
+       x = "Part ID",
+       y = "Count",
+       fill = "Head used in a character other than Kylo Ren?")
+g4 <- add_logo(g4)
+g4
 
 
