@@ -48,6 +48,8 @@ cultural <- cultural_data |>
     culture_represented == "Native American" ~ "Native North American"
   ))
 
+#write_csv(cultural,"cultural_minifigs.csv")
+
 # summarize counts by culture
 culture_summarized <- cultural |>
   group_by(culture_represented) |>
@@ -195,3 +197,114 @@ g3
 
 cmfs <- cultural |>
   filter(str_detect(category, "Collectible Minifigures: Series"))
+
+
+## Exclude Ninjago and Monkie Kid
+
+other <- cultural |>
+  filter(!inspiration %in% c("Monkie Kid","Ninjago","The LEGO Ninjago Movie"))
+
+# summarize counts by culture
+culture_summarized <- other |>
+  group_by(culture_represented) |>
+  summarise(count = n())
+
+# summarize counts by broader region
+region_summarized <- other |>
+  group_by(region) |>
+  summarise(count = n())
+
+# summarize counts by gender
+gender_summarized <- other |>
+  group_by(gender) |>
+  summarise(count = n())
+
+# summarize counts by region and gender
+region_gender_summarized <- other |>
+  group_by(region, gender) |>
+  summarise(count = n())
+
+# summarize by inspiration
+inspiration_summarized <- other |>
+  group_by(inspiration) |>
+  summarise(count = n())
+
+# summarize by year
+year_summarized <- other |>
+  filter(!is.na(release_year)) |>
+  group_by(release_year) |>
+  summarise(count = n())
+
+# summarize by gender and year
+year_gender_summarized <- other |>
+  filter(!is.na(release_year), gender != "neutral") |>
+  group_by(release_year) |>
+  mutate(total = n()) |>
+  group_by(release_year, gender) |>
+  summarise(count = n(), prop = count/total) |>
+  distinct()
+
+# linegraph for gender counts by year
+g5 <- ggplot(year_gender_summarized, aes(x = release_year, y = count, color = gender)) +
+  geom_line() +
+  geom_point() +
+  scale_color_wbi() +
+  labs(title = "Counts by Gender Over Time for Cultural Minifigs (without Ninjago and Monkie Kid)",
+       x = "Year",
+       y = "Count",
+       color = "Gender")
+add_logo(g5)
+g5
+
+# linegraph for gender proportions by year
+g5a <- ggplot(year_gender_summarized, aes(x = release_year, y = prop, color = gender)) +
+  geom_line() +
+  geom_point() +
+  scale_color_wbi() +
+  labs(title = "Gender Proportions Over Time for Cultural Minifigs (without Ninjago and Monkie Kid)",
+       x = "Year",
+       y = "Proportion",
+       color = "Gender"
+  )
+add_logo(g5a)
+g5a
+
+# linegraph for counts by year
+g6 <- ggplot(year_summarized, aes(x = release_year, y = count)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Counts Over Time for Cultural Minifigs (without Ninjago and Monkie Kid)",
+       x = "Year",
+       y = "Count")
+add_logo(g6)
+g6
+
+# Bar chart of gender representation
+g1 <- ggplot(gender_summarized, aes(x = gender, y = count, fill = gender)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Gender Representation in Cultural Minifigs (without Ninjago and Monkie Kid)",
+    subtitle = paste0("Out of ", sum(gender_summarized$count), " total"),
+    x = "Gender",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  ylim(c(0,175)) +
+  geom_text(aes(label = count), vjust = -0.2) +
+  scale_fill_wbi()
+add_logo(g1)
+g1
+
+# Bar chart of region representation
+g2 <- ggplot(region_summarized, aes(x = reorder(region, count), y = count)) +
+  geom_col(show.legend = FALSE) +
+  labs(
+    title = "Region Representation in Cultural Minifigs (without Ninjago and Monkie Kid)",
+    subtitle = paste0("Out of ", sum(region_summarized$count), " total"),
+    x = "Region",
+    y = "Count"
+  ) +
+  coord_flip() +
+  geom_text(aes(label = count), hjust = -0.2)
+add_logo(g2)
+g2
