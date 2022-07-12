@@ -1,0 +1,154 @@
+library(tidyverse)
+library(rvest)
+source(here::here("wbi_colors.R"))
+cultural_data <- read_csv(here::here("data", "cultural_minifigs.csv"))
+
+# function to scrape parts ids and description given item link, returns a dataframe
+scrape_parts_description <- function(url) {
+  item_page <- rvest::read_html(url)
+  parts_id <- item_page |>
+    html_elements("td:nth-child(3) a:nth-child(1)") |>
+    html_text()
+  parts_description <- item_page |>
+    html_elements(".IV_ITEM td:nth-child(4) b") |>
+    html_text()
+  tibble(parts_id, parts_description)
+}
+
+# scrape number of minifigs a part is used in
+scrape_num_minifigs <- function(url) {
+  page <- read_html(url)
+  num_minifigs <- page |>
+    html_elements(".links:nth-child(5)") |>
+    html_text()
+  num_minifigs
+}
+
+scrape_minifigs_info <- function(url) {
+  page <- read_html(url)
+  item_number <- page |>
+    html_elements("#id-main-legacy-table center td a:nth-child(1)") |>
+    html_text()
+  item_number <- item_number[item_number != ""]
+  description <- page |>
+    html_elements("td:nth-child(4) font b") |>
+    html_text()
+  description <- description[1:144]
+  category <- page |>
+    html_elements(".fv a:nth-child(4)") |>
+    html_text()
+  tibble(item_number, description, category)
+}
+
+page <- read_html("https://www.bricklink.com/catalogItemIn.asp?P=3626cpb0633&in=M")
+description <- page |>
+  html_elements("td:nth-child(4) font b") |>
+  html_text()
+
+# filter to ninjago
+ninjago <- cultural_data |>
+  filter(inspiration=="Ninjago"|inspiration=="The LEGO Ninjago Movie") |>
+  mutate(parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", item_number))
+
+# Vector to store scraped parts ids and descriptions in a list of dataframe
+parts_data <- map(ninjago$parts_link, scrape_parts_description)
+
+# Add parts_info to sets_data and unnest so that each row is a part of the minifig
+ninjago_parts <- ninjago |>
+  mutate(parts_info = parts_data) |>
+  unnest(cols = parts_info)
+
+# filter to only heads, classify heads by gender
+heads <- ninjago_parts |>
+  filter(str_detect(parts_description, "Minifigure, Head ")) |>
+  mutate( # categorize heads to female, male, neutral
+    is_female = str_detect(tolower(parts_description), "female"),
+    is_male = str_detect(tolower(parts_description), " male") |
+      str_detect(tolower(parts_description), "beard") |
+      str_detect(tolower(parts_description), "goatee") |
+      str_detect(tolower(parts_description), "sideburns") |
+      str_detect(tolower(parts_description), "moustache") |
+      str_detect(tolower(parts_description), "stubble"),
+    type = case_when(
+      is_female ~ "female",
+      is_male ~ "male",
+      TRUE ~ "neutral"
+    )
+  )
+
+# save one baby head used in 2 ninjago minifigs
+baby_head <- ninjago_parts |>
+  filter(parts_id == "33464pb01")
+
+# summarize to unique heads, pull number of minifigs used for each head
+heads_summarized <- heads |>
+  group_by(parts_id) |>
+  summarize(count = n()) |>
+  # filter(count < 9) |>  # filter out main characters
+  mutate(head_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?P=", parts_id),
+         num_minifigs = map_chr(head_link, scrape_num_minifigs)
+         )
+
+# add gender info
+heads_gender <- heads |>
+  filter(parts_id %in% heads_summarized$parts_id) |>
+  select(parts_id, type) |>
+  distinct()
+
+# calcuate percent of minifigs that are outside of ninjago for each head
+heads_summarized2 <- heads_summarized |>
+  separate(col = num_minifigs, into = c("num_minifigs", "discard"), sep = " ") |>
+  select(-discard) |>
+  left_join(heads_gender, by = "parts_id") |>
+  mutate(num_minifigs = as.numeric(num_minifigs)) |>
+  mutate(num_outside = num_minifigs - count,
+         perc_not = 100*round(num_outside/num_minifigs, 2),
+         perc_not = ifelse(perc_not < 0, 0, perc_not),
+         has_outside = ifelse(perc_not > 0, TRUE, FALSE),
+         minifigs_link = paste0("https://www.bricklink.com/catalogItemIn.asp?P=", parts_id ,"&in=M")
+         )
+
+# initial summary of counts by gender for heads for comparison
+gender <- heads_summarized2 |>
+  group_by(type, has_outside) |>
+  summarise(count = n())
+
+
+# filter to only heads used outside of ninjago
+heads_filtered <- heads_summarized2 |>
+  filter(perc_not > 0)
+
+minifigs_13626cpb0633 <- scrape_minifigs_info("https://www.bricklink.com/catalogItemIn.asp?P=3626cpb0633&in=M")
+
+# count by category
+category_summary <- minifigs_13626cpb0633 |>
+  group_by(category) |>
+  summarize(count = n())
+
+g1 <- ggplot(heads_summarized2, aes(x = perc_not)) +
+  geom_histogram(binwidth = 10)
+g1
+
+# barchart of counts by gender and whether or not used outside
+g2 <- ggplot(gender, aes(x = type, y = count, fill = has_outside)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = count), position = position_dodge(width = 0.8), vjust = -0.2) +
+  scale_fill_wbi() +
+  labs(title = "Counts for Ninjago Heads by Gender and If Used Outside of Ninjago",
+       x = "Gender",
+       y = "Number of Heads",
+       fill = "Used Outside Ninjago?"
+       )
+add_logo(g2)
+
+g3 <- ggplot(category_summary, aes(x = reorder(category, count), y = count)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Category Distribution for Head 13626cpb0633",
+       subtitle = "Out of 144 Total",
+       x = "Category",
+       y = "Number of Minifigs"
+       )
+add_logo(g3)
+
+write_csv(heads_summarized2, "ninjago_repetition.csv")
