@@ -118,10 +118,10 @@ gender <- heads_summarized2 |>
 heads_filtered <- heads_summarized2 |>
   filter(perc_not > 0)
 
-minifigs_13626cpb0633 <- scrape_minifigs_info("https://www.bricklink.com/catalogItemIn.asp?P=3626cpb0633&in=M")
+minifigs_3626cpb0633 <- scrape_minifigs_info("https://www.bricklink.com/catalogItemIn.asp?P=3626cpb0633&in=M")
 
 # count by category
-category_summary <- minifigs_13626cpb0633 |>
+category_summary <- minifigs_3626cpb0633 |>
   group_by(category) |>
   summarize(count = n())
 
@@ -144,11 +144,42 @@ add_logo(g2)
 g3 <- ggplot(category_summary, aes(x = reorder(category, count), y = count)) +
   geom_col() +
   coord_flip() +
-  labs(title = "Category Distribution for Head 13626cpb0633",
+  labs(title = "Category Distribution for Head 3626cpb0633",
        subtitle = "Out of 144 Total",
        x = "Category",
        y = "Number of Minifigs"
-       )
+       ) +
+  geom_text(aes(label=count), hjust=-0.2)
 add_logo(g3)
+g3
 
 write_csv(heads_summarized2, "ninjago_repetition.csv")
+
+ninjago_heads <- read_csv(here::here("data", "ninjago_repetition.csv"))
+has_outside <- ninjago_heads |>
+  filter(num_outside>2) |>
+  select(parts_id, num_inside = count, num_outside, type) |>
+  pivot_longer(cols = c(num_inside, num_outside), names_to = "in_or_out", values_to = "count")
+
+g4 <- ggplot(has_outside, aes(x=reorder(parts_id, count), y=count, fill=in_or_out)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Number of Minifigs in/outside Ninjago per reused head",
+       subtitle = "Out of 33 total heads that have been reused more than twice",
+       x = "Unique Head",
+       y = "Count",
+       fill = "Inside Ninjago?") +
+  scale_fill_wbi()
+g4
+
+# by gender
+g5 <- ggplot(has_outside, aes(x=reorder(parts_id, count), y=count, fill=type)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Number of Minifigs per reused head",
+       subtitle = "Out of 33 total heads that have been reused more than twice",
+       x = "Unique Head",
+       y = "Count",
+       fill = "Gender") +
+  scale_fill_wbi()
+g5
