@@ -26,6 +26,9 @@ town_recent_parts <- town_recent |>
   mutate(parts_info = parts_data) |>
   unnest(cols = parts_info)
 
+# Read in saved data (no need to map again)
+town_recent_parts <- read_csv(here::here("data", "town","town_parts_2017-2022.csv"))
+
 # Filter to just heads, classify gender
 # excludes babies and robots
 heads_data_recent <- town_recent_parts |>
@@ -177,46 +180,27 @@ g5 <- ggplot(heads_data_summarized0, aes(x = type, y = count, fill = type)) +
   scale_fill_wbi()
 g5
 
+heads_combined <- bind_rows(heads_female,heads_male,heads_neutral)
+
 # boxplots showing distribution of count by gender
 
-g6 <- ggplot(heads_female, aes(x = count)) +
-  geom_boxplot(fill = "#f43b93") +
+g6 <- ggplot(heads_combined, aes(x = type, y=count, fill=type)) +
+  geom_boxplot(show.legend = FALSE) +
   labs(
-    title = "Distribution of Number of Times Each Female Head Used",
-    subtitle = paste("Out of", as.character(sum(heads_female$count)), "total"),
-    x = "Unique Head",
+    title = "Distribution of Number of Times Head Used",
+    x = "Gender",
     y = "Count"
-  )
+  ) +
+  scale_fill_wbi()
 g6
-
-g7 <- ggplot(heads_male, aes(x = count)) +
-  geom_boxplot(fill = "#8cc63f") +
-  labs(
-    title = "Distribution of Number of Times Each Male Head Used",
-    subtitle = paste("Out of", as.character(sum(heads_male$count)), "total"),
-    x = "Unique Head",
-    y = "Count"
-  )
-g7
-
-g8 <- ggplot(heads_neutral, aes(x = count)) +
-  geom_boxplot(fill = "#f77f08") +
-  labs(
-    title = "Distribution of Number of Times Each Neutral Head Used",
-    subtitle = paste("Out of", as.character(sum(heads_neutral$count)), "total"),
-    x = "Unique Head",
-    y = "Count"
-  )
-g8
 
 # save parts data
 write_csv(town_recent_parts, "town_parts_2017-2022.csv")
 
 # save plots
 names <- c(
-  "g1.png", "g2.png", "g3.png", "g1b.png", "g2b.png", "g3b.png", "g4.png", "g5.png", "g6.png",
-  "g7.png", "g8.png"
+  "g1.png", "g2.png", "g3.png", "g1b.png", "g2b.png", "g3b.png", "g4.png", "g5.png", "g6.png"
 )
-plots <- list(g1, g2, g3, g1b, g2b, g3b, g4, g5, g6, g7, g8)
+plots <- list(g1, g2, g3, g1b, g2b, g3b, g4, g5, g6)
 
 map2(names, plots, ggsave)
