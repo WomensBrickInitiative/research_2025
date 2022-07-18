@@ -407,3 +407,18 @@ data2 <- data2 |>
 write_csv(data2, "data2.csv")
 ```
 
+```{r}
+# Starwars by Era
+starwars_by_era <- read_csv(here::here("data", "starwars_minifig_links.csv"))
+links_all <- map2(starwars_by_era$pages, starwars_by_era$link, generate_page_links)
+
+starwars_by_era <- starwars_by_era |> 
+  mutate(links_all = links_all) |> 
+  unnest(cols = links_all)
+
+data_all <- purrr::map2(starwars_by_era$links_all, starwars_by_era$category, scrape_minifigs_data)
+data_bind <- plyr::ldply(data_all, rbind)
+
+write_csv(data_bind, "starwars_mainfilms_minifigs.csv")
+```
+
