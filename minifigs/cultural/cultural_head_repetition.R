@@ -251,7 +251,7 @@ m1 <- ggplot(gender, aes(x = type, y = count, fill = has_outside)) +
   geom_col(position = "dodge") +
   geom_text(aes(label = count), position = position_dodge(width = 0.8), vjust = -0.2) +
   scale_fill_wbi() +
-  labs(title = "Counts for Ninjago Heads by Gender and If Used Outside of Monkie Kid",
+  labs(title = "Counts for Monkie Kid Heads by Gender and If Used Outside of Monkie Kid",
        x = "Gender",
        y = "Number of Heads",
        fill = "Used Outside Monkie Kid?"
