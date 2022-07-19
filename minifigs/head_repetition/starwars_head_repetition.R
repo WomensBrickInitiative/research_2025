@@ -71,13 +71,15 @@ leia_heads_summarized <- leia_heads2 |>
 g1 <- ggplot(leia_heads_summarized, aes(x = reorder(parts_id, count), y = as.integer(count), fill = is_repeated)) +
   geom_col() +
   coord_flip() +
-  scale_y_continuous(breaks = 1:15, labels = as.character(1:15), limits = c(0,12)) +
+  scale_y_continuous(breaks = 1:15, labels = as.character(1:15), limits = c(0, 12)) +
   geom_text(aes(label = paste0(count, " | ", head_year)), hjust = 0) +
   scale_fill_wbi() +
-  labs(title = "Number of Minifigs Per Unique Princess Leia Head",
-       x = "Part ID",
-       y = "Count",
-       fill = "Head used in a character other than Leia?")
+  labs(
+    title = "Number of Minifigs Per Unique Princess Leia Head",
+    x = "Part ID",
+    y = "Count",
+    fill = "Head used in a character other than Leia?"
+  )
 g1 <- add_logo(g1)
 g1
 
@@ -130,10 +132,12 @@ g2 <- ggplot(luke_heads_summarized, aes(x = reorder(parts_id, count), y = as.int
   scale_y_continuous(breaks = 1:12, labels = as.character(1:12), limits = c(0, 12)) +
   geom_text(aes(label = paste0(count, " | ", head_year)), hjust = 0) +
   scale_fill_wbi() +
-  labs(title = "Number of Minifigs Per Unique Luke Skywalker Head",
-       x = "Part ID",
-       y = "Count",
-       fill = "Head used in a character other than Luke?")
+  labs(
+    title = "Number of Minifigs Per Unique Luke Skywalker Head",
+    x = "Part ID",
+    y = "Count",
+    fill = "Head used in a character other than Luke?"
+  )
 g2 <- add_logo(g2)
 g2
 
@@ -180,13 +184,15 @@ solo_heads_summarized <- solo_heads2 |>
 g3 <- ggplot(solo_heads_summarized, aes(x = reorder(parts_id, count), y = as.integer(count), fill = is_repeated)) +
   geom_col() +
   coord_flip() +
-  scale_y_continuous(breaks = 1:12, labels = as.character(1:12), limits = c(0,12)) +
+  scale_y_continuous(breaks = 1:12, labels = as.character(1:12), limits = c(0, 12)) +
   geom_text(aes(label = paste0(count, " | ", head_year)), hjust = 0) +
   scale_fill_wbi() +
-  labs(title = "Number of Minifigs Per Unique Han Solo Head",
-       x = "Part ID",
-       y = "Count",
-       fill = "Head used in a character other than Han Solo?")
+  labs(
+    title = "Number of Minifigs Per Unique Han Solo Head",
+    x = "Part ID",
+    y = "Count",
+    fill = "Head used in a character other than Han Solo?"
+  )
 g3 <- add_logo(g3)
 g3
 
@@ -231,7 +237,7 @@ rey_heads_summarized <- rey_heads2 |>
 ## Analysis of repetition of Ben Solo/Kylo Ren heads
 
 # filter to only Kylo Ren minifigs
-kylo<- minifigs_starwars |>
+kylo <- minifigs_starwars |>
   filter(str_detect(description, "Kylo Ren")) |>
   mutate(parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", item_number))
 
@@ -271,13 +277,15 @@ kylo_heads_summarized <- kylo_heads2 |>
 g4 <- ggplot(kylo_heads_summarized, aes(x = reorder(parts_id, count), y = as.integer(count), fill = is_repeated)) +
   geom_col() +
   coord_flip() +
-  scale_y_continuous(breaks = 1:12, labels = as.character(1:12), limits = c(0,6)) +
+  scale_y_continuous(breaks = 1:12, labels = as.character(1:12), limits = c(0, 6)) +
   geom_text(aes(label = paste0(count, " | ", head_year)), hjust = 0) +
   scale_fill_wbi() +
-  labs(title = "Number of Minifigs Per Unique Kylo Ren Head",
-       x = "Part ID",
-       y = "Count",
-       fill = "Head used in a character other than Kylo Ren?")
+  labs(
+    title = "Number of Minifigs Per Unique Kylo Ren Head",
+    x = "Part ID",
+    y = "Count",
+    fill = "Head used in a character other than Kylo Ren?"
+  )
 g4 <- add_logo(g4)
 g4
 
@@ -324,14 +332,14 @@ poe_heads_summarized <- poe_heads2 |>
 g4 <- ggplot(kylo_heads_summarized, aes(x = reorder(parts_id, count), y = as.integer(count), fill = is_repeated)) +
   geom_col() +
   coord_flip() +
-  scale_y_continuous(breaks = 1:12, labels = as.character(1:12), limits = c(0,6)) +
+  scale_y_continuous(breaks = 1:12, labels = as.character(1:12), limits = c(0, 6)) +
   geom_text(aes(label = paste0(count, " | ", head_year)), hjust = 0) +
   scale_fill_wbi() +
-  labs(title = "Number of Minifigs Per Unique Kylo Ren Head",
-       x = "Part ID",
-       y = "Count",
-       fill = "Head used in a character other than Kylo Ren?")
+  labs(
+    title = "Number of Minifigs Per Unique Kylo Ren Head",
+    x = "Part ID",
+    y = "Count",
+    fill = "Head used in a character other than Kylo Ren?"
+  )
 g4 <- add_logo(g4)
 g4
-
-

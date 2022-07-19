@@ -62,6 +62,8 @@ sets_data <- sets_data |>
   mutate(parts_info = parts_data) |>
   unnest(cols = parts_info)
 
+male_keywords <- c("beard", "goatee", "sideburns", "moustache", "stubble", " male")
+
 # Filter to just heads
 heads_data <- sets_data |>
   filter(str_detect(parts_id, "bp")) |>
@@ -69,17 +71,10 @@ heads_data <- sets_data |>
   distinct() |> # filter to only distinct minifigs
   rename(description = parts_description) |>
   mutate( # categorize heads to female, male, neutral
-    is_female = str_detect(tolower(description), "female"),
-    is_male = str_detect(tolower(description), " male") |
-      str_detect(tolower(description), "beard") |
-      str_detect(tolower(description), "goatee") |
-      str_detect(tolower(description), "sideburns") |
-      str_detect(tolower(description), "moustache") |
-      str_detect(tolower(description), "stubble"),
     type = case_when(
-      is_female ~ "female",
-      is_male ~ "male",
-      TRUE ~ "neutral"
+      str_detect(tolower(temp), "female") ~ "female",
+      str_detect(tolower(temp), paste(male_keywords, collapse = "|")) ~ "male",
+      TRUE ~ "no tag"
     )
   )
 

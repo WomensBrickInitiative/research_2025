@@ -4,16 +4,13 @@ source(here::here("wbi_colors.R"))
 
 town_parts <- read_csv(here::here("data", "town", "town_parts_2017-2022.csv"))
 
+male_keywords <- c("beard", "goatee", "sideburns", "moustache", "stubble", " male")
+
 neutral_heads <- town_parts |>
   filter(str_detect(parts_description, "Minifigure, Head ")) |>
   mutate( # categorize heads to female, male, neutral
     is_female = str_detect(tolower(parts_description), "female"),
-    is_male = str_detect(tolower(parts_description), " male") |
-      str_detect(tolower(parts_description), "beard") |
-      str_detect(tolower(parts_description), "goatee") |
-      str_detect(tolower(parts_description), "sideburns") |
-      str_detect(tolower(parts_description), "moustache") |
-      str_detect(tolower(parts_description), "stubble"),
+    is_male = str_detect(tolower(parts_description), paste(male_keywords, collapse = "|")),
     type = case_when(
       is_female ~ "female",
       is_male ~ "male",
@@ -66,6 +63,18 @@ scrape_mini_description <- function(url) {
 # Vector to store scraped minifigures' description
 mini_description <- map(neutral_heads$minifig_link, scrape_mini_description)
 
+female_keywords <- c(
+  "mom", "ballerina", "barista", "female", "woman", "girl", "lady", "ponytail", "little red",
+  "sally", "madison", "necklace"
+)
+male_keywords <- c(
+  "Male", "Beard", "Goatee", "Sideburns", "Moustache", "Stubble", "Man", "Son", "Dad", "Guy",
+  "Father", "Uncle", "Salesman", "Businessman", "Dareth", "Chad", "Rocky", "Si", "Ronny",
+  "Chan Kong-Sang", "Jia", "Groom", "Chase McCain", "Hans Christian Andersen", "Merman", "Santa",
+  "Billy", "Lil' Nelson", "Tito", "Jack", "Robin", "Tommy", "Wade", "Lee", "Paul", "Duke", "Wizard",
+  "Boy"
+)
+
 neutral_heads <- neutral_heads |>
   mutate(mini_description = mini_description) |>
   filter(
@@ -75,59 +84,8 @@ neutral_heads <- neutral_heads |>
   ) |>
   mutate( # categorize heads to female, male, neutral
     gender = case_when(
-      str_detect(mini_description, "Mom") |
-        str_detect(mini_description, "Ballerina") |
-        str_detect(mini_description, "Barista") |
-        str_detect(mini_description, "Ballerina") |
-        str_detect(mini_description, "Ballerina") |
-        str_detect(mini_description, "Ballerina") |
-        str_detect(tolower(mini_description), "female") |
-        str_detect(tolower(mini_description), "woman") |
-        str_detect(tolower(mini_description), "girl") |
-        str_detect(tolower(mini_description), "lady") |
-        str_detect(tolower(mini_description), "ponytail") |
-        str_detect(mini_description, "Little Red") |
-        str_detect(mini_description, "Sally") |
-        str_detect(mini_description, "Madison") |
-        str_detect(tolower(mini_description), "necklace") ~ "female",
-      str_detect(mini_description, "Male") |
-        str_detect(tolower(mini_description), "beard") |
-        str_detect(tolower(mini_description), "goatee") |
-        str_detect(tolower(mini_description), "sideburns") |
-        str_detect(tolower(mini_description), "moustache") |
-        str_detect(tolower(mini_description), "stubble") |
-        str_detect(mini_description, "Man") |
-        str_detect(mini_description, "Son") |
-        str_detect(mini_description, "Dad") |
-        str_detect(mini_description, "Guy") |
-        str_detect(tolower(mini_description), "father") |
-        str_detect(tolower(mini_description), "uncle") |
-        str_detect(tolower(mini_description), "salesman") |
-        str_detect(tolower(mini_description), "businessman") |
-        str_detect(mini_description, "Dareth") |
-        str_detect(mini_description, "Chad") |
-        str_detect(mini_description, "Rocky") |
-        str_detect(mini_description, "Si") |
-        str_detect(mini_description, "Ronny") |
-        str_detect(mini_description, "Chan Kong-Sang") |
-        str_detect(mini_description, "Jia") |
-        str_detect(mini_description, "Groom") |
-        str_detect(mini_description, "Chase McCain") |
-        str_detect(mini_description, "Hans Christian Andersen") |
-        str_detect(mini_description, "Merman") |
-        str_detect(mini_description, "Santa") |
-        str_detect(mini_description, "Billy") |
-        str_detect(mini_description, "Lil' Nelson") |
-        str_detect(mini_description, "Tito") |
-        str_detect(mini_description, "Jack") |
-        str_detect(mini_description, "Robin") |
-        str_detect(mini_description, "Tommy") |
-        str_detect(mini_description, "Wade") |
-        str_detect(mini_description, "Lee") |
-        str_detect(mini_description, "Paul") |
-        str_detect(mini_description, "Duke") |
-        str_detect(mini_description, "Wizard") |
-        str_detect(tolower(mini_description), "boy") ~ "male",
+      str_detect(tolower(mini_description), paste(female_keywords, collapse = "|")) ~ "female",
+      str_detect(mini_description, paste(male_keywords, collapse = "|")) ~ "male",
       TRUE ~ "neutral"
     )
   )
@@ -141,38 +99,44 @@ gender_summarized <- neutral_heads |>
 
 unique_heads_summarized <- neutral_heads |>
   group_by(parts_id) |>
-  mutate(total=n()) |>
-  filter(total>1) |>
+  mutate(total = n()) |>
+  filter(total > 1) |>
   group_by(parts_id, gender) |>
-  summarize(count=n(),perc=round(count/total*100)) |>
+  summarize(count = n(), perc = round(count / total * 100)) |>
   distinct()
 
 # boxplot
-b1 <- ggplot(unique_heads_summarized, aes(x=gender, y=perc, fill=gender)) +
+b1 <- ggplot(unique_heads_summarized, aes(x = gender, y = perc, fill = gender)) +
   geom_boxplot(show.legend = FALSE) +
   scale_fill_wbi() +
-  labs(title = "Distribution of Minifigs' Gender Percentages for Neutral Heads",
-       x = "Gender",
-       y = "Percentage")
+  labs(
+    title = "Distribution of Minifigs' Gender Percentages for Neutral Heads",
+    x = "Gender",
+    y = "Percentage"
+  )
 b1
 
 # histogram
-h1 <- ggplot(unique_heads_summarized, aes(x=perc, fill=gender)) +
+h1 <- ggplot(unique_heads_summarized, aes(x = perc, fill = gender)) +
   geom_histogram(binwidth = 10) +
   facet_wrap(~gender) +
   scale_fill_wbi() +
-  labs(title = "Distribution of Minifigs' Gender Percentages for Neutral Heads",
-       x = "Percentage",
-       y = "Frequency")
+  labs(
+    title = "Distribution of Minifigs' Gender Percentages for Neutral Heads",
+    x = "Percentage",
+    y = "Frequency"
+  )
 h1
 
 # stacked bar chart showing gender dist. of unique neutral heads
-g1 <- ggplot(unique_heads_summarized, aes(x=reorder(parts_id, perc), y=perc, fill=gender)) +
+g1 <- ggplot(unique_heads_summarized, aes(x = reorder(parts_id, perc), y = perc, fill = gender)) +
   geom_col() +
   scale_fill_wbi() +
-  labs(title = "Minifigs' Gender Distribution by Unique Neutral Heads",
-       x="Unique Neutral Heads",
-       y="Percentage") +
-  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank())
+  labs(
+    title = "Minifigs' Gender Distribution by Unique Neutral Heads",
+    x = "Unique Neutral Heads",
+    y = "Percentage"
+  ) +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 g1

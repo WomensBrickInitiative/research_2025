@@ -173,7 +173,7 @@ p1 <- ggplot(color_counts, aes(x = reorder(brick_link_color, prop), y = prop, fi
     x = "Color",
     y = "Proportion"
   )
-#add_logo(p1)
+# add_logo(p1)
 p1
 # filter out yellow heads
 color_counts_flesh <- color_counts |>
@@ -258,7 +258,7 @@ p1a <- add_logo(p1a)
 p2a <- ggplot(color_counts_flesh, aes(x = year, y = prop, fill = brick_link_color)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~brick_link_color) +
-  #coord_flip() +
+  # coord_flip() +
   scale_fill_skintones() +
   labs(
     title = "Head Color Proportions Over Time (flesh tones only)",
@@ -272,7 +272,7 @@ p2a <- add_logo(p2a)
 p3a <- ggplot(color_counts_flesh, aes(x = year, y = count, fill = brick_link_color)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~brick_link_color) +
-  #coord_flip() +
+  # coord_flip() +
   scale_fill_skintones() +
   labs(
     title = "Head Color Counts Over Time (flesh tones only)",
@@ -282,6 +282,9 @@ p3a <- ggplot(color_counts_flesh, aes(x = year, y = count, fill = brick_link_col
 p3a <- add_logo(p3a)
 
 ###### Gender Analysis
+
+male_keywords <- c("beard", "goatee", "sideburns", "moustache", "stubble", " male")
+nonhuman_keywords <- c("pineapple", "cobra", "skull", "ghost", "alien", "clock", "headphones", "globe")
 
 ### Fill in missing values for descriptions
 ## for all item_ids, make sure same description filled in for all years
@@ -293,29 +296,18 @@ heads_all <- heads_all |>
   filter(brick_link_color != "White") |>
   mutate(
     is_female = str_detect(tolower(description), "female"),
-    is_male = str_detect(tolower(description), " male") |
-      str_detect(tolower(description), "beard") |
-      str_detect(tolower(description), "goatee") |
-      str_detect(tolower(description), "sideburns") |
-      str_detect(tolower(description), "moustache") |
-      str_detect(tolower(description), "stubble"),
+    is_male = str_detect(tolower(description), paste(male_keywords, collapse = "|")),
     is_child = str_detect(tolower(description), "child"),
     is_dual_sided = str_detect(tolower(description), "dual sided"),
     is_plain = str_detect(tolower(description), "plain"),
-    is_nonhuman = str_detect(tolower(description), "pineapple") |
-      str_detect(tolower(description), "cobra") |
-      str_detect(tolower(description), "skull") |
-      str_detect(tolower(description), "ghost") |
-      str_detect(tolower(description), "alien") |
-      str_detect(tolower(description), "clock") |
-      str_detect(tolower(description), "headphones"),
+    is_nonhuman = str_detect(tolower(description), paste(nonhuman_keywords, collapse = "|")),
     type = case_when(
       is_female ~ "female",
       is_male ~ "male",
       is_child ~ "child",
       is_plain ~ "no face",
       is_nonhuman ~ "non human",
-      !(is_female | is_male | is_child | is_plain | is_nonhuman) ~ "neutral"
+      TRUE ~ "neutral"
     )
   )
 
@@ -345,30 +337,18 @@ heads_completed <- bind_rows(d, na_completed) |>
   filter(!is.na(description)) |>
   mutate(
     is_female = str_detect(tolower(description), "female"),
-    is_male = str_detect(tolower(description), " male") |
-      str_detect(tolower(description), "beard") |
-      str_detect(tolower(description), "goatee") |
-      str_detect(tolower(description), "sideburns") |
-      str_detect(tolower(description), "moustache") |
-      str_detect(tolower(description), "stubble"),
+    is_male = str_detect(tolower(description), paste(male_keywords, collapse = "|")),
     is_child = str_detect(tolower(description), "child"),
     is_dual_sided = str_detect(tolower(description), "dual sided"),
     is_plain = str_detect(tolower(description), "plain"),
-    is_nonhuman = str_detect(tolower(description), "pineapple") |
-      str_detect(tolower(description), "cobra") |
-      str_detect(tolower(description), "skull") |
-      str_detect(tolower(description), "ghost") |
-      str_detect(tolower(description), "alien") |
-      str_detect(tolower(description), "clock") |
-      str_detect(tolower(description), "headphones") |
-      str_detect(tolower(description), "globe"),
+    is_nonhuman = str_detect(tolower(description), paste(nonhuman_keywords, collapse = "|")),
     type = case_when(
       is_female ~ "female",
       is_male ~ "male",
       is_child ~ "child",
       is_plain ~ "no face",
       is_nonhuman ~ "non human",
-      !(is_female | is_male | is_child | is_plain | is_nonhuman) ~ "neutral"
+      TRUE ~ "neutral"
     )
   ) |>
   filter(type != "non human", type != "no face") |>

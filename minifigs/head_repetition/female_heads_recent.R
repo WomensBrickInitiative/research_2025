@@ -2,7 +2,7 @@ library(tidyverse)
 library(rvest)
 source(here::here("wbi_colors.R"))
 
-town <- read_csv(here::here("data", "town","town_minifig.csv"))
+town <- read_csv(here::here("data", "town", "town_minifig.csv"))
 town_recent <- town |>
   filter(release_year > 2016)
 
@@ -27,24 +27,20 @@ town_recent_parts <- town_recent |>
   unnest(cols = parts_info)
 
 # Read in saved data (no need to map again)
-town_recent_parts <- read_csv(here::here("data", "town","town_parts_2017-2022.csv"))
+town_recent_parts <- read_csv(here::here("data", "town", "town_parts_2017-2022.csv"))
+
+
+male_keywords <- c("beard", "goatee", "sideburns", "moustache", "stubble", " male")
 
 # Filter to just heads, classify gender
 # excludes babies and robots
 heads_data_recent <- town_recent_parts |>
   filter(str_detect(parts_description, "Minifigure, Head ")) |>
   mutate( # categorize heads to female, male, neutral
-    is_female = str_detect(tolower(parts_description), "female"),
-    is_male = str_detect(tolower(parts_description), " male") |
-      str_detect(tolower(parts_description), "beard") |
-      str_detect(tolower(parts_description), "goatee") |
-      str_detect(tolower(parts_description), "sideburns") |
-      str_detect(tolower(parts_description), "moustache") |
-      str_detect(tolower(parts_description), "stubble"),
     type = case_when(
-      is_female ~ "female",
-      is_male ~ "male",
-      TRUE ~ "neutral"
+      str_detect(tolower(temp), "female") ~ "female",
+      str_detect(tolower(temp), paste(male_keywords, collapse = "|")) ~ "male",
+      TRUE ~ "no tag"
     )
   )
 
@@ -180,11 +176,11 @@ g5 <- ggplot(heads_data_summarized0, aes(x = type, y = count, fill = type)) +
   scale_fill_wbi()
 g5
 
-heads_combined <- bind_rows(heads_female,heads_male,heads_neutral)
+heads_combined <- bind_rows(heads_female, heads_male, heads_neutral)
 
 # boxplots showing distribution of count by gender
 
-g6 <- ggplot(heads_combined, aes(x = type, y=count, fill=type)) +
+g6 <- ggplot(heads_combined, aes(x = type, y = count, fill = type)) +
   geom_boxplot(show.legend = FALSE) +
   labs(
     title = "Distribution of Number of Times Head Used",

@@ -16,28 +16,18 @@ source(here::here("wbi_colors.R"))
 ```
 
 ```{r}
+female_keywords <- c("female", "eyelashes", "ponytail", "pigtails", "lips", "girl", "woman")
+male_keywords <- c("male", "beard", "goatee", "sideburns", "moustache", "stubble", "man")
+
 town_data <- prof_data |>
   # filter(category=="Town") |>
   mutate(gender = case_when(
-    str_detect(description, "Male") |
-      str_detect(tolower(description), "beard") |
-      str_detect(tolower(description), "goatee") |
-      str_detect(tolower(description), "sideburns") |
-      str_detect(tolower(description), "moustache") |
-      str_detect(tolower(description), "stubble") |
-      str_detect(description, "Man") |
-      str_detect(tolower(description), "businessman")
-    ~ "male",
-    str_detect(description, "Female") |
-      str_detect(tolower(description), "eyelashes") |
-      str_detect(tolower(description), "ponytail") |
-      str_detect(tolower(description), "pigtails") |
-      str_detect(tolower(description), "lips") |
-      str_detect(tolower(description), "girl") |
-      str_detect(tolower(description), "woman")
+    str_detect(tolower(temp), paste(female_keywords, collapse = "|"))
     ~ "female",
+    str_detect(tolower(temp), paste(male_keywords, collapse = "|"))
+    ~ "male",
     TRUE ~ "no tag"
-  )) |> 
+  )) |>
   mutate(item_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?M=", item_number)) |>
   mutate(parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", item_number))
 ```
@@ -327,17 +317,17 @@ map2(names, plots, ggsave)
 scrape_year <- function(url) {
   if (!robotstxt::paths_allowed(paths = c(url))) stop("scraping not allowed, cannot proceed")
   item_page <- rvest::read_html(url)
-  release_year <- item_page |> 
-    html_elements("#yearReleasedSec") |> 
+  release_year <- item_page |>
+    html_elements("#yearReleasedSec") |>
     html_text()
   release_year
 }
 
 # function to scrape parts description given item link
-scrape_parts_description <- function(url){
+scrape_parts_description <- function(url) {
   item_page <- rvest::read_html(url)
-  parts_description <- item_page |> 
-    html_elements(".IV_ITEM td:nth-child(4) b") |> 
+  parts_description <- item_page |>
+    html_elements(".IV_ITEM td:nth-child(4) b") |>
     html_text()
   parts_description
 }
@@ -350,15 +340,15 @@ police_release_year <- town_data |>
     str_detect(tolower(description), "police"),
     !str_detect(tolower(description), "jail"),
     !str_detect(tolower(description), "crook")
-  ) |> 
+  ) |>
   mutate(item_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?M=", item_number)) |>
   mutate(parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", item_number))
 ```
 
 ```{r}
 # Filter to "no tag" only
-police_notag <- police_release_year |> 
-  filter(gender=="no tag")
+police_notag <- police_release_year |>
+  filter(gender == "no tag")
 
 # Scrape parts descriptions for no-tag items/minifigs
 parts_descriptions <- map(police_notag$parts_link, scrape_parts_description)
@@ -366,64 +356,51 @@ parts_descriptions <- map(police_notag$parts_link, scrape_parts_description)
 # Add parts descriptions as a column to dataframe
 # Combine all parts' descriptions to one string for each minifig (temp)
 # Re-categorize gender based on parts descriptions (gender2)
-police_notag <- police_notag |> 
-  mutate(parts_description = parts_descriptions) |> 
-  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+police_notag <- police_notag |>
+  mutate(parts_description = parts_descriptions) |>
+  mutate(temp = map_chr(parts_description, ~ paste(.x, sep = " ", collapse = ""))) |>
   mutate(gender2 = case_when(
-    str_detect(temp, "Male") |
-      str_detect(tolower(temp), "beard") |
-      str_detect(tolower(temp), "goatee") |
-      str_detect(tolower(temp), "sideburns") |
-      str_detect(tolower(temp), "moustache") |
-      str_detect(tolower(temp), "stubble") |
-      str_detect(temp, "Man") |
-      str_detect(tolower(temp), "businessman")
-    ~ "male",
-      str_detect(temp, "Female") |
-      str_detect(tolower(temp), "eyelashes") |
-      str_detect(tolower(temp), "ponytail") |
-      str_detect(tolower(temp), "pigtails") |
-      str_detect(tolower(temp), "lips") |
-      str_detect(tolower(temp), "girl") |
-      str_detect(tolower(temp), "woman")
+    str_detect(tolower(temp), paste(female_keywords, collapse = "|"))
     ~ "female",
+    str_detect(tolower(temp), paste(male_keywords, collapse = "|"))
+    ~ "male",
     TRUE ~ "no tag"
-  )) |> 
+  )) |>
   select(-parts_description) # get rid of parts_description column for bind_rows
 ```
 
 ```{r}
 # Create new police dataframe with re-categorized gender (police2)
-police2 <- police_release_year |> 
-  filter(gender != "no tag") |> 
+police2 <- police_release_year |>
+  filter(gender != "no tag") |>
   mutate(item_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?M=", item_number)) |>
-  mutate(parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", item_number)) |> 
-  mutate(temp="NA", gender2=gender) |> 
+  mutate(parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", item_number)) |>
+  mutate(temp = "NA", gender2 = gender) |>
   bind_rows(police_notag)
 
 # Scrape release_year
 release_year <- map(police2$item_link, scrape_year)
-release_year <- release_year |> 
-  as.character() %>% 
+release_year <- release_year |>
+  as.character() %>%
   ifelse(. == "character(0)", "NA", .)
 
 # Add release_year column to police2 dataframe and convert to numeric
-police2 <- police2 |> 
-  mutate(release_year=release_year) |> 
-  filter(release_year != "NA") |> 
-  mutate(release_year=as.numeric(release_year))
+police2 <- police2 |>
+  mutate(release_year = release_year) |>
+  filter(release_year != "NA") |>
+  mutate(release_year = as.numeric(release_year))
 
 # Filter to only female
-policewomen <- police2 |> 
-  filter(gender2=="female") |> 
-  filter(release_year != "NA") |> 
-  mutate(release_year=as.numeric(release_year))
+policewomen <- police2 |>
+  filter(gender2 == "female") |>
+  filter(release_year != "NA") |>
+  mutate(release_year = as.numeric(release_year))
 
 # Summarize counts and props by gender2 for graphing
-police2_graph <- police2 |> 
-  mutate(total=n()) |> 
-  group_by(gender2) |> 
-  summarize(count=n(),prop=round(count/total,2)) |> 
+police2_graph <- police2 |>
+  mutate(total = n()) |>
+  group_by(gender2) |>
+  summarize(count = n(), prop = round(count / total, 2)) |>
   distinct()
 ```
 
@@ -458,7 +435,7 @@ p2
 p2 <- add_logo(p2)
 
 # Histogram of police2 counts
-p3 <- ggplot(police2, aes(x = release_year, fill=gender2)) +
+p3 <- ggplot(police2, aes(x = release_year, fill = gender2)) +
   geom_histogram(show.legend = FALSE, binwidth = 5) +
   labs(
     title = "Distribution of Release Year by Gender for Police Minifigs",
@@ -477,7 +454,6 @@ names <- c("p1.png", "p2.png", "p3.png")
 plots <- list(p1, p2, p3)
 
 map2(names, plots, ggsave)
-
 ```
 
 ### Chef
@@ -490,8 +466,8 @@ chef_release_year <- town_data |>
 
 ```{r}
 # Filter to "no tag" only
-chef_notag <- chef_release_year |> 
-  filter(gender=="no tag")
+chef_notag <- chef_release_year |>
+  filter(gender == "no tag")
 
 # Scrape parts descriptions for no-tag items/minifigs
 parts_descriptions <- map(chef_notag$parts_link, scrape_parts_description)
@@ -499,57 +475,44 @@ parts_descriptions <- map(chef_notag$parts_link, scrape_parts_description)
 # Add parts descriptions as a column to dataframe
 # Combine all parts' descriptions to one string for each minifig (temp)
 # Re-categorize gender based on parts descriptions (gender2)
-chef_notag <- chef_notag |> 
-  mutate(parts_description = parts_descriptions) |> 
-  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+chef_notag <- chef_notag |>
+  mutate(parts_description = parts_descriptions) |>
+  mutate(temp = map_chr(parts_description, ~ paste(.x, sep = " ", collapse = ""))) |>
   mutate(gender2 = case_when(
-    str_detect(temp, "Male") |
-      str_detect(tolower(temp), "beard") |
-      str_detect(tolower(temp), "goatee") |
-      str_detect(tolower(temp), "sideburns") |
-      str_detect(tolower(temp), "moustache") |
-      str_detect(tolower(temp), "stubble") |
-      str_detect(temp, "Man") |
-      str_detect(tolower(temp), "businessman")
-    ~ "male",
-      str_detect(temp, "Female") |
-      str_detect(tolower(temp), "eyelashes") |
-      str_detect(tolower(temp), "ponytail") |
-      str_detect(tolower(temp), "pigtails") |
-      str_detect(tolower(temp), "lips") |
-      str_detect(tolower(temp), "girl") |
-      str_detect(tolower(temp), "woman")
+    str_detect(tolower(temp), paste(female_keywords, collapse = "|"))
     ~ "female",
+    str_detect(tolower(temp), paste(male_keywords, collapse = "|"))
+    ~ "male",
     TRUE ~ "no tag"
-  )) |> 
+  )) |>
   select(-parts_description) # get rid of parts_description column for bind_rows
 ```
 
 ```{r}
 # Create new police dataframe with re-categorized gender (police2)
-chef2 <- chef_release_year |> 
-  filter(gender != "no tag") |> 
-  mutate(temp="NA", gender2=gender) |> 
+chef2 <- chef_release_year |>
+  filter(gender != "no tag") |>
+  mutate(temp = "NA", gender2 = gender) |>
   bind_rows(chef_notag)
 
 # Scrape release_year
 release_year <- map(chef2$item_link, scrape_year)
-release_year <- release_year |> 
-  as.character() %>% 
+release_year <- release_year |>
+  as.character() %>%
   ifelse(. == "character(0)", "NA", .)
 
 # Add release_year column to chef2 dataframe and convert to numeric
-chef2 <- chef2 |> 
-  mutate(release_year=release_year) |> 
-  filter(release_year != "NA") |> 
-  mutate(release_year=as.numeric(release_year)) |> 
-  mutate(gender2=ifelse(release_year<1998, "male", gender2))
+chef2 <- chef2 |>
+  mutate(release_year = release_year) |>
+  filter(release_year != "NA") |>
+  mutate(release_year = as.numeric(release_year)) |>
+  mutate(gender2 = ifelse(release_year < 1998, "male", gender2))
 
 # Summarize counts and props by gender2 for graphing
-chef2_graph <- chef2 |> 
-  mutate(total=n()) |> 
-  group_by(gender2) |> 
-  summarize(count=n(),prop=round(count/total,2)) |> 
+chef2_graph <- chef2 |>
+  mutate(total = n()) |>
+  group_by(gender2) |>
+  summarize(count = n(), prop = round(count / total, 2)) |>
   distinct()
 ```
 
@@ -584,7 +547,7 @@ c2
 c2 <- add_logo(c2)
 
 # Histogram of chef2 counts
-c3 <- ggplot(chef2, aes(x = release_year, fill=gender2)) +
+c3 <- ggplot(chef2, aes(x = release_year, fill = gender2)) +
   geom_histogram(show.legend = FALSE, binwidth = 5) +
   labs(
     title = "Distribution of Release Year by Gender for Chef Minifigs",
@@ -603,7 +566,6 @@ names <- c("c1.png", "c2.png", "c3.png")
 plots <- list(c1, c2, c3)
 
 map2(names, plots, ggsave)
-
 ```
 
 ### Diver
@@ -616,8 +578,8 @@ diver <- town_data |>
 
 ```{r}
 # Filter to "no tag" only
-diver_notag <- diver |> 
-  filter(gender=="no tag")
+diver_notag <- diver |>
+  filter(gender == "no tag")
 
 # Scrape parts descriptions for no-tag items/minifigs
 parts_descriptions <- map(diver_notag$parts_link, scrape_parts_description)
@@ -625,64 +587,51 @@ parts_descriptions <- map(diver_notag$parts_link, scrape_parts_description)
 # Add parts descriptions as a column to dataframe
 # Combine all parts' descriptions to one string for each minifig (temp)
 # Re-categorize gender based on parts descriptions (gender2)
-diver_notag <- diver_notag |> 
-  mutate(parts_description = parts_descriptions) |> 
-  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+diver_notag <- diver_notag |>
+  mutate(parts_description = parts_descriptions) |>
+  mutate(temp = map_chr(parts_description, ~ paste(.x, sep = " ", collapse = ""))) |>
   mutate(gender2 = case_when(
-    str_detect(temp, "Male") |
-      str_detect(tolower(temp), "beard") |
-      str_detect(tolower(temp), "goatee") |
-      str_detect(tolower(temp), "sideburns") |
-      str_detect(tolower(temp), "moustache") |
-      str_detect(tolower(temp), "stubble") |
-      str_detect(temp, "Man") |
-      str_detect(tolower(temp), "businessman")
-    ~ "male",
-      str_detect(temp, "Female") |
-      str_detect(tolower(temp), "eyelashes") |
-      str_detect(tolower(temp), "ponytail") |
-      str_detect(tolower(temp), "pigtails") |
-      str_detect(tolower(temp), "lips") |
-      str_detect(tolower(temp), "girl") |
-      str_detect(tolower(temp), "woman")
+    str_detect(tolower(temp), paste(female_keywords, collapse = "|"))
     ~ "female",
+    str_detect(tolower(temp), paste(male_keywords, collapse = "|"))
+    ~ "male",
     TRUE ~ "no tag"
-  )) |> 
+  )) |>
   select(-parts_description) # get rid of parts_description column for bind_rows
 ```
 
 ```{r}
 # Create new police dataframe with re-categorized gender (diver2)
-diver2 <- diver |> 
-  filter(gender != "no tag") |> 
-  mutate(temp="NA", gender2=gender) |> 
+diver2 <- diver |>
+  filter(gender != "no tag") |>
+  mutate(temp = "NA", gender2 = gender) |>
   bind_rows(diver_notag)
 
 # Scrape release_year
 release_year <- map(diver2$item_link, scrape_year)
-release_year <- release_year |> 
-  as.character() %>% 
+release_year <- release_year |>
+  as.character() %>%
   ifelse(. == "character(0)", "NA", .)
 
 # Add release_year column to diver2 dataframe and convert to numeric
-diver2 <- diver2 |> 
-  mutate(release_year=release_year) |> 
-  filter(release_year != "NA") |> 
-  mutate(release_year=as.numeric(release_year)) |> 
-  mutate(gender2=ifelse(release_year<1998, "male", gender2))
+diver2 <- diver2 |>
+  mutate(release_year = release_year) |>
+  filter(release_year != "NA") |>
+  mutate(release_year = as.numeric(release_year)) |>
+  mutate(gender2 = ifelse(release_year < 1998, "male", gender2))
 
 # Summarize counts and props by gender for graphing
-diver_graph <- diver |> 
-  mutate(total=n()) |> 
-  group_by(gender) |> 
-  summarize(count=n(),prop=round(count/total,2)) |> 
+diver_graph <- diver |>
+  mutate(total = n()) |>
+  group_by(gender) |>
+  summarize(count = n(), prop = round(count / total, 2)) |>
   distinct()
 
 # Summarize counts and props by gender2 for graphing
-diver2_graph <- diver2 |> 
-  mutate(total=n()) |> 
-  group_by(gender2) |> 
-  summarize(count=n(),prop=round(count/total,2)) |> 
+diver2_graph <- diver2 |>
+  mutate(total = n()) |>
+  group_by(gender2) |>
+  summarize(count = n(), prop = round(count / total, 2)) |>
   distinct()
 ```
 
@@ -744,7 +693,7 @@ d2
 d2 <- add_logo(d2)
 
 # Histogram of diver2 counts
-d3 <- ggplot(diver2, aes(x = release_year, fill=gender2)) +
+d3 <- ggplot(diver2, aes(x = release_year, fill = gender2)) +
   geom_histogram(show.legend = FALSE, binwidth = 5) +
   labs(
     title = "Distribution of Release Year by Gender for Diver Minifigs",
@@ -763,7 +712,6 @@ names <- c("d0.png", "d1.png", "d0b.png", "d2.png", "d3.png")
 plots <- list(d0, d1, d0b, d2, d3)
 
 map2(names, plots, ggsave)
-
 ```
 
 ### Driver
@@ -776,8 +724,8 @@ driver <- town_data |>
 
 ```{r}
 # Filter to "no tag" only
-driver_notag <- driver |> 
-  filter(gender=="no tag")
+driver_notag <- driver |>
+  filter(gender == "no tag")
 
 # Scrape parts descriptions for no-tag items/minifigs
 parts_descriptions <- map(driver_notag$parts_link, scrape_parts_description)
@@ -785,64 +733,51 @@ parts_descriptions <- map(driver_notag$parts_link, scrape_parts_description)
 # Add parts descriptions as a column to dataframe
 # Combine all parts' descriptions to one string for each minifig (temp)
 # Re-categorize gender based on parts descriptions (gender2)
-driver_notag <- driver_notag |> 
-  mutate(parts_description = parts_descriptions) |> 
-  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+driver_notag <- driver_notag |>
+  mutate(parts_description = parts_descriptions) |>
+  mutate(temp = map_chr(parts_description, ~ paste(.x, sep = " ", collapse = ""))) |>
   mutate(gender2 = case_when(
-    str_detect(temp, "Male") |
-      str_detect(tolower(temp), "beard") |
-      str_detect(tolower(temp), "goatee") |
-      str_detect(tolower(temp), "sideburns") |
-      str_detect(tolower(temp), "moustache") |
-      str_detect(tolower(temp), "stubble") |
-      str_detect(temp, "Man") |
-      str_detect(tolower(temp), "businessman")
-    ~ "male",
-      str_detect(temp, "Female") |
-      str_detect(tolower(temp), "eyelashes") |
-      str_detect(tolower(temp), "ponytail") |
-      str_detect(tolower(temp), "pigtails") |
-      str_detect(tolower(temp), "lips") |
-      str_detect(tolower(temp), "girl") |
-      str_detect(tolower(temp), "woman")
+    str_detect(tolower(temp), paste(female_keywords, collapse = "|"))
     ~ "female",
+    str_detect(tolower(temp), paste(male_keywords, collapse = "|"))
+    ~ "male",
     TRUE ~ "no tag"
-  )) |> 
+  )) |>
   select(-parts_description) # get rid of parts_description column for bind_rows
 ```
 
 ```{r}
 # Create new police dataframe with re-categorized gender (diver2)
-driver2 <- driver |> 
-  filter(gender != "no tag") |> 
-  mutate(temp="NA", gender2=gender) |> 
+driver2 <- driver |>
+  filter(gender != "no tag") |>
+  mutate(temp = "NA", gender2 = gender) |>
   bind_rows(driver_notag)
 
 # Scrape release_year
 release_year <- map(driver2$item_link, scrape_year)
-release_year <- release_year |> 
-  as.character() %>% 
+release_year <- release_year |>
+  as.character() %>%
   ifelse(. == "character(0)", "NA", .)
 
 # Add release_year column to diver2 dataframe and convert to numeric
-driver2 <- driver2 |> 
-  mutate(release_year=release_year) |> 
-  filter(release_year != "NA") |> 
-  mutate(release_year=as.numeric(release_year)) |> 
-  mutate(gender2=ifelse(release_year<2000, "male", gender2))
+driver2 <- driver2 |>
+  mutate(release_year = release_year) |>
+  filter(release_year != "NA") |>
+  mutate(release_year = as.numeric(release_year)) |>
+  mutate(gender2 = ifelse(release_year < 2000, "male", gender2))
 
 # Summarize counts and props by gender for graphing
-driver_graph <- driver |> 
-  mutate(total=n()) |> 
-  group_by(gender) |> 
-  summarize(count=n(),prop=round(count/total,2)) |> 
+driver_graph <- driver |>
+  mutate(total = n()) |>
+  group_by(gender) |>
+  summarize(count = n(), prop = round(count / total, 2)) |>
   distinct()
 
 # Summarize counts and props by gender2 for graphing
-driver2_graph <- driver2 |> 
-  mutate(total=n()) |> 
-  group_by(gender2) |> 
-  summarize(count=n(),prop=round(count/total,2)) |> 
+driver2_graph <- driver2 |>
+  mutate(total = n()) |>
+  group_by(gender2) |>
+  summarize(count = n(), prop = round(count / total, 2)) |>
   distinct()
 ```
 
@@ -904,7 +839,7 @@ dr2
 dr2 <- add_logo(dr2)
 
 # Histogram of driver2 counts
-dr3 <- ggplot(driver2, aes(x = release_year, fill=gender2)) +
+dr3 <- ggplot(driver2, aes(x = release_year, fill = gender2)) +
   geom_histogram(show.legend = FALSE, binwidth = 5) +
   labs(
     title = "Distribution of Release Year by Gender for Driver Minifigs",
@@ -923,7 +858,6 @@ names <- c("dr0.png", "dr1.png", "dr0b.png", "dr2.png", "dr3.png")
 plots <- list(dr0, dr1, dr0b, dr2, dr3)
 
 map2(names, plots, ggsave)
-
 ```
 
 ### Doctor
@@ -936,8 +870,8 @@ doctor <- town_data |>
 
 ```{r}
 # Filter to "no tag" only
-doctor_notag <- doctor |> 
-  filter(gender=="no tag")
+doctor_notag <- doctor |>
+  filter(gender == "no tag")
 
 # Scrape parts descriptions for no-tag items/minifigs
 parts_descriptions <- map(doctor_notag$parts_link, scrape_parts_description)
@@ -945,56 +879,43 @@ parts_descriptions <- map(doctor_notag$parts_link, scrape_parts_description)
 # Add parts descriptions as a column to dataframe
 # Combine all parts' descriptions to one string for each minifig (temp)
 # Re-categorize gender based on parts descriptions (gender2)
-doctor_notag <- doctor_notag |> 
-  mutate(parts_description = parts_descriptions) |> 
-  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+doctor_notag <- doctor_notag |>
+  mutate(parts_description = parts_descriptions) |>
+  mutate(temp = map_chr(parts_description, ~ paste(.x, sep = " ", collapse = ""))) |>
   mutate(gender2 = case_when(
-    str_detect(temp, "Male") |
-      str_detect(tolower(temp), "beard") |
-      str_detect(tolower(temp), "goatee") |
-      str_detect(tolower(temp), "sideburns") |
-      str_detect(tolower(temp), "moustache") |
-      str_detect(tolower(temp), "stubble") |
-      str_detect(temp, "Man") |
-      str_detect(tolower(temp), "businessman")
-    ~ "male",
-      str_detect(temp, "Female") |
-      str_detect(tolower(temp), "eyelashes") |
-      str_detect(tolower(temp), "ponytail") |
-      str_detect(tolower(temp), "pigtails") |
-      str_detect(tolower(temp), "lips") |
-      str_detect(tolower(temp), "girl") |
-      str_detect(tolower(temp), "woman")
+    str_detect(tolower(temp), paste(female_keywords, collapse = "|"))
     ~ "female",
+    str_detect(tolower(temp), paste(male_keywords, collapse = "|"))
+    ~ "male",
     TRUE ~ "no tag"
-  )) |> 
+  )) |>
   select(-parts_description) # get rid of parts_description column for bind_rows
 ```
 
 ```{r}
 # Create new doctor dataframe with re-categorized gender (doctor2)
-doctor2 <- doctor |> 
-  filter(gender != "no tag") |> 
-  mutate(temp="NA", gender2=gender) |> 
+doctor2 <- doctor |>
+  filter(gender != "no tag") |>
+  mutate(temp = "NA", gender2 = gender) |>
   bind_rows(doctor_notag)
 
 # Scrape release_year
 release_year <- map(doctor2$item_link, scrape_year)
-release_year <- release_year |> 
-  as.character() %>% 
+release_year <- release_year |>
+  as.character() %>%
   ifelse(. == "character(0)", "NA", .)
 
 # Add release_year column to chef2 dataframe and convert to numeric
-doctor2 <- doctor2 |> 
-  mutate(release_year=release_year) |> 
-  filter(release_year != "NA") |> 
-  mutate(release_year=as.numeric(release_year))
+doctor2 <- doctor2 |>
+  mutate(release_year = release_year) |>
+  filter(release_year != "NA") |>
+  mutate(release_year = as.numeric(release_year))
 
 # Summarize counts and props by gender2 for graphing
-doctor2_graph <- doctor2 |> 
-  mutate(total=n()) |> 
-  group_by(gender2) |> 
-  summarize(count=n(),prop=round(count/total,2)) |> 
+doctor2_graph <- doctor2 |>
+  mutate(total = n()) |>
+  group_by(gender2) |>
+  summarize(count = n(), prop = round(count / total, 2)) |>
   distinct()
 ```
 
@@ -1029,7 +950,7 @@ doc2
 doc2 <- add_logo(doc2)
 
 # Histogram of chef2 counts
-doc3 <- ggplot(doctor2, aes(x = release_year, fill=gender2)) +
+doc3 <- ggplot(doctor2, aes(x = release_year, fill = gender2)) +
   geom_histogram(show.legend = FALSE, binwidth = 5) +
   labs(
     title = "Distribution of Release Year by Gender for Doctor Minifigs",
@@ -1048,7 +969,6 @@ names <- c("doc1.png", "doc2.png", "doc3.png")
 plots <- list(doc1, doc2, doc3)
 
 map2(names, plots, ggsave)
-
 ```
 
 ### Astronaut
@@ -1061,8 +981,8 @@ astronaut <- town_data |>
 
 ```{r}
 # Filter to "no tag" only
-astronaut_notag <- astronaut |> 
-  filter(gender=="no tag")
+astronaut_notag <- astronaut |>
+  filter(gender == "no tag")
 
 # Scrape parts descriptions for no-tag items/minifigs
 parts_descriptions <- map(astronaut_notag$parts_link, scrape_parts_description)
@@ -1070,57 +990,44 @@ parts_descriptions <- map(astronaut_notag$parts_link, scrape_parts_description)
 # Add parts descriptions as a column to dataframe
 # Combine all parts' descriptions to one string for each minifig (temp)
 # Re-categorize gender based on parts descriptions (gender2)
-astronaut_notag <- astronaut_notag |> 
-  mutate(parts_description = parts_descriptions) |> 
-  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+astronaut_notag <- astronaut_notag |>
+  mutate(parts_description = parts_descriptions) |>
+  mutate(temp = map_chr(parts_description, ~ paste(.x, sep = " ", collapse = ""))) |>
   mutate(gender2 = case_when(
-    str_detect(temp, "Male") |
-      str_detect(tolower(temp), "beard") |
-      str_detect(tolower(temp), "goatee") |
-      str_detect(tolower(temp), "sideburns") |
-      str_detect(tolower(temp), "moustache") |
-      str_detect(tolower(temp), "stubble") |
-      str_detect(temp, "Man") |
-      str_detect(tolower(temp), "businessman")
-    ~ "male",
-      str_detect(temp, "Female") |
-      str_detect(tolower(temp), "eyelashes") |
-      str_detect(tolower(temp), "ponytail") |
-      str_detect(tolower(temp), "pigtails") |
-      str_detect(tolower(temp), "lips") |
-      str_detect(tolower(temp), "girl") |
-      str_detect(tolower(temp), "woman")
+    str_detect(tolower(temp), paste(female_keywords, collapse = "|"))
     ~ "female",
+    str_detect(tolower(temp), paste(male_keywords, collapse = "|"))
+    ~ "male",
     TRUE ~ "no tag"
-  )) |> 
+  )) |>
   select(-parts_description) # get rid of parts_description column for bind_rows
 ```
 
 ```{r}
 # Create new police dataframe with re-categorized gender (astronaut2)
-astronaut2 <- astronaut |> 
-  filter(gender != "no tag") |> 
-  mutate(temp="NA", gender2=gender) |> 
+astronaut2 <- astronaut |>
+  filter(gender != "no tag") |>
+  mutate(temp = "NA", gender2 = gender) |>
   bind_rows(astronaut_notag)
 
 # Scrape release_year
 release_year <- map(astronaut2$item_link, scrape_year)
-release_year <- release_year |> 
-  as.character() %>% 
+release_year <- release_year |>
+  as.character() %>%
   ifelse(. == "character(0)", "NA", .)
 
 # Add release_year column to astronaut2 dataframe and convert to numeric
-astronaut2 <- astronaut2 |> 
-  mutate(release_year=release_year) |> 
-  filter(release_year != "NA") |> 
-  mutate(release_year=as.numeric(release_year)) |> 
-  mutate(gender2=ifelse(release_year<1999, "male", gender2))
+astronaut2 <- astronaut2 |>
+  mutate(release_year = release_year) |>
+  filter(release_year != "NA") |>
+  mutate(release_year = as.numeric(release_year)) |>
+  mutate(gender2 = ifelse(release_year < 1999, "male", gender2))
 
 # Summarize counts and props by gender2 for graphing
-astronaut2_graph <- astronaut2 |> 
-  mutate(total=n()) |> 
-  group_by(gender2) |> 
-  summarize(count=n(),prop=round(count/total,2)) |> 
+astronaut2_graph <- astronaut2 |>
+  mutate(total = n()) |>
+  group_by(gender2) |>
+  summarize(count = n(), prop = round(count / total, 2)) |>
   distinct()
 ```
 
@@ -1155,7 +1062,7 @@ a2
 a2 <- add_logo(a2)
 
 # Histogram of astronaut2 counts
-a3 <- ggplot(astronaut2, aes(x = release_year, fill=gender2)) +
+a3 <- ggplot(astronaut2, aes(x = release_year, fill = gender2)) +
   geom_histogram(show.legend = FALSE, binwidth = 5) +
   labs(
     title = "Distribution of Release Year by Gender for Astronaut Minifigs",
@@ -1174,7 +1081,6 @@ names <- c("a1.png", "a2.png", "a3.png")
 plots <- list(a1, a2, a3)
 
 map2(names, plots, ggsave)
-
 ```
 
 ### Businessperson
@@ -1187,8 +1093,8 @@ business <- town_data |>
 
 ```{r}
 # Filter to "no tag" only
-business_notag <- business |> 
-  filter(gender=="no tag")
+business_notag <- business |>
+  filter(gender == "no tag")
 
 # Scrape parts descriptions for no-tag items/minifigs
 parts_descriptions <- map(business_notag$parts_link, scrape_parts_description)
@@ -1196,50 +1102,37 @@ parts_descriptions <- map(business_notag$parts_link, scrape_parts_description)
 # Add parts descriptions as a column to dataframe
 # Combine all parts' descriptions to one string for each minifig (temp)
 # Re-categorize gender based on parts descriptions (gender2)
-business_notag <- business_notag |> 
-  mutate(parts_description = parts_descriptions) |> 
-  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+business_notag <- business_notag |>
+  mutate(parts_description = parts_descriptions) |>
+  mutate(temp = map_chr(parts_description, ~ paste(.x, sep = " ", collapse = ""))) |>
   mutate(gender2 = case_when(
-    str_detect(temp, "Male") |
-      str_detect(tolower(temp), "beard") |
-      str_detect(tolower(temp), "goatee") |
-      str_detect(tolower(temp), "sideburns") |
-      str_detect(tolower(temp), "moustache") |
-      str_detect(tolower(temp), "stubble") |
-      str_detect(temp, "Man") |
-      str_detect(tolower(temp), "businessman")
-    ~ "male",
-      str_detect(temp, "Female") |
-      str_detect(tolower(temp), "eyelashes") |
-      str_detect(tolower(temp), "ponytail") |
-      str_detect(tolower(temp), "pigtails") |
-      str_detect(tolower(temp), "lips") |
-      str_detect(tolower(temp), "girl") |
-      str_detect(tolower(temp), "woman")
+    str_detect(tolower(temp), paste(female_keywords, collapse = "|"))
     ~ "female",
+    str_detect(tolower(temp), paste(male_keywords, collapse = "|"))
+    ~ "male",
     TRUE ~ "no tag"
-  )) |> 
+  )) |>
   select(-parts_description) # get rid of parts_description column for bind_rows
 ```
 
 ```{r}
 # Create new police dataframe with re-categorized gender (police2)
-business2 <- business |> 
-  filter(gender != "no tag") |> 
-  mutate(temp="NA", gender2=gender) |> 
+business2 <- business |>
+  filter(gender != "no tag") |>
+  mutate(temp = "NA", gender2 = gender) |>
   bind_rows(business_notag)
 
 # Scrape release_year
 release_year <- map(business2$item_link, scrape_year)
-release_year <- release_year |> 
-  as.character() %>% 
+release_year <- release_year |>
+  as.character() %>%
   ifelse(. == "character(0)", "NA", .)
 
 # Add release_year column to chef2 dataframe and convert to numeric
-business2 <- business2 |> 
-  mutate(release_year=release_year) |> 
-  filter(release_year != "NA") |> 
-  mutate(release_year=as.numeric(release_year))
+business2 <- business2 |>
+  mutate(release_year = release_year) |>
+  filter(release_year != "NA") |>
+  mutate(release_year = as.numeric(release_year))
 
 # No changes, so no new graphs
 ```
@@ -1254,8 +1147,8 @@ scientist <- town_data |>
 
 ```{r}
 # Filter to "no tag" only
-scientist_notag <- scientist |> 
-  filter(gender=="no tag")
+scientist_notag <- scientist |>
+  filter(gender == "no tag")
 
 # Scrape parts descriptions for no-tag items/minifigs
 parts_descriptions <- map(scientist_notag$parts_link, scrape_parts_description)
@@ -1263,56 +1156,43 @@ parts_descriptions <- map(scientist_notag$parts_link, scrape_parts_description)
 # Add parts descriptions as a column to dataframe
 # Combine all parts' descriptions to one string for each minifig (temp)
 # Re-categorize gender based on parts descriptions (gender2)
-scientist_notag <- scientist_notag |> 
-  mutate(parts_description = parts_descriptions) |> 
-  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+scientist_notag <- scientist_notag |>
+  mutate(parts_description = parts_descriptions) |>
+  mutate(temp = map_chr(parts_description, ~ paste(.x, sep = " ", collapse = ""))) |>
   mutate(gender2 = case_when(
-    str_detect(temp, "Male") |
-      str_detect(tolower(temp), "beard") |
-      str_detect(tolower(temp), "goatee") |
-      str_detect(tolower(temp), "sideburns") |
-      str_detect(tolower(temp), "moustache") |
-      str_detect(tolower(temp), "stubble") |
-      str_detect(temp, "Man") |
-      str_detect(tolower(temp), "businessman")
-    ~ "male",
-      str_detect(temp, "Female") |
-      str_detect(tolower(temp), "eyelashes") |
-      str_detect(tolower(temp), "ponytail") |
-      str_detect(tolower(temp), "pigtails") |
-      str_detect(tolower(temp), "lips") |
-      str_detect(tolower(temp), "girl") |
-      str_detect(tolower(temp), "woman")
+    str_detect(tolower(temp), paste(female_keywords, collapse = "|"))
     ~ "female",
+    str_detect(tolower(temp), paste(male_keywords, collapse = "|"))
+    ~ "male",
     TRUE ~ "no tag"
-  )) |> 
+  )) |>
   select(-parts_description) # get rid of parts_description column for bind_rows
 ```
 
 ```{r}
 # Create new police dataframe with re-categorized gender (scientist2)
-scientist2 <- scientist |> 
-  filter(gender != "no tag") |> 
-  mutate(temp="NA", gender2=gender) |> 
+scientist2 <- scientist |>
+  filter(gender != "no tag") |>
+  mutate(temp = "NA", gender2 = gender) |>
   bind_rows(scientist_notag)
 
 # Scrape release_year
 release_year <- map(scientist2$item_link, scrape_year)
-release_year <- release_year |> 
-  as.character() %>% 
+release_year <- release_year |>
+  as.character() %>%
   ifelse(. == "character(0)", "NA", .)
 
 # Add release_year column to scientist2 dataframe and convert to numeric
-scientist2 <- scientist2 |> 
-  mutate(release_year=release_year) |> 
-  filter(release_year != "NA") |> 
-  mutate(release_year=as.numeric(release_year))
+scientist2 <- scientist2 |>
+  mutate(release_year = release_year) |>
+  filter(release_year != "NA") |>
+  mutate(release_year = as.numeric(release_year))
 
 # Summarize counts and props by gender2 for graphing
-scientist2_graph <- scientist2 |> 
-  mutate(total=n()) |> 
-  group_by(gender2) |> 
-  summarize(count=n(),prop=round(count/total,2)) |> 
+scientist2_graph <- scientist2 |>
+  mutate(total = n()) |>
+  group_by(gender2) |>
+  summarize(count = n(), prop = round(count / total, 2)) |>
   distinct()
 ```
 
@@ -1347,7 +1227,7 @@ s2
 s2 <- add_logo(s2)
 
 # Histogram of scientist2 counts
-s3 <- ggplot(scientist2, aes(x = release_year, fill=gender2)) +
+s3 <- ggplot(scientist2, aes(x = release_year, fill = gender2)) +
   geom_histogram(show.legend = FALSE, binwidth = 5) +
   labs(
     title = "Distribution of Release Year by Gender for Scientist Minifigs",
@@ -1371,8 +1251,8 @@ pilot <- town_data |>
 
 ```{r}
 # Filter to "no tag" only
-pilot_notag <- pilot |> 
-  filter(gender=="no tag")
+pilot_notag <- pilot |>
+  filter(gender == "no tag")
 
 # Scrape parts descriptions for no-tag items/minifigs
 parts_descriptions <- map(pilot_notag$parts_link, scrape_parts_description)
@@ -1380,57 +1260,44 @@ parts_descriptions <- map(pilot_notag$parts_link, scrape_parts_description)
 # Add parts descriptions as a column to dataframe
 # Combine all parts' descriptions to one string for each minifig (temp)
 # Re-categorize gender based on parts descriptions (gender2)
-pilot_notag <- pilot_notag |> 
-  mutate(parts_description = parts_descriptions) |> 
-  mutate(temp = map_chr(parts_description, ~paste(.x, sep=" ", collapse=""))) |> 
+pilot_notag <- pilot_notag |>
+  mutate(parts_description = parts_descriptions) |>
+  mutate(temp = map_chr(parts_description, ~ paste(.x, sep = " ", collapse = ""))) |>
   mutate(gender2 = case_when(
-    str_detect(temp, "Male") |
-      str_detect(tolower(temp), "beard") |
-      str_detect(tolower(temp), "goatee") |
-      str_detect(tolower(temp), "sideburns") |
-      str_detect(tolower(temp), "moustache") |
-      str_detect(tolower(temp), "stubble") |
-      str_detect(temp, "Man") |
-      str_detect(tolower(temp), "businessman")
-    ~ "male",
-      str_detect(temp, "Female") |
-      str_detect(tolower(temp), "eyelashes") |
-      str_detect(tolower(temp), "ponytail") |
-      str_detect(tolower(temp), "pigtails") |
-      str_detect(tolower(temp), "lips") |
-      str_detect(tolower(temp), "girl") |
-      str_detect(tolower(temp), "woman")
+    str_detect(tolower(temp), paste(female_keywords, collapse = "|"))
     ~ "female",
+    str_detect(tolower(temp), paste(male_keywords, collapse = "|"))
+    ~ "male",
     TRUE ~ "no tag"
-  )) |> 
+  )) |>
   select(-parts_description) # get rid of parts_description column for bind_rows
 ```
 
 ```{r}
 # Create new police dataframe with re-categorized gender (pilot2)
-pilot2 <- pilot |> 
-  filter(gender != "no tag") |> 
-  mutate(temp="NA", gender2=gender) |> 
+pilot2 <- pilot |>
+  filter(gender != "no tag") |>
+  mutate(temp = "NA", gender2 = gender) |>
   bind_rows(pilot_notag)
 
 # Scrape release_year
 release_year <- map(pilot2$item_link, scrape_year)
-release_year <- release_year |> 
-  as.character() %>% 
+release_year <- release_year |>
+  as.character() %>%
   ifelse(. == "character(0)", "NA", .)
 
 # Add release_year column to chef2 dataframe and convert to numeric
-pilot2 <- pilot2 |> 
-  mutate(release_year=release_year) |> 
-  filter(release_year != "NA") |> 
-  mutate(release_year=as.numeric(release_year)) |> 
-  mutate(gender2=ifelse(release_year<1996, "male", gender2))
+pilot2 <- pilot2 |>
+  mutate(release_year = release_year) |>
+  filter(release_year != "NA") |>
+  mutate(release_year = as.numeric(release_year)) |>
+  mutate(gender2 = ifelse(release_year < 1996, "male", gender2))
 
 # Summarize counts and props by gender2 for graphing
-pilot2_graph <- pilot2 |> 
-  mutate(total=n()) |> 
-  group_by(gender2) |> 
-  summarize(count=n(),prop=round(count/total,2)) |> 
+pilot2_graph <- pilot2 |>
+  mutate(total = n()) |>
+  group_by(gender2) |>
+  summarize(count = n(), prop = round(count / total, 2)) |>
   distinct()
 ```
 
@@ -1465,7 +1332,7 @@ pl2
 pl2 <- add_logo(pl2)
 
 # Histogram of pilot2 counts
-pl3 <- ggplot(pilot2, aes(x = release_year, fill=gender2)) +
+pl3 <- ggplot(pilot2, aes(x = release_year, fill = gender2)) +
   geom_histogram(show.legend = FALSE, binwidth = 5) +
   labs(
     title = "Distribution of Release Year by Gender for Pilot Minifigs",
