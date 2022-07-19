@@ -1,52 +1,53 @@
 library(tidyverse)
-cultural_data <- read_csv(here::here("data", "cultural_minifigs.csv"))
 source(here::here("wbi_colors.R"))
 
+cultural <- read_csv(here::here("data", "cultural_minifigs.csv"))
+
 # cleaning and grouping by broader geographic region
-cultural <- cultural_data |>
-  mutate(culture_represented = ifelse(culture_represented == "Mohawk" |
-    culture_represented == "American Indian", "Native American", culture_represented)) |>
-  mutate(inspiration = ifelse(inspiration == "N/A" |
-    inspiration == "90307pb02: Red Minifigure, Headgear Hat, Mexican Sombrero with Bright Green Trim Pattern. 90542pb02: Yellow Minifigure Poncho Half Cloth with Green and Red Mexican Print Pattern",
-  NA, inspiration
-  )) |>
-  mutate(gender = tolower(gender)) |>
-  mutate(
-    gender = ifelse(is.na(gender), "neutral", gender),
-    gender = ifelse(gender == "n/a", "neutral", gender),
-    gender = ifelse(gender == "femlae", "female", gender)
-  ) |>
-  mutate(release_year = as.numeric(substr(year, 1, 4))) |>
-  mutate(region = case_when(
-    culture_represented == "Egyptian" |
-      culture_represented == "Muslim/islamic" |
-      culture_represented == "Middle Eastern and Asian" ~ "Middle Eastern",
-    culture_represented == "German" |
-      culture_represented == "British" |
-      culture_represented == "Spanish" |
-      culture_represented == "Greek" |
-      culture_represented == "Roman" |
-      culture_represented == "European" |
-      culture_represented == "Irish" |
-      culture_represented == "Swedish" |
-      culture_represented == "Scandinavian" |
-      culture_represented == "Viking" ~ "Western European",
-    culture_represented == "Ukranian" |
-      culture_represented == "Armenian" |
-      culture_represented == "Russian" ~ "Eastern European",
-    culture_represented == "Chinese" |
-      culture_represented == "Japanese" |
-      culture_represented == "East Asian" |
-      culture_represented == "Mongolian" ~ "East Asian",
-    culture_represented == "Indian" |
-      culture_represented == "South Asian" ~ "South Asian",
-    culture_represented == "Pacific Islander (loosely)" |
-      culture_represented == "Polynesian" ~ "Pacific Islander",
-    culture_represented == "Aztec" |
-      culture_represented == "Mexican" ~ "Mesoamerican",
-    culture_represented == "South American" ~ "South American",
-    culture_represented == "Native American" ~ "Native North American"
-  ))
+# cultural <- cultural_data |>
+#   mutate(culture_represented = ifelse(culture_represented == "Mohawk" |
+#     culture_represented == "American Indian", "Native American", culture_represented)) |>
+#   mutate(inspiration = ifelse(inspiration == "N/A" |
+#     inspiration == "90307pb02: Red Minifigure, Headgear Hat, Mexican Sombrero with Bright Green Trim Pattern. 90542pb02: Yellow Minifigure Poncho Half Cloth with Green and Red Mexican Print Pattern",
+#   NA, inspiration
+#   )) |>
+#   mutate(gender = tolower(gender)) |>
+#   mutate(
+#     gender = ifelse(is.na(gender), "neutral", gender),
+#     gender = ifelse(gender == "n/a", "neutral", gender),
+#     gender = ifelse(gender == "femlae", "female", gender)
+#   ) |>
+#   mutate(release_year = as.numeric(substr(year, 1, 4))) |>
+#   mutate(region = case_when(
+#     culture_represented == "Egyptian" |
+#       culture_represented == "Muslim/islamic" |
+#       culture_represented == "Middle Eastern and Asian" ~ "Middle Eastern",
+#     culture_represented == "German" |
+#       culture_represented == "British" |
+#       culture_represented == "Spanish" |
+#       culture_represented == "Greek" |
+#       culture_represented == "Roman" |
+#       culture_represented == "European" |
+#       culture_represented == "Irish" |
+#       culture_represented == "Swedish" |
+#       culture_represented == "Scandinavian" |
+#       culture_represented == "Viking" ~ "Western European",
+#     culture_represented == "Ukranian" |
+#       culture_represented == "Armenian" |
+#       culture_represented == "Russian" ~ "Eastern European",
+#     culture_represented == "Chinese" |
+#       culture_represented == "Japanese" |
+#       culture_represented == "East Asian" |
+#       culture_represented == "Mongolian" ~ "East Asian",
+#     culture_represented == "Indian" |
+#       culture_represented == "South Asian" ~ "South Asian",
+#     culture_represented == "Pacific Islander (loosely)" |
+#       culture_represented == "Polynesian" ~ "Pacific Islander",
+#     culture_represented == "Aztec" |
+#       culture_represented == "Mexican" ~ "Mesoamerican",
+#     culture_represented == "South American" ~ "South American",
+#     culture_represented == "Native American" ~ "Native North American"
+#   ))
 
 #write_csv(cultural,"cultural_minifigs.csv")
 
