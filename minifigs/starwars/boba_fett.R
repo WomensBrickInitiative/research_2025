@@ -66,6 +66,8 @@ bobafett_time_summarized <- bobafett_time_summarized |>
          has_minifig_bobafett = ifelse(num_minifigs_bobafett > 0, TRUE, FALSE)
          )
 
+write_csv(bobafett_time_summarized, "boba_fett.csv")
+
 # barchart of screentime by character
 g1 <- ggplot(bobafett_time_summarized, aes(x = reorder(character, minutes), y = minutes, fill = has_minifig_bobafett)) +
   geom_col(show.legend = FALSE) +
