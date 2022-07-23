@@ -1,0 +1,375 @@
+---
+title: "Guide for Updating Heads Flowchart"
+author: "Rose Porta"
+date: '2022-07-23'
+output: 
+  html_document:
+    toc: TRUE
+
+---
+
+# Intro
+
+The purpose of this document is to help facilitate the process of updating the heads flowchart for future interns. It may seem a bit long and daunting, but if you take your time with it, it will be mostly straight-forward. For most of it, you can simply run the code chunks in order as they are, however make sure you read the instructions and update information where instructed. Also, you may need to modify parts of the code slightly for new special cases you come across in the new data. 
+
+In order to move through this process, you must first have R and R Studio installed (or use the [Smith R Studio Cloud](https://rstudio.smith.edu/auth-sign-in?appUri=%2F)). Although a lot of the code in this document is fairly advanced and may seem very confusing if you are not an SDS major or have not had much experience with R, but I am hoping that the instructions are clear enough that you can work through the code even with limited knowledge of R. 
+
+If you have questions, feel free to contact me at rosecporta@icloud.com.
+
+# Part 0: Set-Up
+
+This section gets everything set up by loading required packages, reading in the data from past years, and defining functions and objects that we will need later. 
+
+Note: The path to the old data is the relative path within the R project I am currently working in. You may need to change the path in the first chunk below if you have the data stored in a different place. If you do not have the data already saved as a csv file, you can do that first by saving the data in the first sheet of the google sheet "flowchart_data_evolving" as a csv. 
+
+```{r setup, eval=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# load packages
+library(tidyverse)
+library(rvest)
+source(here::here("wbi_colors.R"))
+
+# read in past data
+data_old <- read_csv(here::here("data", "flowchart_data_2022_corrected.csv"))
+```
+
+```{r, eval=FALSE}
+# function to scrape data from one year summary webpage
+scrape_heads_data <- function(url) {
+  if (!robotstxt::paths_allowed(paths = c(url))) stop("scraping not allowed, cannot proceed")
+
+  webpage <- rvest::read_html(url)
+
+  item_number <- webpage |>
+    rvest::html_elements("font:nth-child(1) a:nth-child(2)") |>
+    rvest::html_text()
+  description <- webpage |>
+    rvest::html_elements("#ItemEditForm strong") |>
+    rvest::html_text()
+  tibble(item_number, description)
+}
+
+# function to create a new url for each additional page beyond the first page
+replace_page <- function(pg, url) {
+  pg_char <- as.character(pg)
+  url_split <- str_split(url, "catType")
+  new_url <- paste0(url_split[[1]][[1]], "pg=", pg_char, "&catType", url_split[[1]][[2]])
+}
+
+# function to create all urls for each year
+generate_page_links <- function(num_pg, year) {
+  url <- paste0("https://www.bricklink.com/catalogList.asp?itemYear=", as.character(year), "&catString=238&catType=P")
+  if (num_pg == 1L) {
+    url_list <- as.list(url)
+  } else {
+    pages <- 2L:num_pg
+    url_list <- map(pages, replace_page, url = url)
+    url_list <- c(url, url_list)
+  }
+  url_list
+}
+
+# function to get colors for each head
+get_colors <- function(item_no) {
+  url <- paste0("https://www.bricklink.com/v2/catalog/catalogitem.page?P=", as.character(item_no))
+  suppressMessages(
+    if (!robotstxt::paths_allowed(paths = c(url))) stop("scraping not allowed, cannot proceed")
+  )
+  page <- read_html(url)
+  colors <- page |>
+    html_elements("#_idColorListAll .pciSelectColorColorItem") |>
+    html_attr("data-name")
+  colors[-1]
+}
+```
+
+Note: If you identify new keywords in your process of adding the new data, make sure to add them in the chunk below.
+```{r, eval=FALSE}
+# age keywords
+older_keywords <- c(
+  "age lines", "crow's feet", "wrinkles", "laugh lines", "eye bags", "gray eyebrows", "facial lines",
+  "cheek lines", "forehead lines"
+)
+child_keywords <- c("child", "baby", "toddler")
+
+# gender keywords
+male_keywords <- c(
+  "beard", "goatee", "sideburns", "moustache", "stubble", " male", "mutton chops",
+  "whiskers", "muttonchops", "soul patch", "bushy"
+)
+```
+
+# Part 1: Scrape and Classify New Data
+
+This section scrapes the new head data from the present year and the second half of the previous year (post-summer) and does an initial classification for gender, age, and emotion using keywords in the descriptions.
+
+## Step 1: Fill in Year Info
+
+In the chunk below, you will need to fill in the years and the corresponding numbers of pages:
+
+page_links <- map2(c([Number of Pages for Present Year], [Number of Pages for Last Year]), c([Current Year], [Last Year]), generate_page_links)
+
+In order to find the number of pages, go to bricklink.com -> Parts -> Minifigure, Head -> Year Summary -> Select a year (current or last year) -> the total number of pages will be in the top right corner
+
+Example from 2022:
+You will see: "107 Items Found. Page 1 of 3", so the total number of pages for 2022 is 3 (as of July).
+
+Make sure you do this for both the present year and last year (i.e., if it is currently 2023, do it for 2023 and 2022).
+
+## Step 2: Scrape initial data
+Run the chunk below to scrape the item numbers and descriptions for the new heads
+```{r, eval=FALSE}
+# page links for all present and past year heads
+## FILL IN PAGES AND YEARS BELOW
+page_links <- map2(c(3, 5), c(2022, 2021), generate_page_links) |>
+  purrr::flatten() |>
+  as.character()
+
+# scrape heads data for each page and combine into one
+data_new <- purrr::map(page_links, scrape_heads_data) |>
+  plyr::ldply(bind_rows) |>
+  filter(!(map_lgl(item_number, `%in%`, data_old$item_number))) |> # filters out heads already present in old data
+  filter(!str_detect(tolower(description), "alien")) # filter out non-humans
+```
+
+## Step 2: Add color information
+
+Run the chunk below to scrape color information for each head, filter to only flesh tone colors, group colors to be only in the five categories of Yellow, Light Nougat, Nougat, Medium Nougat, and Reddish brown (the rarer flesh tone colors are not worth creating separate categories for because there are so few of them), and add color codes. The goal of this step is to filter to only human heads and make sure colors are correct, but note that there are a few cases where this doesn't work, such as heads wearing "balaclavas", which have the color listed as the color of the balaclava on bricklink instead of the color of the flesh tone. It is worth taking a brief look through the new data you are adding on bricklink and make corrections if there are any special cases like this. 
+
+```{r, eval=FALSE}
+# scrape color data
+colors <- map(data_new$item_number, get_colors)
+
+# correct colors that are wrong, filter to only flesh tone colors
+data_new <- data_new |>
+  mutate(
+    color = colors,
+    color = case_when(
+      str_detect(description, "Light Nougat Face") ~ list("Light Nougat"),
+      str_detect(description, "Reddish Brown Face") ~ list("Reddish Brown"),
+      str_detect(description, "Yellow Face") ~ list("Yellow"),
+      TRUE ~ color
+    ) ## correct colors for balaclava heads
+  ) |>
+  unnest(cols = color) |>
+  filter(color %in% skin_colors) |>
+  # group rarer colors into 5 main categories, make sure to edit if new colors appear in the new data
+  mutate(color = case_when(
+    color == "Med. Nougat" ~ "Medium Nougat",
+    color == "Med. Brown" | color == "Dark Orange" ~ "Reddish Brown",
+    color == "Tan" ~ "Light Nougat",
+    TRUE ~ color
+  )) |>
+  mutate(color_code = case_when(
+    color == "Yellow" ~ 3,
+    color == "Light Nougat" ~ 90,
+    color == "Nougat" ~ 28,
+    color == "Medium Nougat" ~ 150,
+    color == "Reddish Brown" ~ 88,
+  ))
+```
+
+## Step 3: Classify Gender and Age by Keywords
+
+Run the chunk below to classify gender and age for heads by keywords.
+```{r, eval=FALSE}
+# filter out non-human, classify gender and age based on keywords above
+data_new <- data_new |>
+  mutate(
+    gender = case_when(
+      str_detect(tolower(description), "female") ~ "female",
+      str_detect(tolower(description), paste(male_keywords, collapse = "|")) ~ "male",
+      TRUE ~ "neutral"
+    ),
+    age = case_when(
+      str_detect(tolower(description), paste(older_keywords, collapse = "|")) ~ "older adult",
+      str_detect(tolower(description), paste(child_keywords, collapse = "|")) ~ "child",
+      TRUE ~ "young adult"
+    )
+  )
+```
+
+# Step 4: Classify Expressions by Keywords
+
+Run the chunk below to reformat the data so one row is one expression instead of one row being one unique head (dual sided heads have two expressions) and classify emotions by keywords
+
+```{r, eval=FALSE}
+# pivot so that each row is 1 expression (instead of 1 head, since some are dual-sided)
+data_new_expressions <- data_new |>
+  mutate(expression = str_replace(description, "Baby / Toddler", "Baby")) |>
+  separate(col = expression, into = c("expression1", "expression2"), sep = "/") |>
+  pivot_longer(cols = c("expression1", "expression2"), names_to = "side", values_to = "expression") |>
+  filter(!is.na(expression)) |>
+  mutate(emotion = case_when(
+    str_detect(tolower(expression), "angry|grimace") ~ "angry",
+    str_detect(tolower(expression), "sad|worried|concerned|confused|frown") ~ "sad",
+    str_detect(tolower(expression), "annoyed|scowl|sneer") ~ "annoyed",
+    str_detect(tolower(expression), "evil|vicious") ~ "evil",
+    str_detect(tolower(expression), "scared|terrified") ~ "scared",
+    str_detect(tolower(expression), "sleepy|asleep") ~ "sleepy",
+    str_detect(tolower(expression), "smirk|lopsided grin|raised eyebrow") ~ "smirk",
+    str_detect(tolower(expression), "surprised") ~ "surprised",
+    str_detect(tolower(expression), "smile|grin|happy") ~ "happy",
+    TRUE ~ "neutral"
+  )) |>
+  select(-year, -side, -expression)
+```
+
+## Step 5: Save New Data
+
+Run the chunk below to save your new data into a csv file. Note that the file will save in your current working directory.
+
+```{r, eval=FALSE}
+write_csv(data_new_expressions, "data_new.csv")
+```
+
+# Part 2: Manually Check and Correct New Data in Google Sheets
+
+The process above does a pretty good job of classifying the heads by gender, age, and emotion, but it is not perfect, and there will always be some exceptions. For example, many heads are made for specific characters, and will not have gender identifiers in the description, but will have the name of a character that indicates the gender. In those, cases, the code would incorrectly classify the heads as neutral. To make sure the data is as accurate as possible, this next part will guide you through checking and correcting the data manually.
+
+## Step 1: Import New Data into Google Sheets
+
+- Navigate to the google sheet titled "flowchart_data_evolving"
+- Create a new sheet within the file and name it according to the current year
+- Import your new data that you just saved as a csv to that sheet
+- add a new column to the left of the first column for images (having the images right there helps to quickly identify classification errors)
+
+## Step 2: Add Images
+
+- resize all rows to size 100 to fit images
+- copy the formula from image column of the first sheet within the file "flowchart_heads_2022" to your images column to import the images directly from bricklink (in this sheet, the color code is in column C, but you may have to change that in the formula if your color code column is in a different spot)
+- there may be some images that do not show up since we grouped the rarer colors into the the 5 main color groups, so you may have to check those ones manually by searching for the part on bricklink via the part number
+
+## Step 3: Filter to Neutral Gender and Correct Mistakes
+
+The most likely categories to have mistakes are neutral gender and emotion because these are the "catch-all" categories when no identifying key words are present. So, these are the most important ones to check. 
+
+- To create a filter:
+  - select the column you want to filter by
+  - at the top, select Data -> create a filter
+  - a little filter symbol will then appear on the header of the title you are filtering by. Click on that to select which categories you want to filter to
+  
+Once you have set the neutral gender filter, go through each row and look for mistakes (especially in gender classification, but also in age and emotion). This process may require some subjective judgement to make corrections. 
+During this process, if you notice any patterns in the mis-classifications based on common keywords that were missed
+in the initial classification, make sure to add them in the keyword definitions at the top of this document.
+
+When you are done, remove the gender filter.
+
+## Step 4: Filter to Neutral Emotion and Correct mistakes
+
+Repeat step 3, filtering to neutral emotion instead of neutral gender.
+
+## Step 5: Combine New Data with Old Data
+
+Once you are reasonably confident that the new data is classified accurately, copy all rows from the sheet with your new data and copy them onto the first sheet of the spreadsheet that has all of the past data (make sure the columns are all the same and in the same order first).
+
+Then, download this new updated sheet with all of the data as a csv file.
+
+# Part 3: Compute Aggregate Counts
+
+Now that you have the data updated, you can compute aggregate counts to update the numbers in the flowchart.
+
+## Step 1: Read in the data you just downloaded. Note that you will have to change the path to whatever it is on your computer
+
+```{r, eval=FALSE}
+# Read in new data after manual corrections
+data_all <- read_csv(here::here("data", "flowchart_data_corrected.csv"))
+```
+
+## Step 2: Compute Aggregate Counts
+
+Run the chunk below to compute aggregate counts and proportions
+```{r, eval=FALSE}
+# summarize aggregate counts by gender, age, color, emotion
+flowchart_summary <- data_all |>
+  group_by(gender, age, color, emotion) |>
+  summarize(count = n()) |>
+  ungroup() |>
+  complete(gender, age, color, emotion, fill = list(count = 0)) |>
+  mutate(has_head = ifelse(count > 0, TRUE, FALSE))
+
+# summarize aggregate proportions by age, gender, color
+flowchart_props <- data_all |>
+  group_by(gender, age) |>
+  mutate(total = n()) |>
+  group_by(gender, age, color) |>
+  summarize(count = n(), perc = round(100 * count / total)) |>
+  distinct()
+```
+
+## Step 3: Split the data into separate tables by gender-age category and change format to be the same as the flowchart format
+
+Run the code below to reformat the data and write separate csv files for each category. You can then upload each of these new csvs into google sheets to update the flowchart numbers.
+```{r, eval=FALSE}
+# split aggregate data and make a separate data frame for each gender-age category, pivot to wide format
+data_split <- flowchart_summary |>
+  select(-has_head) |>
+  split(f = list(as.factor(flowchart_summary$gender), as.factor(flowchart_summary$age))) |>
+  map(~ select(.x, -c(gender, age))) |>
+  map(~ pivot_wider(.x, names_from = color, values_from = count))
+
+# write individual csv files to format into flowchart
+map2(data_split, paste0(names(data_split), ".csv"), write_csv)
+```
+
+## Step 4: Create Summary Graphs
+
+Run the code below to create a couple of barcharts summarizing color counts (g1) and percentages (g2) by gender and age.
+```{r, eval=FALSE}
+# barchart of count of each color by gender and age
+g1 <- ggplot(
+  flowchart_summary,
+  aes(
+    x = gender,
+    y = count,
+    fill = factor(color, levels = c("Reddish Brown", "Medium Nougat", "Nougat", "Light Nougat", "Yellow")) # re-order colors
+  )
+) +
+  geom_col() +
+  scale_fill_manual(values = c(
+    "Yellow" = "#f3d000",
+    "Light Nougat" = "#faccae",
+    "Nougat" = "#f8ae79",
+    "Medium Nougat" = "#dd9f55",
+    "Reddish Brown" = "#843419"
+  )) +
+  facet_wrap(~ factor(flowchart_summary$age, levels = c("child", "young adult", "older adult"))) +
+  labs(
+    title = "Minifig Head Color Counts by Gender and Age",
+    x = "Gender",
+    y = "Count",
+    fill = "Color"
+  )
+
+add_logo(g1)
+
+# barchart of percentage of each color by gender and age
+g2 <- ggplot(
+  flowchart_props,
+  aes(
+    x = gender,
+    y = perc,
+    fill = factor(color, levels = c("Reddish Brown", "Medium Nougat", "Nougat", "Light Nougat", "Yellow")) # re-order colors
+  )
+) +
+  geom_col() +
+  facet_wrap(~ factor(flowchart_props$age, levels = c("child", "young adult", "older adult"))) +
+  scale_fill_manual(values = c(
+    "Yellow" = "#f3d000",
+    "Light Nougat" = "#faccae",
+    "Nougat" = "#f8ae79",
+    "Medium Nougat" = "#dd9f55",
+    "Reddish Brown" = "#843419"
+  )) +
+  labs(
+    title = "Minifig Head Color Percentages by Gender and Age (Human Heads Only)",
+    x = "Gender",
+    y = "Percentage",
+    fill = "Color"
+  )
+
+add_logo(g2)
+```
+
+Congrats! You are done! 

@@ -51,7 +51,7 @@ get_colors <- function(item_no){
 }
 
 # page links for all 2022 heads (3 pages in total)
-page_link <- generate_page_links(3, "https://www.bricklink.com/catalogList.asp?itemYear=2022&catString=238&catType=P")
+page_link <- generate_page_links(3, 2022)
 
 # scrape heads data for each page and combine into one
 data_all <- purrr::map(page_link, scrape_heads_data, year = 2022)
@@ -183,7 +183,6 @@ flowchart_summarized <- all |>
 write_csv(all, "flowchart_heads.csv")
 
 
-
 ## 2021
 # page links for all 2021 heads (5 pages in total)
 page_links <- generate_page_links(5, 2021)
@@ -253,9 +252,9 @@ heads_2021 <- dual_sided |>
 # write_csv(heads_2021, "flowchart_heads_2021.csv")
 
 # Read in new data after manual corrections
-
 data_all <- read_csv(here::here("data", "flowchart_data_2022_corrected.csv"))
 
+# summarize aggregate counts by gender, age, color, emotion
 flowchart_summary <- data_all |>
   group_by(gender, age, color, emotion) |>
   summarize(count=n()) |>
@@ -263,6 +262,7 @@ flowchart_summary <- data_all |>
   complete(gender, age, color, emotion, fill = list(count = 0)) |>
   mutate(has_head = ifelse(count>0, TRUE, FALSE))
 
+# summarize aggregate proportions by age, gender, color
 flowchart_props <- data_all |>
   group_by(gender, age) |>
   mutate(total=n()) |>
@@ -272,34 +272,65 @@ flowchart_props <- data_all |>
 
 # write_csv(flowchart_summary, "flowchart_aggregate.csv")
 
+# split aggregate data and make a separate data frame for each gender-age category, pivot to wide format
 data_split <- flowchart_summary |>
   select(-has_head) |>
   split(f = list(as.factor(flowchart_summary$gender), as.factor(flowchart_summary$age))) |>
   map(~select(.x, -c(gender, age))) |>
   map(~pivot_wider(.x, names_from = color, values_from = count))
 
+# write individual csv files to format into flowchart
 map2(data_split, paste0(names(data_split), ".csv"), write_csv)
 
-# graphs
+##  summary graphs
 
-g1 <- ggplot(flowchart_summary, aes(x = gender, y = count, fill = color)) +
+# barchart of count of each color by gender and age
+g1 <- ggplot(flowchart_summary,
+             aes(
+               x = gender,
+               y = count,
+               fill = factor(color, levels = c("Reddish Brown", "Medium Nougat", "Nougat", "Light Nougat", "Yellow")
+                             ) # re-order colors
+               )
+             )+
   geom_col() +
+  scale_fill_manual(values = c("Yellow" = "#f3d000",
+                               "Light Nougat" = "#faccae",
+                               "Nougat" = "#f8ae79",
+                               "Medium Nougat" = "#dd9f55",
+                               "Reddish Brown" = "#843419"
+                               )
+                    )+
   facet_wrap(~factor(flowchart_summary$age, levels = c("child", "young adult", "older adult"))) +
-  scale_fill_skintones() +
-  labs(title = "Minifig Head Counts by Gender, Age, and Color",
+  labs(title = "Minifig Head Color Counts by Gender and Age",
        x = "Gender",
-       y = "Count")
+       y = "Count",
+       fill = "Color")
 
 add_logo(g1)
 
-g2 <- ggplot(flowchart_props, aes(x = gender, y = perc, fill = color)) +
+# barchart of percentage of each color by gender and age
+g2 <- ggplot(flowchart_props,
+             aes(
+               x = gender,
+               y = perc,
+               fill = factor(color, levels = c("Reddish Brown", "Medium Nougat", "Nougat", "Light Nougat", "Yellow")
+                             ) # re-order colors
+               )
+             )+
   geom_col() +
   facet_wrap(~factor(flowchart_props$age, levels = c("child", "young adult", "older adult"))) +
-  scale_fill_skintones() +
-  # scale_fill_manual(values = c("#f3d000", "#faccae", "#f8ae79", "#dd9f55", "#843419")) +
-  labs(title = "Minifig Head Counts by Gender, Age, and Color",
+  scale_fill_manual(values = c("Yellow" = "#f3d000",
+                               "Light Nougat" = "#faccae",
+                               "Nougat" = "#f8ae79",
+                               "Medium Nougat" = "#dd9f55",
+                               "Reddish Brown" = "#843419"
+                               )
+                    ) +
+  labs(title = "Minifig Head Color Percentages by Gender and Age (Human Heads Only)",
        x = "Gender",
-       y = "Percentage")
+       y = "Percentage",
+       fill = "Color")
 
 add_logo(g2)
 
