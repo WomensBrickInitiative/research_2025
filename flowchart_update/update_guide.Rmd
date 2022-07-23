@@ -5,7 +5,6 @@ date: '2022-07-23'
 output: 
   html_document:
     toc: TRUE
-
 ---
 
 # Intro
@@ -14,28 +13,46 @@ The purpose of this document is to help facilitate the process of updating the h
 
 In order to move through this process, you must first have R and R Studio installed (or use the [Smith R Studio Cloud](https://rstudio.smith.edu/auth-sign-in?appUri=%2F)). Although a lot of the code in this document is fairly advanced and may seem very confusing if you are not an SDS major or have not had much experience with R, but I am hoping that the instructions are clear enough that you can work through the code even with limited knowledge of R. 
 
-If you have questions, feel free to contact me at rosecporta@icloud.com.
+If you have questions, feel free to contact me at [rosecporta@icloud.com](mailto:rosecporta@icloud.com). 
 
 # Part 0: Set-Up
 
 This section gets everything set up by loading required packages, reading in the data from past years, and defining functions and objects that we will need later. 
 
-Note: The path to the old data is the relative path within the R project I am currently working in. You may need to change the path in the first chunk below if you have the data stored in a different place. If you do not have the data already saved as a csv file, you can do that first by saving the data in the first sheet of the google sheet "flowchart_data_evolving" as a csv. 
+Before starting, make sure you have R and Studio installed. In order to run the code in this document, you will need to open the .Rmd version (update_guide.Rmd) in R Studio. If you are new to R, here are some helpful links to get you started:
+
+- [install R macOS](https://cran.r-project.org/bin/macosx/)
+- [install R for Windows](https://cran.r-project.org/bin/windows/)
+- [install R Studio](https://www.rstudio.com/products/rstudio/download/)
+- [Helpful page for getting started with R](https://education.rstudio.com/learn/beginner/)
+
+How to run code:
+- Click the green "play" button in the top right corner of a chunk to run all code in the chunk at the same time, or
+- Select the lines of code you want to run and then type cmd+enter for Mac or ctrl+enter for Windows.
+- All dataframes/objects that you create will appear in the "environment" window in the top left corner of R Studio. You can click on their names from there to view them.
+
+Once you feel comfortable navigating R Studio, continue on with the instructions below.
+
+**Note**: You may need to change the path if you have the file wbi_colors.R stored in a different place on your computer.
 
 ```{r setup, eval=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
 # load packages
 library(tidyverse)
 library(rvest)
 source(here::here("wbi_colors.R"))
+```
 
+**Note**: The path to the old data is the relative path within the R project I am currently working in. You may need to change the path in the first chunk below if you have the data stored in a different place. If you do not have the data already saved as a csv file, you can do that first by saving the data in the first sheet of the google sheet "flowchart_data_evolving" as a csv. 
+
+```{r, eval = FALSE}
 # read in past data
 data_old <- read_csv(here::here("data", "flowchart_data_2022_corrected.csv"))
 ```
 
+
 ```{r, eval=FALSE}
-# function to scrape data from one year summary webpage
+# function to scrape item number and descriptions data from one year summary webpage
 scrape_heads_data <- function(url) {
   if (!robotstxt::paths_allowed(paths = c(url))) stop("scraping not allowed, cannot proceed")
 
@@ -84,7 +101,8 @@ get_colors <- function(item_no) {
 }
 ```
 
-Note: If you identify new keywords in your process of adding the new data, make sure to add them in the chunk below.
+**Note**: The following keywords will be used to classify the gender and age of the heads. If you identify new keywords in your process of adding the new data, make sure to add them in the chunk below.
+
 ```{r, eval=FALSE}
 # age keywords
 older_keywords <- c(
@@ -106,7 +124,7 @@ This section scrapes the new head data from the present year and the second half
 
 ## Step 1: Fill in Year Info
 
-In the chunk below, you will need to fill in the years and the corresponding numbers of pages:
+In the chunk below, you will need to fill in the years and the corresponding numbers of pages. You will fill in the parts in brackets like this:
 
 page_links <- map2(c([Number of Pages for Present Year], [Number of Pages for Last Year]), c([Current Year], [Last Year]), generate_page_links)
 
@@ -139,6 +157,7 @@ Run the chunk below to scrape color information for each head, filter to only fl
 
 ```{r, eval=FALSE}
 # scrape color data
+# The line below may take a couple minutes to run
 colors <- map(data_new$item_number, get_colors)
 
 # correct colors that are wrong, filter to only flesh tone colors
@@ -161,7 +180,7 @@ data_new <- data_new |>
     color == "Tan" ~ "Light Nougat",
     TRUE ~ color
   )) |>
-  mutate(color_code = case_when(
+  mutate(color_code = case_when( # add color codes
     color == "Yellow" ~ 3,
     color == "Light Nougat" ~ 90,
     color == "Nougat" ~ 28,

@@ -437,29 +437,51 @@ advanced and may seem very confusing if you are not an SDS major or have
 not had much experience with R, but I am hoping that the instructions
 are clear enough that you can work through the code even with limited
 knowledge of R.</p>
-<p>If you have questions, feel free to contact me at <a href="mailto:rosecporta@icloud.com" class="email">rosecporta@icloud.com</a>.</p>
+<p>If you have questions, feel free to contact me at <a href="mailto:rosecporta@icloud.com">rosecporta@icloud.com</a>.</p>
 </div>
 <div id="part-0-set-up" class="section level1">
 <h1>Part 0: Set-Up</h1>
 <p>This section gets everything set up by loading required packages,
 reading in the data from past years, and defining functions and objects
 that we will need later.</p>
-<p>Note: The path to the old data is the relative path within the R
-project I am currently working in. You may need to change the path in
-the first chunk below if you have the data stored in a different place.
-If you do not have the data already saved as a csv file, you can do that
-first by saving the data in the first sheet of the google sheet
-“flowchart_data_evolving” as a csv.</p>
+<p>Before starting, make sure you have R and Studio installed. In order
+to run the code in this document, you will need to open the .Rmd version
+(update_guide.Rmd) in R Studio. If you are new to R, here are some
+helpful links to get you started:</p>
+<ul>
+<li><a href="https://cran.r-project.org/bin/macosx/">install R
+macOS</a></li>
+<li><a href="https://cran.r-project.org/bin/windows/">install R for
+Windows</a></li>
+<li><a href="https://www.rstudio.com/products/rstudio/download/">install
+R Studio</a></li>
+<li><a href="https://education.rstudio.com/learn/beginner/">Helpful page
+for getting started with R</a></li>
+</ul>
+<p>How to run code: - Click the green “play” button in the top right
+corner of a chunk to run all code in the chunk at the same time, or -
+Select the lines of code you want to run and then type cmd+enter for Mac
+or ctrl+enter for Windows. - All dataframes/objects that you create will
+appear in the “environment” window in the top left corner of R Studio.
+You can click on their names from there to view them.</p>
+<p>Once you feel comfortable navigating R Studio, continue on with the
+instructions below.</p>
+<p><strong>Note</strong>: You may need to change the path if you have
+the file wbi_colors.R stored in a different place on your computer.</p>
 <pre class="r"><code>knitr::opts_chunk$set(echo = TRUE)
-
 # load packages
 library(tidyverse)
 library(rvest)
-source(here::here(&quot;wbi_colors.R&quot;))
-
-# read in past data
+source(here::here(&quot;wbi_colors.R&quot;))</code></pre>
+<p><strong>Note</strong>: The path to the old data is the relative path
+within the R project I am currently working in. You may need to change
+the path in the first chunk below if you have the data stored in a
+different place. If you do not have the data already saved as a csv
+file, you can do that first by saving the data in the first sheet of the
+google sheet “flowchart_data_evolving” as a csv.</p>
+<pre class="r"><code># read in past data
 data_old &lt;- read_csv(here::here(&quot;data&quot;, &quot;flowchart_data_2022_corrected.csv&quot;))</code></pre>
-<pre class="r"><code># function to scrape data from one year summary webpage
+<pre class="r"><code># function to scrape item number and descriptions data from one year summary webpage
 scrape_heads_data &lt;- function(url) {
   if (!robotstxt::paths_allowed(paths = c(url))) stop(&quot;scraping not allowed, cannot proceed&quot;)
 
@@ -506,8 +528,10 @@ get_colors &lt;- function(item_no) {
     html_attr(&quot;data-name&quot;)
   colors[-1]
 }</code></pre>
-<p>Note: If you identify new keywords in your process of adding the new
-data, make sure to add them in the chunk below.</p>
+<p><strong>Note</strong>: The following keywords will be used to
+classify the gender and age of the heads. If you identify new keywords
+in your process of adding the new data, make sure to add them in the
+chunk below.</p>
 <pre class="r"><code># age keywords
 older_keywords &lt;- c(
   &quot;age lines&quot;, &quot;crow&#39;s feet&quot;, &quot;wrinkles&quot;, &quot;laugh lines&quot;, &quot;eye bags&quot;, &quot;gray eyebrows&quot;, &quot;facial lines&quot;,
@@ -530,7 +554,8 @@ descriptions.</p>
 <div id="step-1-fill-in-year-info" class="section level2">
 <h2>Step 1: Fill in Year Info</h2>
 <p>In the chunk below, you will need to fill in the years and the
-corresponding numbers of pages:</p>
+corresponding numbers of pages. You will fill in the parts in brackets
+like this:</p>
 <p>page_links &lt;- map2(c([Number of Pages for Present Year], [Number
 of Pages for Last Year]), c([Current Year], [Last Year]),
 generate_page_links)</p>
@@ -574,6 +599,7 @@ of the flesh tone. It is worth taking a brief look through the new data
 you are adding on bricklink and make corrections if there are any
 special cases like this.</p>
 <pre class="r"><code># scrape color data
+# The line below may take a couple minutes to run
 colors &lt;- map(data_new$item_number, get_colors)
 
 # correct colors that are wrong, filter to only flesh tone colors
@@ -596,7 +622,7 @@ data_new &lt;- data_new |&gt;
     color == &quot;Tan&quot; ~ &quot;Light Nougat&quot;,
     TRUE ~ color
   )) |&gt;
-  mutate(color_code = case_when(
+  mutate(color_code = case_when( # add color codes
     color == &quot;Yellow&quot; ~ 3,
     color == &quot;Light Nougat&quot; ~ 90,
     color == &quot;Nougat&quot; ~ 28,
