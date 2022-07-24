@@ -269,3 +269,110 @@ p <- ggplotly(
 p
 
 htmlwidgets::saveWidget(as_widget(p), "scatterplot_by_era.html")
+
+## Ratios
+
+data1 <- read_csv(here::here("data", "starwars", "plotly1.csv")) |>
+  mutate(ratio = round(num_minifigs/minutes, 2))
+
+ratio_summarized <- data1 |>
+  group_by(gender) |>
+  summarize(median_ratio = median(ratio))
+
+# boxplot of distribution of minifigs:screentime ratio by gender
+b1 <- ggplot(data1,
+             aes(x = gender, y = ratio, fill = gender)
+             )+
+  geom_boxplot(show.legend = FALSE) +
+  scale_fill_wbi() +
+  labs(title = "Distribution of Minifigs:Screen Time Ratios by Gender",
+       x = "Gender",
+       y = "Number of Minifigs Per Minute of Screen Time")
+add_logo(b1)
+
+has_minifig_summarized <- data1 |>
+  group_by(gender) |>
+  mutate(total = n()) |>
+  group_by(gender, has_minifigs) |>
+  summarize(count = n(), perc = round(100*count/total)) |>
+  distinct()
+
+# barchart of percentage of characters with at least 1 minifig by gender
+b2 <- ggplot(has_minifig_summarized,
+             aes(x = gender, y = perc, fill = has_minifigs)
+             ) +
+  geom_col() +
+  scale_fill_manual(values = c(
+    "TRUE" = "#f77f08",
+    "FALSE" = "#999999"
+  )) +
+  labs(title = "Percentage of Characters with at Least 1 Minifig by Gender",
+       x = "Gender",
+       y = "Percentage"
+       )
+add_logo(b2)
+
+percentages_summarized <- data1 |>
+  mutate(total_screentime = sum(minutes),
+         total_minifigs = sum(num_minifigs),
+         total_characters = n()
+         ) |>
+  group_by(gender) |>
+  summarise(screentime_sum = sum(minutes),
+         minifigs_sum = sum(num_minifigs),
+         characters_sum = n(),
+         perc_screentime = round(100*screentime_sum/total_screentime),
+         perc_minifigs = round(100*minifigs_sum/total_minifigs),
+         perc_characters = round(100*characters_sum/total_characters),
+         ) |>
+  distinct() |>
+  select(-c(screentime_sum, characters_sum, minifigs_sum)) |>
+  pivot_longer(cols = -gender, names_to = "type", values_to = "value") |>
+  separate(type, into = c("discard", "type"), sep = "_") |>
+  select(-discard)
+
+b3 <- ggplot(percentages_summarized,
+             aes(x = type, y = value, fill = gender)
+             ) +
+  geom_col() +
+  scale_fill_wbi() +
+  labs(title = "Percentage Breakdown by Gender for Characters, Minifigs, and Screentime",
+       x = "",
+       y = "Percentage",
+       fill = "Gender")
+add_logo(b3)
+
+data2 <- read_csv(here::here("data", "starwars", "plotly2.csv")) |>
+  mutate(ratio = round(num_minifigs/minutes, 2))
+
+percentages_summarized2 <- data2 |>
+  group_by(era) |>
+  mutate(total_screentime = sum(minutes),
+         total_minifigs = sum(num_minifigs),
+         total_characters = n()
+  ) |>
+  group_by(era, gender) |>
+  summarise(screentime_sum = sum(minutes),
+            minifigs_sum = sum(num_minifigs),
+            characters_sum = n(),
+            perc_screentime = round(100*screentime_sum/total_screentime),
+            perc_minifigs = round(100*minifigs_sum/total_minifigs),
+            perc_characters = round(100*characters_sum/total_characters),
+  ) |>
+  distinct() |>
+  select(-c(screentime_sum, characters_sum, minifigs_sum)) |>
+  pivot_longer(cols = -c(gender, era), names_to = "type", values_to = "value") |>
+  separate(type, into = c("discard", "type"), sep = "_") |>
+  select(-discard)
+
+b3b <- ggplot(percentages_summarized2,
+             aes(x = type, y = value, fill = gender)
+) +
+  geom_col() +
+  scale_fill_wbi() +
+  facet_wrap(~era) +
+  labs(title = "Percentage Breakdown by Gender for Characters, Minifigs, and Screentime",
+       x = "",
+       y = "Percentage",
+       fill = "Gender")
+add_logo(b3b)
