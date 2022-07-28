@@ -47,7 +47,7 @@ source(here::here("wbi_colors.R"))
 
 ```{r, eval = FALSE}
 # read in past data
-data_old <- read_csv(here::here("data", "flowchart_data_2022_corrected.csv"))
+data_old <- read_csv(here::here("data", "flowchart", "flowchart_2022_all"))
 ```
 
 
@@ -319,76 +319,19 @@ flowchart_props <- data_all |>
 
 ## Step 3: Split the data into separate tables by gender-age category and change format to be the same as the flowchart format
 
-Run the code below to reformat the data and write separate csv files for each category. You can then upload each of these new csvs into google sheets to update the flowchart numbers.
+Run the code below to reformat the data and write separate csv files for each category. You can then upload each of these new csv files into google sheets to update the flowchart numbers.
 ```{r, eval=FALSE}
 # split aggregate data and make a separate data frame for each gender-age category, pivot to wide format
 data_split <- flowchart_summary |>
   select(-has_head) |>
   split(f = list(as.factor(flowchart_summary$gender), as.factor(flowchart_summary$age))) |>
   map(~ select(.x, -c(gender, age))) |>
-  map(~ pivot_wider(.x, names_from = color, values_from = count))
+  map(~ pivot_wider(.x, names_from = color, values_from = count)) |> 
+  map(~ select(.x, emotion, Yellow, `Light Nougat`, Nougat, `Medium Nougat`, `Reddish Brown`))
 
 # write individual csv files to format into flowchart
 map2(data_split, paste0(names(data_split), ".csv"), write_csv)
 ```
 
-## Step 4: Create Summary Graphs
-
-Run the code below to create a couple of barcharts summarizing color counts (g1) and percentages (g2) by gender and age.
-```{r, eval=FALSE}
-# barchart of count of each color by gender and age
-g1 <- ggplot(
-  flowchart_summary,
-  aes(
-    x = gender,
-    y = count,
-    fill = factor(color, levels = c("Reddish Brown", "Medium Nougat", "Nougat", "Light Nougat", "Yellow")) # re-order colors
-  )
-) +
-  geom_col() +
-  scale_fill_manual(values = c(
-    "Yellow" = "#f3d000",
-    "Light Nougat" = "#faccae",
-    "Nougat" = "#f8ae79",
-    "Medium Nougat" = "#dd9f55",
-    "Reddish Brown" = "#843419"
-  )) +
-  facet_wrap(~ factor(flowchart_summary$age, levels = c("child", "young adult", "older adult"))) +
-  labs(
-    title = "Minifig Head Color Counts by Gender and Age",
-    x = "Gender",
-    y = "Count",
-    fill = "Color"
-  )
-
-add_logo(g1)
-
-# barchart of percentage of each color by gender and age
-g2 <- ggplot(
-  flowchart_props,
-  aes(
-    x = gender,
-    y = perc,
-    fill = factor(color, levels = c("Reddish Brown", "Medium Nougat", "Nougat", "Light Nougat", "Yellow")) # re-order colors
-  )
-) +
-  geom_col() +
-  facet_wrap(~ factor(flowchart_props$age, levels = c("child", "young adult", "older adult"))) +
-  scale_fill_manual(values = c(
-    "Yellow" = "#f3d000",
-    "Light Nougat" = "#faccae",
-    "Nougat" = "#f8ae79",
-    "Medium Nougat" = "#dd9f55",
-    "Reddish Brown" = "#843419"
-  )) +
-  labs(
-    title = "Minifig Head Color Percentages by Gender and Age (Human Heads Only)",
-    x = "Gender",
-    y = "Percentage",
-    fill = "Color"
-  )
-
-add_logo(g2)
-```
 
 Congrats! You are done! 

@@ -289,7 +289,12 @@ heads_2021 <- dual_sided |>
 # write_csv(heads_2021, "flowchart_heads_2021.csv")
 
 # Read in new data after manual corrections
-data_all <- read_csv(here::here("data", "flowchart_data_2022_corrected.csv"))
+data_all <- read_csv(here::here("data", "flowchart_data_2022_corrected.csv")) |>
+  mutate(emotion = case_when(
+    emotion == "smile" ~ "happy",
+    emotion == "frown" ~ "sad",
+    TRUE ~ emotion
+  ))
 
 # summarize aggregate counts by gender, age, color, emotion
 flowchart_summary <- data_all |>
@@ -591,6 +596,7 @@ p8 <- ggplot(gender_color, aes(
 p8
 
 # get year info
+data_all2 <- data_all
 
 data_all2 <- data_all2 |>
   mutate(link = paste0("https://www.bricklink.com/v2/catalog/catalogitem.page?P=", item_number))
@@ -603,9 +609,9 @@ release_year <- release_year |>
 
 # add release years to data, filter out NAs (109)
 data_all3 <- data_all2 |>
-  mutate(release_year = release_year) |>
-  filter(release_year != "NA") |>
-  mutate(release_year = as.numeric(release_year))
+  mutate(release_year = release_year) #|>
+  # filter(release_year != "NA") |>
+  # mutate(release_year = as.numeric(release_year))
 
 data_all3 <- data_all3 |>
   select(-emotion) |>
@@ -726,3 +732,17 @@ l4 <- ggplot(gender_summarized, aes(
     color = "Gender"
   )
 add_logo(l4)
+
+
+## create individual sheets for options for each category
+# split data and make a separate data frame for each gender-age category, pivot to wide format
+data_split <- data_all3 |>
+  split(f = list(as.factor(data_all3$gender), as.factor(data_all3$age))) |>
+  map(~ select(.x, -c(gender, age)))
+
+# write individual csv files to format into flowchart
+map2(data_split, paste0(names(data_split), ".csv"), write_csv)
+
+
+write_csv(data_all3, "flowchart_2022_all")
+

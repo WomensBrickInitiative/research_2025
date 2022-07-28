@@ -2,12 +2,10 @@ emotion,Light Nougat,Medium Nougat,Nougat,Reddish Brown,Yellow
 angry,0,0,0,0,0
 annoyed,0,0,0,0,0
 evil,0,0,0,0,0
-frown,0,0,0,0,0
-happy,1,0,0,0,0
+happy,1,0,1,0,0
 neutral,0,0,0,0,0
 sad,0,0,1,0,0
 scared,1,0,0,0,0
 sleepy,0,0,0,0,0
-smile,0,0,1,0,0
 smirk,0,0,0,0,0
 surprised,0,0,0,0,0
