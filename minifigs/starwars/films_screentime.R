@@ -105,7 +105,8 @@ screentime_summarized <- screentime |>
 
 # dataset for making bar chart comparing minifig&character count by gender
 count_summarized <- screentime_summarized |>
-  filter(type != "screentime_hours")
+  filter(type != "screentime_hours") |>
+  mutate(type = ifelse(type == "count_gender", "characters", "minifigs"))
 
 # Bar chart to compare minifig count & character count by gender
 g1 <- ggplot(count_summarized, aes(x = type, y = value, fill = gender)) +
@@ -118,7 +119,7 @@ g1 <- ggplot(count_summarized, aes(x = type, y = value, fill = gender)) +
     y = "Count",
     fill = "Gender"
   )
-add_logo(g1)
+g1
 
 # Bar chart to compare screentime by gender
 g2 <- ggplot(filter(screentime_summarized, type == "screentime_hours"), aes(x = gender, y = value, fill = gender)) +
@@ -127,10 +128,12 @@ g2 <- ggplot(filter(screentime_summarized, type == "screentime_hours"), aes(x = 
   scale_fill_wbi() +
   labs(
     title = "Star Wars Screentime Distribution by Gender",
-    x = "Gender",
-    y = "Screentime (hours)"
-  )
-add_logo(g2)
+    x = "Screen Time",
+    y = "Hours"
+  ) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+g2
 
 # Group by Eras
 screentime <- read_csv(here::here("data", "starwars", "starwars_screentime.csv"))
