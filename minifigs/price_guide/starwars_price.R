@@ -67,3 +67,5 @@ prices <- map(starwars_price$price_guide_link, get_price)
 starwars_price <- starwars_price |>
   mutate(price_info = prices) |>
   unnest_wider(col = price_info)
+
+write_csv(starwars_price, "starwars_price.csv")
