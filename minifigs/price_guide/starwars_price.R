@@ -7,6 +7,15 @@ starwars_minifigs <- read_csv(here::here("data", "starwars", "starwars_mainfilms
 starwars_price <- starwars_minifigs |>
   mutate(price_guide_link=paste0("https://www.bricklink.com/catalogPG.asp?M=",item_number))
 
+get_past_used_avg <- function(url){
+  item_page <- rvest::read_html(url)
+  past_used_avg <- item_page |>
+    html_elements("td:nth-child(2) tr:nth-child(4) b") |>
+    html_text()
+  past_used_avg <- past_used_avg[1]
+  tibble(past_used_avg)
+}
+
 get_price <- function(url){
   item_page <- rvest::read_html(url)
   past_used_avg <- item_page |>
@@ -72,14 +81,22 @@ get_price <- function(url){
 test <- get_price("https://www.bricklink.com/catalogPG.asp?M=sw0327")
 test2 <- get_price(starwars_price$price_guide_link[[8]])
 test3 <- get_price("https://www.bricklink.com/catalogPG.asp?M=sw0349")
+test4 <- get_past_used_avg("https://www.bricklink.com/catalogPG.asp?M=sw0327")
 
 # Vector to store 12 prices scraped in a list of dataframe
 prices <- map(starwars_price$price_guide_link, get_price)
+prices <- prices |>
+  plyr::ldply(bind_rows)
+
+prices2 <- map(starwars_price$price_guide_link[1:10], get_past_used_avg)
+prices2 <- prices2 |>
+  plyr::ldply(bind_rows)
 
 # Add parts_info to sets_data and unnest so that each row is a part of the minifig
 starwars_price <- starwars_price |>
-  mutate(price_info = prices) |>
-  unnest(cols = price_info)
+  bind_cols(prices)
+  #mutate(price_info = prices) |>
+  #unnest(cols = price_info)
   # the unnest for list (instead of tibble/dataframe)
   # unnest_wider(col = price_info)
 
