@@ -87,3 +87,105 @@ clone_wars <- clone_wars_summarized |>
   mutate(num_minifigs = num_minifigs)
 
 write_csv(clone_wars, "clone_wars.csv")
+
+### Analysis
+
+clone_wars <- read_csv(here::here("data", "starwars", "clone_wars.csv")) |>
+  filter(gender != "No idea who this is")
+
+
+# dataset for making bar chart comparing screentime by gender
+screentime_summarized <- clone_wars |>
+  select(gender, num_minifigs, minutes) |>
+  group_by(gender) |>
+  summarize(count_gender = n(), time_gender = sum(minutes), count_minifigs = sum(num_minifigs)) |>
+  mutate(screentime_hours = round(time_gender / 60, 2)) |>
+  pivot_longer(cols = c(count_gender, count_minifigs, screentime_hours), names_to = "type", values_to = "value")
+
+# dataset for making bar chart comparing minifig&character count by gender
+count_summarized <- screentime_summarized |>
+  filter(type != "screentime_hours") |>
+  mutate(type = ifelse(type == "count_gender", "characters", "minifigs"))
+
+# Bar chart to compare minifig count & character count by gender
+g1 <- ggplot(count_summarized, aes(x = type, y = value, fill = gender)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = value), position = position_dodge(width = 1), vjust = -0.2) +
+  scale_fill_wbi() +
+  labs(
+    title = "Minifigs Count versus Character Count by Gender",
+    x = "",
+    y = "Count",
+    fill = "Gender"
+  )
+g1
+
+# Bar chart to compare screentime by gender
+g2 <- ggplot(filter(screentime_summarized, type == "screentime_hours"), aes(x = gender, y = value, fill = gender)) +
+  geom_col(show.legend = FALSE) +
+  geom_text(aes(label = value), vjust = 0) +
+  scale_fill_wbi() +
+  labs(
+    title = "Screentime Distribution by Gender",
+    x = "Screen Time",
+    y = "Hours"
+  ) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+g2
+
+# compute gender percentages for screentime, characters, and minifigs--main films
+percentages_summarized <- clone_wars |>
+  mutate(
+    total_screentime = sum(minutes),
+    total_minifigs = sum(num_minifigs),
+    total_characters = n()
+  ) |>
+  group_by(gender) |>
+  summarise(
+    screentime_sum = sum(minutes),
+    minifigs_sum = sum(num_minifigs),
+    characters_sum = n(),
+    perc_screentime = round(100 * screentime_sum / total_screentime),
+    perc_minifigs = round(100 * minifigs_sum / total_minifigs),
+    perc_characters = round(100 * characters_sum / total_characters),
+  ) |>
+  distinct() |>
+  select(-c(screentime_sum, characters_sum, minifigs_sum)) |>
+  pivot_longer(cols = -gender, names_to = "type", values_to = "value") |>
+  separate(type, into = c("discard", "type"), sep = "_") |>
+  select(-discard)
+
+# barchart comparing gender percentages for screentime, characters, and minifigs
+b3 <- ggplot(
+  percentages_summarized,
+  aes(x = type, y = value, fill = gender)
+) +
+  geom_col() +
+  scale_fill_wbi() +
+  labs(
+    title = "Percentage Breakdown by Gender for Characters, Minifigs, and Screentime",
+    x = "",
+    y = "Percentage",
+    fill = "Gender"
+  )
+add_logo(b3)
+
+library(plotly)
+# screen tiem vs number of minifigs scatterplot
+p <- ggplotly(
+  ggplot(clone_wars, aes(x = minutes, y = num_minifigs, color = gender, text = paste("Name:", character, "\n#Minifigs:", num_minifigs, "\nScreentime:", minutes, "\nSpecies:", species))) +
+    geom_jitter(alpha = 0.5) +
+    # geom_smooth() + not working
+    scale_color_wbi() +
+    labs(
+      title = "Relationship between Screentime and Number of Minifigs (Clone Wars)",
+      x = "Screentime (minutes)",
+      y = "Number of Minifigs",
+      color = "Gender"
+    ),
+  tooltip = "text"
+)
+p
+
+htmlwidgets::saveWidget(as_widget(p), "scatterplot_clone_wars.html")

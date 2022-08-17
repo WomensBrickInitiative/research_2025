@@ -90,3 +90,16 @@ g2 <- ggplot(bobafett_time_summarized, aes(x = reorder(character, minutes), y = 
        fill = "Has a minifig in the Boba Fett Category?") +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 g2
+
+boba_fett <- read_csv(here::here("data", "starwars", "boba_fett.csv"))
+
+# barchart of screentime by gender
+g3 <- ggplot(boba_fett, aes(x = reorder(character, minutes), y = minutes, fill = gender)) +
+  geom_col() +
+  coord_flip() +
+  scale_fill_wbi() +
+  labs(title = "",
+       x = "Character",
+       y = "Screen Time (minutes)",
+       fill = "Gender")
+g3

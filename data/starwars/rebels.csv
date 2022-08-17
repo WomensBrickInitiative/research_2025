@@ -1,0 +1,40 @@
+character,seconds,minutes,num_minifigs,has_minifig,gender,species
+Ahsoka Tano,607,10.12,1,TRUE,Female,Togruta
+Alexsandr Kallus,1245,20.75,2,TRUE,Male,Human
+Azmorigan,301,5.02,0,FALSE,Male,Scumbag
+Bail Organa,57,0.95,0,FALSE,Male,Human
+Brom Titus,183,3.05,0,FALSE,Male,Human
+C-3PO,280,4.67,0,FALSE,Male,droid
+Chopper,3653,60.88,1,TRUE,Male,Grumpy
+Cikatro Vizago,380,6.33,0,FALSE,Male,Devaronian
+Darth Vader,379,6.32,1,TRUE,Male,Human
+Ezra Bridger,12992,216.53,2,TRUE,Male,Human
+Fifth Brother,444,7.4,1,TRUE,Male,Nope
+Gregor,400,6.67,1,TRUE,Male,Human
+Hera Syndulla,5356,89.27,1,TRUE,Female,Twi'lek
+Hondo Ohnaka,558,9.3,0,FALSE,Male,Weequay
+Jai Kell,295,4.92,0,FALSE,Male,Human
+Jho,99,1.65,0,FALSE,Male,Ithorian
+Jun Sato,362,6.03,1,TRUE,Male,Human
+Kanan Jarrus,8748,145.8,3,TRUE,Male,Human
+Kassius Konstantine,290,4.83,0,FALSE,Male,Human
+Ketsu Onyo,466,7.77,0,FALSE,Female,Human
+Lando Calrissian,562,9.37,0,FALSE,Male,Human
+Leia,522,8.7,0,FALSE,Female,Human
+Luminara Unduli,38,0.63,0,FALSE,Female,Mirialan
+Maketh Tua,554,9.23,0,FALSE,Female,Human
+Marida Sumar,40,0.67,0,FALSE,Female,Human
+Morad Sumar,78,1.3,0,FALSE,Male,Human
+Obi-Wan Kenobi,21,0.35,0,FALSE,Male,Ewan
+R2-D2,267,4.45,0,FALSE,Male,Droid
+Rex,1454,24.23,1,TRUE,Male,Human
+Ryder Azadi,353,5.88,0,FALSE,Male,Human
+Sabine Wren,6247,104.12,2,TRUE,Female,Human
+Seventh Sister,551,9.18,0,FALSE,Female,Mirialan
+The Grand Inquisitor,1119,18.65,0,FALSE,Male,Pau'an
+Valen Rudor,148,2.47,0,FALSE,Male,Human
+White Loth-cat,80,1.33,0,FALSE,NA,cat
+Wilhuff Tarkin,393,6.55,1,TRUE,Male,Human
+Wolffe,344,5.73,1,TRUE,Male,Human
+Yogar Lyste,284,4.73,0,FALSE,Male,Human
+Zeb Orrelios,5552,92.53,1,TRUE,Male,Lasat
