@@ -11,9 +11,11 @@ This repository contains all of the data used in our analyses as well as the R c
 
 LUGBULK is a system through which Recognized Lego Communities (commonly known as LUGS), which are groups of LEGO fans who generally assemble in the same geographic region, have the opportunity to purchase LEGO parts in bulk yearly. Because the parts are purchased in bulk, they are less expensive than they would be to purchase individually. Many of the parts available are minifigure parts, including hair, heads, torsos, legs, and accessories.
 
+#### Data
+
 Since WBI is a Recognized LEGO Community, we had access to information about all of the available parts for each year from 2015-2022. The data for this project is not included in the repository, as it is not publicly available. 
 
-This project has two parts:
+#### Articles
 
 - Is LEGO Putting a Price on Diversity? An exploration of LUGBULK, where cheap LEGOs are bought in bulk (Part 1: Minifig Heads)
 
@@ -23,5 +25,8 @@ We conducted an analysis on gender equity and flesh tone diversity in minifig he
 
 We conducted an analysis comparing the number of female wigs to the number of male wigs available as well as comparing the price distributions for female versus male wigs in 2022. We found that the number of wigs was fairly gender-equitable, yet female wigs were surprisingly more expensive than male wigs.
 
+#### Code
+The code relating to this project is in [lugbulk_parts](https://github.com/rporta23/WBI/tree/main/lugbulk_parts)
 
+### Analysis of Representation in Professions
 
