@@ -416,6 +416,32 @@ Counts</a></li>
 3: Split the data into separate tables by gender-age category and change
 format to be the same as the flowchart format</a></li>
 </ul></li>
+<li><a href="#part-4-assemble-flowchart-in-lucidchart" id="toc-part-4-assemble-flowchart-in-lucidchart">Part 4: Assemble
+Flowchart in LucidChart</a>
+<ul>
+<li><a href="#step-1-create-a-new-google-sheets-document-and-import-each-csv-file-as-a-new-tab-in-the-same-order-as-the-flowchart-is-in-female-child-female-young-adult-female-older-adult-neutral-child-neutral-young-adult-neutral-older-adult-male-child-male-young-adult-male-older-adult." id="toc-step-1-create-a-new-google-sheets-document-and-import-each-csv-file-as-a-new-tab-in-the-same-order-as-the-flowchart-is-in-female-child-female-young-adult-female-older-adult-neutral-child-neutral-young-adult-neutral-older-adult-male-child-male-young-adult-male-older-adult.">Step
+1: Create a new google sheets document and import each csv file as a new
+tab in the same order as the flowchart is in (female child, female young
+adult, female older adult, neutral child, neutral young adult, neutral
+older adult, male child, male young adult, male older adult).</a></li>
+<li><a href="#step-2-ask-alice-to-give-you-access-to-the-lucidchart-document-from-last-year" id="toc-step-2-ask-alice-to-give-you-access-to-the-lucidchart-document-from-last-year">Step
+2: Ask Alice to give you access to the LucidChart document from last
+year</a></li>
+<li><a href="#step-3-transfer-all-pieces-of-flowchart-to-wordpress-and-assemble-together" id="toc-step-3-transfer-all-pieces-of-flowchart-to-wordpress-and-assemble-together">Step
+3: Transfer all pieces of flowchart to WordPress and assemble
+together</a></li>
+</ul></li>
+<li><a href="#part-5-create-google-sheets-for-options-for-each-category" id="toc-part-5-create-google-sheets-for-options-for-each-category">Part
+5: Create Google Sheets for Options for Each Category</a>
+<ul>
+<li><a href="#step-1-run-the-following-code-chunk-to-split-the-full-options-data-set-into-separate-files-for-each-gender-age-category." id="toc-step-1-run-the-following-code-chunk-to-split-the-full-options-data-set-into-separate-files-for-each-gender-age-category.">Step
+1: Run the following code chunk to split the full options data set into
+separate files for each gender-age category.</a></li>
+<li><a href="#step-2-import-into-google-sheets" id="toc-step-2-import-into-google-sheets">Step 2 Import into google
+sheets</a></li>
+</ul></li>
+<li><a href="#part-6-summary-graphs" id="toc-part-6-summary-graphs">Part
+6: Summary Graphs</a></li>
 </ul>
 </div>
 
@@ -777,15 +803,7 @@ flowchart_summary &lt;- data_all |&gt;
   summarize(count = n()) |&gt;
   ungroup() |&gt;
   complete(gender, age, color, emotion, fill = list(count = 0)) |&gt;
-  mutate(has_head = ifelse(count &gt; 0, TRUE, FALSE))
-
-# summarize aggregate proportions by age, gender, color
-flowchart_props &lt;- data_all |&gt;
-  group_by(gender, age) |&gt;
-  mutate(total = n()) |&gt;
-  group_by(gender, age, color) |&gt;
-  summarize(count = n(), perc = round(100 * count / total)) |&gt;
-  distinct()</code></pre>
+  mutate(has_head = ifelse(count &gt; 0, TRUE, FALSE))</code></pre>
 </div>
 <div id="step-3-split-the-data-into-separate-tables-by-gender-age-category-and-change-format-to-be-the-same-as-the-flowchart-format" class="section level2">
 <h2>Step 3: Split the data into separate tables by gender-age category
@@ -803,8 +821,90 @@ data_split &lt;- flowchart_summary |&gt;
 
 # write individual csv files to format into flowchart
 map2(data_split, paste0(names(data_split), &quot;.csv&quot;), write_csv)</code></pre>
-<p>Congrats! You are done!</p>
 </div>
+</div>
+<div id="part-4-assemble-flowchart-in-lucidchart" class="section level1">
+<h1>Part 4: Assemble Flowchart in LucidChart</h1>
+<p>The output of the previous code chunk will write 9 csv files (one for
+each category) into your current working directory. Unfortunately, we
+have not yet found a way to import these directly into LucidChart, so I
+will outline our process of transferring the data, but if you find a
+faster way, do that!</p>
+<div id="step-1-create-a-new-google-sheets-document-and-import-each-csv-file-as-a-new-tab-in-the-same-order-as-the-flowchart-is-in-female-child-female-young-adult-female-older-adult-neutral-child-neutral-young-adult-neutral-older-adult-male-child-male-young-adult-male-older-adult." class="section level2">
+<h2>Step 1: Create a new google sheets document and import each csv file
+as a new tab in the same order as the flowchart is in (female child,
+female young adult, female older adult, neutral child, neutral young
+adult, neutral older adult, male child, male young adult, male older
+adult).</h2>
+<p>This is not a formal document that you will publish; it just makes it
+easier to transfer the data.</p>
+</div>
+<div id="step-2-ask-alice-to-give-you-access-to-the-lucidchart-document-from-last-year" class="section level2">
+<h2>Step 2: Ask Alice to give you access to the LucidChart document from
+last year</h2>
+<p>Once you have access, you can make copies of each of the pages (we
+have a separate page for each category that we assembled together at the
+end) and change the numbers and colors manually by copy-pasting from the
+google sheets created in Step 1.</p>
+</div>
+<div id="step-3-transfer-all-pieces-of-flowchart-to-wordpress-and-assemble-together" class="section level2">
+<h2>Step 3: Transfer all pieces of flowchart to WordPress and assemble
+together</h2>
+<p>See the article published from last year for formatting</p>
+</div>
+</div>
+<div id="part-5-create-google-sheets-for-options-for-each-category" class="section level1">
+<h1>Part 5: Create Google Sheets for Options for Each Category</h1>
+<p>If you look at the article from last year, you will see how each
+category in the flowchart includes a link to the data containing all
+options for that category. This step will walk you through how to
+recreate that.</p>
+<div id="step-1-run-the-following-code-chunk-to-split-the-full-options-data-set-into-separate-files-for-each-gender-age-category." class="section level2">
+<h2>Step 1: Run the following code chunk to split the full options data
+set into separate files for each gender-age category.</h2>
+<pre class="r"><code>## create individual sheets for options for each category
+# split data and make a separate data frame for each gender-age category, pivot to wide format
+data_split &lt;- data_all |&gt;
+  split(f = list(as.factor(data_all$gender), as.factor(data_all$age))) |&gt;
+  map(~ select(.x, -c(gender, age)))
+
+# write individual csv files to format into flowchart
+map2(data_split, paste0(names(data_split), &quot;.csv&quot;), write_csv)</code></pre>
+<p>Similarly to the previous part, this code will write 9 csv files to
+your current working directory (one for each category), which you can
+then import to google sheets.</p>
+</div>
+<div id="step-2-import-into-google-sheets" class="section level2">
+<h2>Step 2 Import into google sheets</h2>
+<ul>
+<li>Create a new google sheet and make sure the share setting is “anyone
+with the link”.</li>
+<li>Then, create 9 tabs, one for each category, similarly to what we did
+in the previous step for the counts. Again, make sure the order is the
+same as it is in the flowchart. See <a href="https://docs.google.com/spreadsheets/d/1YZA4xkA7eoxA5f0Z3ZDWQrdcRHT3QF7DVy_ONdqfvNA/edit?usp=sharing">flowchart_options_2022</a>
+to see the formatting. (Alternatively, you could make a copy of that
+sheet and replace the data with your new data).</li>
+<li>When you import the data, all values in the image column will be NA.
+In order to fill in the images, delete all of the NAs, then apply the
+image formula to all cells (see the previously linked sheet for the
+image formula)</li>
+<li>resize all rows to 100 so that the images are visible</li>
+<li>Add one extra tab at the beginning, name it options_all, and copy
+all of the updated data from the flowchart_data_evolving google sheet
+into that tab so users can see all options at once if they don’t want
+them separated by gender-age category.</li>
+<li>When you format the flowchart in WordPress, you will link to this
+sheet you just created so that if the users want to go beyond the
+numbers they see in the chart and see the actual options, it is super
+easy.</li>
+</ul>
+</div>
+</div>
+<div id="part-6-summary-graphs" class="section level1">
+<h1>Part 6: Summary Graphs</h1>
+<p>If you want to make summary graphs to go along with the flowchart,
+see the heads_2022.R file for ideas.</p>
+<p>Congrats! You are done!</p>
 </div>
 
 
