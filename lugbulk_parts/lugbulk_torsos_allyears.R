@@ -117,3 +117,51 @@ torsos_na <- torsos_not_complete |>
 write_csv(torsos_not_complete, "torsos_not_complete.csv")
 
 write_csv(torsos_na, "torsos_na.csv")
+
+## After manual filling in of genders by Alice
+
+# genders filled in
+na_complete <- read_csv(here::here("torsos_na_completed.csv")) |>
+  select(item_id, gender, year, search_link)
+
+# torsos where we had descriptions from before
+part1 <- read_csv(here::here("torsos_not_complete.csv")) |>
+  filter(!is.na(description)) |>
+  select(item_id, description, year, search_link) |>
+  mutate(
+    gender = case_when( # gender classification based on keywords
+      str_detect(description, "Female|Necklace|Halter") ~ "f",
+      str_detect(description, "Male|King|SW|Santa|Tie|Tunic|No Shirt") ~ "m",
+      TRUE ~ "n"
+    )
+  ) |>
+  select(item_id, gender, year, search_link)
+
+# combine torsos classified by Alice with torsos classified by string detect
+torsos_all <- part1 |>
+  bind_rows(na_complete) |>
+  mutate(gender = case_when(
+    tolower(gender) == "f" | item_id == "6116697" ~ "female",
+    tolower(gender) == "m" | item_id == "6022406" ~ "male",
+    tolower(gender) == "n" ~ "neutral"
+    )
+  ) |>
+  filter(item_id != "6218204")
+
+# summarize gender counts by year
+torsos_summarized <- torsos_all |>
+  group_by(gender, year) |>
+  summarise(count = n())
+
+# line graph of counts over time by gender
+g1 <- ggplot(torsos_summarized, aes(x = year, y = count, color = gender)) +
+  geom_line() +
+  geom_point() +
+  scale_color_wbi() +
+  labs(title = "LUGBULK Torso Counts By Gender Over Time (2015-2022)",
+         x = "Year",
+         y = "Count",
+         color = "Gender"
+         )
+
+add_logo(g1)
