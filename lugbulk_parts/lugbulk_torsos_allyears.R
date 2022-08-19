@@ -165,3 +165,25 @@ g1 <- ggplot(torsos_summarized, aes(x = year, y = count, color = gender)) +
          )
 
 add_logo(g1)
+
+# write completed torso data
+
+write_csv(torsos_all, "torsos_completed.csv")
+
+# unique torsos
+torsos_unique <- torsos_all |>
+  select(-year) |>
+  distinct() |>
+  group_by(gender) |>
+  summarise(count = n())
+
+g2 <- ggplot(torsos_unique, aes(x = reorder(gender, count), y = count, fill = gender)) +
+  geom_col(show.legend = FALSE) +
+  scale_fill_wbi() +
+  geom_text(aes(label = count), vjust = 0) +
+  labs(title = "Gender Distribution of Unique LUGBULK Torsos (2015-2022)",
+       x = "Gender",
+       y = "Count"
+       )
+
+add_logo(g2)
