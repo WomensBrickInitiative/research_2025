@@ -362,12 +362,12 @@ Similarly to the previous part, this code will write 9 csv files to your current
 
 ## Step 2 Import into google sheets
 
-- Create a new google sheet and make sure the share setting is "anyone with the link". 
+- Create a new google sheet and make sure the share setting is "anyone with the link can view" (make sure it is NOT anyone with the link can edit!). 
 - Then, create 9 tabs, one for each category, similarly to what we did in the previous step for the counts. Again, make sure the order is the same as it is in the flowchart. See [flowchart_options_2022](https://docs.google.com/spreadsheets/d/1YZA4xkA7eoxA5f0Z3ZDWQrdcRHT3QF7DVy_ONdqfvNA/edit?usp=sharing) to see the formatting. (Alternatively, you could make a copy of that sheet and replace the data with your new data). 
 - When you import the data, all values in the image column will be NA. In order to fill in the images, delete all of the NAs, then apply the image formula to all cells (see the previously linked sheet for the image formula)
 - resize all rows to 100 so that the images are visible
 - Add one extra tab at the beginning, name it options_all, and copy all of the updated data from the flowchart_data_evolving google sheet into that tab so users can see all options at once if they don't want them separated by gender-age category. 
-- When you format the flowchart in WordPress, you will link to this sheet you just created so that if the users want to go beyond the numbers they see in the chart and see the actual options, it is super easy. 
+- When you format the flowchart in WordPress, you will link to this sheet you just created so that if the users want to go beyond the numbers they see in the chart and see the actual options, it is super easy. In order to get the links for each tab specifically, copy the url directly for each tab (not the sharing link, the actual link that is in the search bar when the tab is open). 
 
 # Part 6: Summary Graphs
 
