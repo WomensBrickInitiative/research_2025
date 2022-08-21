@@ -1,1 +1,1 @@
-window.location.href = "https://suobset.github.io/iCons/iCons1-CS2"
+window.location.href = "https://rporta23.github.io/WBI/flowchart_update/update_guide.html"
