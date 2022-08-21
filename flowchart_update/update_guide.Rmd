@@ -19,7 +19,7 @@ If you have questions, feel free to contact me at [rosecporta@icloud.com](mailto
 
 This section gets everything set up by loading required packages, reading in the data from past years, and defining functions and objects that we will need later. 
 
-Before starting, make sure you have R and Studio installed. In order to run the code in this document, you will need to open the .Rmd version (update_guide.Rmd) in R Studio. If you are new to R, here are some helpful links to get you started:
+Before starting, make sure you have R and Studio installed. In order to run the code in this document, you will need to download the [R Markdown version](https://github.com/rporta23/WBI/blob/main/flowchart_update/update_guide.Rmd) and open it in R Studio. If you are new to R, here are some helpful links to get you started:
 
 - [install R macOS](https://cran.r-project.org/bin/macosx/)
 - [install R for Windows](https://cran.r-project.org/bin/windows/)
