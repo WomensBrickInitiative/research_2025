@@ -163,3 +163,9 @@ A dataset containing information about heads of ninjago minifigs and how frequen
 
 <b>Source</b>:
 [BrickLink](https://www.bricklink.com/catalogTree.asp?itemType=M)
+
+### starwars
+
+Sub-folder containing data relating to analysis of screen time versus number of minifigs for Star Wars characters. For more information about individual files, contact [rosecporta@icloud.com](mailto: rosecporta@icloud.com)
+
+
