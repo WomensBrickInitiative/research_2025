@@ -1,6 +1,6 @@
 ## Data
 
-* [minifigs_data.csv](https://github.com/rporta23/WBI/blob/main/data/minifigs_data.csv)
+### [minifigs_data.csv](https://github.com/rporta23/WBI/blob/main/data/minifigs_data.csv)
     is a dataset containing information about all minifigs on BrickLink
     as of May 2022.
 
@@ -24,7 +24,7 @@ possible. The process for creating it was a bit convoluted because of
 BrickLink's quotas for scraping, but may be easier to update if you can
 avoid scraping everything from scratch again.
 
-* [categories.csv](https://github.com/rporta23/WBI/blob/main/data/categories.csv) is an intermediary dataset used in the process of creating
+### [categories.csv](https://github.com/rporta23/WBI/blob/main/data/categories.csv) is an intermediary dataset used in the process of creating
     [minifigs_data.csv](https://github.com/rporta23/WBI/blob/main/data/minifigs_data.csv).
     It contains the links to each individual page of each minifig
     category on BrickLink.
@@ -47,7 +47,7 @@ columns
 <b>Notes</b>: I never used this directly for analysis, but useful as an
 intermediary to scrape minifig data.
 
-* [category_counts.csv](https://github.com/rporta23/WBI/blob/main/data/category_counts.csv)
+### [category_counts.csv](https://github.com/rporta23/WBI/blob/main/data/category_counts.csv)
     is an intermediary dataset used in the process of creating
     [minifigs_data.csv](https://github.com/rporta23/WBI/blob/main/data/minifigs_data.csv).
     It contains information about each broad minifig category on
