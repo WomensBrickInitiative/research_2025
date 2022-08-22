@@ -73,3 +73,31 @@ an intermediary dataset used in the process of creating
 
 <b>Notes</b>: I never used this directly for analysis, but useful as an
 intermediary to scrape minifig data.
+
+### [flowchart](https://github.com/rporta23/WBI/tree/main/data/flowchart)
+
+Folder containing data for the 2022 head flowchart. 
+
+#### [flowchart_data_2022_corrected.csv](https://github.com/rporta23/WBI/tree/main/data/flowchart/flowchart_data_2022_corrected.csv) 
+
+Dataset containing all head options up to summer 2022.
+
+<b>Dimensions:</b> 3300 rows (one row = one expression), 8 columns
+
+<b>Variables</b>
+  * <i>image</i> (placeholder column to insert images in google sheets) 
+  * <i>item_numbery</i> (BrickLink item number)
+  * <i>color_code</i> (BrickLink color code)
+  * <i>description</i> (BrickLink description)
+  * <i>color</i> (BrickLink color)
+  * <i>gender</i> (gender-- male, female, or neutral)
+  * <i>age</i> (age-- child, young adult, or older adult)
+  * <i>emotion</i> (emotion-- happy, sad, sleepy, scared, evil, angry, smirk, annoyed, surprised, or neutral)
+
+<b>Script used to create it</b>:
+[heads_2022.R](https://github.com/rporta23/WBI/blob/main/flowchart_update/heads_2022.R)
+
+<b>Source</b>:
+[BrickLink](https://www.bricklink.com/catalogList.asp?catType=P&catString=238)
+
+<b>Notes</b>: More info on how to use and update this in the [flowchart update guide](https://rporta23.github.io/WBI/flowchart_update/update_guide.html)
