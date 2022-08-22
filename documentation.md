@@ -169,3 +169,35 @@ A dataset containing information about heads of ninjago minifigs and how frequen
 Sub-folder containing data relating to analysis of screen time versus number of minifigs for Star Wars characters. For more information about individual files, contact [rosecporta@icloud.com](mailto:rosecporta@icloud.com)
 
 ### town
+
+Sub-folder containing data related to minifigs in the Town theme. This theme is useful for analysis because all minifigs are meant to be humans and not other types of creatures. 
+
+#### [town_minifig.csv](https://github.com/rporta23/WBI/blob/main/data/town/town_minifig.csv)
+
+Subset of [minifigs_data.csv](https://github.com/rporta23/WBI/blob/main/data/minifigs_data.csv) filtered to only the Town category. Also contains release year information for each minifig.
+
+#### [town_parts_2017-2022.csv](https://github.com/rporta23/WBI/blob/main/data/town/town_parts_2017-2022.csv)
+
+Dataset containing information about each individual part of each minifig in the Town category between the years 2017-2022.
+
+<b>Dimensions:</b> 3945 rows (one row = one part), 8 columns
+
+<b>Variables</b>
+  * <i>item_number</i> (BrickLink part id for minifig containing part) 
+  * <i>description</i> (BrickLink item description for minifig containing part)
+  * <i>category</i> (BrickLink broad category-- somewhat trivial because it is Town for all of them)
+  * <i>item_link</i> (link to minifig containing part on BrickLink)
+  * <i>parts_link</i> (link to part on BrickLink)
+  * <i>release_year</i> (first year released)
+  * <i>parts_id</i> (BrickLink part id)
+  * <i>parts_description</i> (BrickLink item description)
+
+<b>Script used to create it</b>:
+[female_heads_recent.R](https://github.com/rporta23/WBI/blob/main/minifigs/head_repetition/female_heads_recent.R)
+
+<b>Source</b>:
+[BrickLink](https://www.bricklink.com/catalogTree.asp?itemType=M)
+
+#### [sets_data_3626bp02.csv](https://github.com/rporta23/WBI/blob/main/data/town/sets_data_3626bp02.csv)
+
+Dataset containing minifig part information for one piece of the head repetition analysis. For more information, contact [rosecporta@icloud.com](mailto:rosecporta@icloud.com). 
