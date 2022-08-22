@@ -1,3 +1,30 @@
+# Documentation for WBI Summer 2022
+
+The purpose of this document is to help future interns navigate this repository and build off of the work that we did this summer. It outlines the contents of all data in the repository as well as the data collection process and some other useful info to know. 
+
+With any questions, contact rosecporta@icloud.com](mailto:rosecporta@icloud.com).
+
+## Functions
+
+[wbi_colors.R](https://github.com/rporta23/WBI/blob/main/wbi_colors.R) contains several useful functions for customizing graphs to WBI work. 
+
+* Functions to customize ggplot colors to WBI pink, lime, orange, and grey. All functions below can be added to a ggplot as a layer.
+ * <i>scale_fill_wbi()</i> customizes fill colors-- use for bar plots, box plots, or any other plot type with fill colors
+ * <i>scale_color_wbi()</i> customizes point/line colors-- use for scatter plots, line graphs, or any other plot type with fill colors
+ * <i>scale_y_continuous_wbi()</i> creates a gradient color scale from WBI lime to WBI pink-- use when you have a continuous value where you want color to represent value (i.e. smaller values would be more green, larger values would be more pink)
+
+* Functions to customize ggplot colors to LEGO flesh tone colors. All functions below can be added to a ggplot as a layer.
+  * <i>scale_fill_skintones()</i> customizes fill colors-- use for bar plots, box plots, or any other plot type with fill colors
+  * <i>scale_color_skintones()</i> customizes point/line colors-- use for scatter plots, line graphs, or any other plot type with fill colors
+
+* <i>add_logo</i> adds the two WBI logos ([socials.png](https://github.com/rporta23/WBI/blob/main/socials.png) and [logo.png](https://github.com/rporta23/WBI/blob/main/logo.png)) to the bottom left and bottom right corners of a ggplot, respectively. This function can be added as a layer to a ggplot. 
+
+## General Data Collection Process
+
+Most of the data in this repository has been scraped from [BrickLink](https://www.bricklink.com/v2/main.page) using the [rvest](https://rvest.tidyverse.org/) R package. If you are not familiar with this process, you can learn the basics with this [tutorial](https://www.analyticsvidhya.com/blog/2017/03/beginners-guide-on-web-scraping-in-r-using-rvest-with-hands-on-knowledge/). 
+
+Most of the time, this method will be fairly simple and will make data collection quick and efficient. If you are trying to scrape a lot of information at once, don't be surprised if the code takes up to an hour or two to run. Also, it is helpful to be aware of BrickLink quota limits-- for certain types of scraping, it will only let you pull data from a certain number of pages at a time. If after you run the scraping code, you notice that a bunch of values at the end are missing, you have probably reached the quota limit, and you may have to split up the data into smaller chunks to scrape them separately, then combine them all back together at the end. If you wait a few hours, the quota limit will re-set. 
+
 ## Data
 
 ### [minifigs_data.csv](https://github.com/rporta23/WBI/blob/main/data/minifigs_data.csv) 
