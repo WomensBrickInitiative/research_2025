@@ -166,6 +166,6 @@ A dataset containing information about heads of ninjago minifigs and how frequen
 
 ### starwars
 
-Sub-folder containing data relating to analysis of screen time versus number of minifigs for Star Wars characters. For more information about individual files, contact [rosecporta@icloud.com](mailto: rosecporta@icloud.com)
+Sub-folder containing data relating to analysis of screen time versus number of minifigs for Star Wars characters. For more information about individual files, contact [rosecporta@icloud.com](mailto:rosecporta@icloud.com)
 
-
+### town
