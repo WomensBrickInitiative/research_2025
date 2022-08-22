@@ -2,16 +2,16 @@
 
 The purpose of this document is to help future interns navigate this repository and build off of the work that we did this summer. It outlines the contents of all data in the repository as well as the data collection process and some other useful info to know. 
 
-With any questions, contact rosecporta@icloud.com](mailto:rosecporta@icloud.com).
+With any questions, contact [rosecporta@icloud.com](mailto:rosecporta@icloud.com).
 
 ## Functions
 
 [wbi_colors.R](https://github.com/rporta23/WBI/blob/main/wbi_colors.R) contains several useful functions for customizing graphs to WBI work. 
 
 * Functions to customize ggplot colors to WBI pink, lime, orange, and grey. All functions below can be added to a ggplot as a layer.
- * <i>scale_fill_wbi()</i> customizes fill colors-- use for bar plots, box plots, or any other plot type with fill colors
- * <i>scale_color_wbi()</i> customizes point/line colors-- use for scatter plots, line graphs, or any other plot type with fill colors
- * <i>scale_y_continuous_wbi()</i> creates a gradient color scale from WBI lime to WBI pink-- use when you have a continuous value where you want color to represent value (i.e. smaller values would be more green, larger values would be more pink)
+  * <i>scale_fill_wbi()</i> customizes fill colors-- use for bar plots, box plots, or any other plot type with fill colors
+  * <i>scale_color_wbi()</i> customizes point/line colors-- use for scatter plots, line graphs, or any other plot type with fill colors
+  * <i>scale_y_continuous_wbi()</i> creates a gradient color scale from WBI lime to WBI pink-- use when you have a continuous value where you want color to represent value (i.e. smaller values would be more green, larger values would be more pink)
 
 * Functions to customize ggplot colors to LEGO flesh tone colors. All functions below can be added to a ggplot as a layer.
   * <i>scale_fill_skintones()</i> customizes fill colors-- use for bar plots, box plots, or any other plot type with fill colors
