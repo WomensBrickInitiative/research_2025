@@ -43,7 +43,7 @@ The data is in [data/town](https://github.com/rporta23/WBI/tree/main/data/town) 
 
 #### Articles
 
-- How Does LEGO See Working Women? Analysis of Gender Representation in Professions
+- [How Does LEGO See Working Women? Analysis of Gender Representation in Professions](https://womensbrickinitiative.com/how-does-lego-see-working-women-analysis-of-gender-representation-in-professions%ef%bf%bc/)
 
 #### Code
 
@@ -59,7 +59,7 @@ The two datasets used are [data/town/sets_data_3626bp02.csv](https://github.com/
 
 #### Articles
 
-- How often does LEGO use the same head on a minifigure? Analysis of Head Repetition Part 1
+- [How often does LEGO use the same head on a minifigure? Analysis of Head Repetition Part 1](https://womensbrickinitiative.com/how-often-does-lego-use-the-same-head-on-a-minifigure-analysis-of-head-repetition-part-1/)
 - How Many Female Minifigs in LEGO Town Have the Same Face? Analysis of Head Repetition Part 2 (2017-2022)
 
 #### Code
