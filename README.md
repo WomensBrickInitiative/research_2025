@@ -60,7 +60,7 @@ The two datasets used are [data/town/sets_data_3626bp02.csv](https://github.com/
 #### Articles
 
 - [How often does LEGO use the same head on a minifigure? Analysis of Head Repetition Part 1](https://womensbrickinitiative.com/how-often-does-lego-use-the-same-head-on-a-minifigure-analysis-of-head-repetition-part-1/)
-- How Many Female Minifigs in LEGO Town Have the Same Face? Analysis of Head Repetition Part 2 (2017-2022)
+- [How Many Female Minifigs in LEGO Town Have the Same Face? Analysis of Head Repetition Part 2 (2017-2022)](https://womensbrickinitiative.com/how-many-female-minifigs-in-lego-town-have-the-same-face-analysis-of-head-repetition-part-2/)
 
 #### Code
 
@@ -97,7 +97,7 @@ The data is sourced from the [Star Wars](https://www.bricklink.com/catalogList.a
 
 #### Articles
 
-- Do Princess Leia and Captain Marvel Look Alike? Repetition of Minifig Heads in Star Wars Characters (Part 1)
+- [Do Princess Leia and Captain Marvel Look Alike? Repetition of Minifig Heads in Star Wars Characters (Part 1)](https://womensbrickinitiative.com/do-princess-leia-and-captain-marvel-look-alike-repetition-of-minifig-heads-in-star-wars-characters-part-1/)
 - The Intersection of Star Wars, Jurassic World, and the MCU: A Head Study (Part 2)
 
 #### Code
