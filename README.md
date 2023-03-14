@@ -98,7 +98,7 @@ The data is sourced from the [Star Wars](https://www.bricklink.com/catalogList.a
 #### Articles
 
 - [Do Princess Leia and Captain Marvel Look Alike? Repetition of Minifig Heads in Star Wars Characters (Part 1)](https://womensbrickinitiative.com/do-princess-leia-and-captain-marvel-look-alike-repetition-of-minifig-heads-in-star-wars-characters-part-1/)
-- The Intersection of Star Wars, Jurassic World, and the MCU: A Head Study (Part 2)
+- [The Intersection of Star Wars, Jurassic World, and the MCU: A Head Study (Part 2)](https://womensbrickinitiative.com/the-intersection-of-star-wars-jurassic-world-and-the-marvel-cinematic-universe-a-head-study-part-2/)
 
 #### Code
 
