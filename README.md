@@ -76,8 +76,8 @@ The data is in [data/starwars](https://github.com/rporta23/WBI/tree/main/data/st
 
 #### Articles
 
-- Are Star Wars Minifigs Accurately Representative of Star Wars Films? An analysis of screen time versus number of minifigs by gender (Part 1: Main Films)
-- Are Star Wars Minifigs Accurately Representative of Star Wars Films? An analysis of screen time versus number of minifigs by gender (Part 2: Side Series)
+- [Are Star Wars Minifigs Accurately Representative of Star Wars Films? An analysis of screen time versus number of minifigs by gender (Part 1: Main Films)](https://womensbrickinitiative.com/are-star-wars-minifigs-accurately-representative-of-star-wars-films-an-analysis-of-screen-time-versus-number-of-minifigs-by-gender-part-1/)
+- [Are Star Wars Minifigs Accurately Representative of Star Wars Films? An analysis of screen time versus number of minifigs by gender (Part 2: Side Series)](https://womensbrickinitiative.com/are-star-wars-minifigs-accurately-representative-of-star-wars-films-an-analysis-of-screen-time-versus-number-of-minifigs-by-gender-part-2-side-series/)
 
 #### [Interactive Shiny App](https://rporta.shinyapps.io/starwars_minifigs/)
 
