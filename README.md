@@ -114,7 +114,7 @@ The data is in [data/town/town_parts_2017-2022.csv](https://github.com/rporta23/
 
 #### Articles
 
-- Are Neutral Minifigure Heads Really Gender Neutral?
+- [Are Neutral Minifigure Heads Really Gender Neutral?](https://womensbrickinitiative.com/are-neutral-minifigure-heads-really-gender-neutral/)
 
 #### Code
 
@@ -130,8 +130,8 @@ The data is in [data/cultural](https://github.com/rporta23/WBI/tree/main/data/cu
 
 #### Articles
 
-- How Well Do Minifigs Represent People from Around the World? Analysis of Cultural Representation in Minifigs (Part 1: Overview)
-- How Well Do Minifigs Represent People from Around the World? Analysis of Cultural Representation in Minifigs (Part 2: Head Repetition)
+- [How Well Do Minifigs Represent People from Around the World? Analysis of Cultural Representation in Minifigs (Part 1: Overview)](https://womensbrickinitiative.com/how-well-do-minifigs-represent-people-from-around-the-world-analysis-of-cultural-representation-in-minifigs-part-1-overview/)
+- [How Well Do Minifigs Represent People from Around the World? Analysis of Cultural Representation in Minifigs (Part 2: Head Repetition)](https://womensbrickinitiative.com/how-well-do-minifigs-represent-people-around-the-world-analysis-of-cultural-representation-in-minifigs-part-2-head-repetition/)
 
 #### Code 
 
@@ -147,8 +147,8 @@ The data is in [data/flowchart_data_2022_corrected.csv](https://github.com/rport
 
 #### Articles
 
-- Thousands of Minifig Heads, and Still Not Enough Options? Analysis of Diverse Representation in Minifigure Heads (Part 1)
-- Thousands of Minifig Heads, and Still Not Enough Options? Analysis of Diverse Representation in Minifigure Heads (Part 2)
+- [Thousands of Minifig Heads, and Still Not Enough Options? Analysis of Diverse Representation in Minifigure Heads (Part 1)](https://womensbrickinitiative.com/thousands-of-minifig-heads-and-still-not-enough-options-analysis-of-diverse-representation-in-minifigure-heads-part-1/)
+- [Thousands of Minifig Heads, and Still Not Enough Options? Analysis of Diverse Representation in Minifigure Heads (Part 2)](https://womensbrickinitiative.com/thousands-of-minifig-heads-and-still-not-enough-options-analysis-of-diverse-representation-in-minifigure-heads-part-2/)
 
 #### Code 
 
