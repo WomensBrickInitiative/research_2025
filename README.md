@@ -1,7 +1,7 @@
 # WBI
 Repository to host code relating to my work with the [Women's Brick Initiative](https://womensbrickinitiative.com/) Summer 2022
 
-The Women's Brick Initiative Advocates for diversity, equity, and inclusion within LEGO products. My work as an intern in summer 2022 included conducting research on various aspects of diversity and representation in LEGO products, especially [minifigures](https://en.wikipedia.org/wiki/Lego_minifigure), and writing blog posts to share our findings that will soon be posted on the WBI [website](https://womensbrickinitiative.com/). This work will also be shared with the broader LEGO community and with representatives from The LEGO Group in order to highlight opportunities for improvement and advocate for broader representation. 
+The Women's Brick Initiative Advocates for diversity, equity, and inclusion within LEGO products. My work as an intern in summer 2022 included conducting research on various aspects of diversity and representation in LEGO products, especially [minifigures](https://en.wikipedia.org/wiki/Lego_minifigure), and writing blog posts to share our findings which are posted on the WBI [website](https://womensbrickinitiative.com/). This work will also be shared with the broader LEGO community and with representatives from The LEGO Group in order to highlight opportunities for improvement and advocate for broader representation. 
 
 This repository contains all of the data used in our analyses as well as the R code used to wrangle and visualize the data. There are several different sub-projects within this repository, which I will outline below.
 
