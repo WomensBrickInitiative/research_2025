@@ -1,0 +1,123 @@
+---
+title: "scraping_2025"
+output: html_document
+date: "2025-06-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rvest)
+library(tidyverse)
+library(purrr)
+library(stringi)
+source("scraping_func.R")
+```
+
+```{r}
+# check permission
+robotstxt::paths_allowed(
+  paths = c("https://www.bricklink.com/catalogItemInv.asp?S=10391-1&v=0&bt=0&sortBy=0&sortAsc=A")
+)
+```
+## Pharrell Williams: Over the Moon 
+
+```{r}
+pharrell_parts <- rvest::read_html("https://www.bricklink.com/catalogItemInv.asp?S=10391-1&v=0&bt=0&sortBy=0&sortAsc=A")
+```
+
+```{r}
+description <- pharrell_parts %>% 
+  html_elements(".IV_ITEM td:nth-child(4)") %>% 
+  html_text()
+
+item_number <- pharrell_parts %>% 
+  html_elements(".IV_ITEM td:nth-child(3)") %>% 
+  html_text()
+
+link <- pharrell_parts %>% 
+  html_elements(".IV_ITEM a:nth-child(1)") %>% 
+  html_attr("href") %>% 
+  paste0("https://www.bricklink.com", .)
+
+qty <- pharrell_parts %>% 
+  html_elements(".IV_ITEM td:nth-child(2)") %>% 
+  html_text()
+qty <- as.numeric(gsub("[^0-9]", "", qty))
+       
+# table format
+pharrell_lists <- list(Description = description, ItemNo = item_number, Link = link, Quantity = qty)
+pharrell_table <- as_tibble(pharrell_lists)
+```
+
+## Update of Minifigs Head (2022-2024)
+```{r}
+# link of 2022-2024
+links_year <- c("https://www.bricklink.com/catalogList.asp?itemYear=2022&catString=238&catType=P", 
+                "https://www.bricklink.com/catalogList.asp?itemYear=2023&catString=238&catType=P", 
+                "https://www.bricklink.com/catalogList.asp?itemYear=2024&catString=238&catType=P")
+
+pages_year <- map(links_year, get_pages)
+
+links_all <- map2(pages_year, links_year, generate_page_links)
+
+years <- c("2022", "2023", "2024")
+new_year_data <- tibble(category = years, link = links_all, num_pages = unlist(pages_year)) |>
+  tidyr::unnest(cols = c(link)) |>
+  dplyr::mutate(link = as.character(link))
+
+write.csv(new_year_data, file = "new_years.csv")
+
+# worked to scrape data (quota limit doesn't apply??)
+data_new <- purrr::map2(new_year_data$link, new_year_data$category, scrape_minifigs_data)
+data_bind <- plyr::ldply(data_new, rbind)
+write.csv(data_bind, file = "minifigs_data_2025.csv")
+```
+ 
+ 
+```{r}
+# merge datasets to make complete minifigs heads data
+```
+ 
+## Update of Minifigs (2022-2024) Copy but not just Heads
+
+```{r}
+# link of 2022-2024
+links_heads_year <- c("https://www.bricklink.com/catalogList.asp?itemYear=2022&catType=M", 
+                "https://www.bricklink.com/catalogList.asp?itemYear=2023&catType=M", 
+                "https://www.bricklink.com/catalogList.asp?itemYear=2024&catType=M")
+
+pages_heads_year <- map(links_heads_year, get_pages)
+
+links_heads_all <- map2(pages_heads_year, links_heads_year, generate_page_links)
+
+new_minifigs_data <- tibble(category = years, link = links_heads_all, num_pages = unlist(pages_heads_year)) |>
+  tidyr::unnest(cols = c(link)) |>
+  dplyr::mutate(link = as.character(link))
+
+write.csv(new_minifigs_data, file = "new_minifigs.csv")
+
+print(sum(as.numeric(new_minifigs_data$num_pages)))
+
+# yep definitely too big for quota, splitting category data
+categories_subset <- new_minifigs_data[1:20, ]
+data_sub <- purrr::map2(categories_subset$link, categories_subset$category, scrape_minifigs_data)
+data_bind_s <- plyr::ldply(data_sub, rbind)
+
+categories_subset2 <- new_minifigs_data[21:40, ]
+data_sub2 <- purrr::map2(categories_subset2$link, categories_subset2$category, scrape_minifigs_data)
+data_bind_s2 <- plyr::ldply(data_sub2, rbind)
+
+categories_subset3 <- new_minifigs_data[41:60, ]
+data_sub3 <- purrr::map2(categories_subset3$link, categories_subset3$category, scrape_minifigs_data)
+data_bind_s3 <- plyr::ldply(data_sub3, rbind)
+
+categories_subset4 <- new_minifigs_data[61:64, ]
+data_sub4 <- purrr::map2(categories_subset4$link, categories_subset4$category, scrape_minifigs_data)
+data_bind_s4 <- plyr::ldply(data_sub4, rbind)
+
+data_all_minifigs_new <- list(data_bind_s, data_bind_s2, data_bind_s3, data_bind_s4, data_bind_s5) |>
+  plyr::ldply(rbind)
+
+write.csv(data_all_minifigs_new_file = "minifigs_full_data_2025.csv")
+```
+
