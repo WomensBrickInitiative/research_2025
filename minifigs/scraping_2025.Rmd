@@ -10,7 +10,9 @@ library(rvest)
 library(tidyverse)
 library(purrr)
 library(stringi)
+library(waffle)
 source("scraping_func.R")
+source("../wbi_colors.R")
 ```
 
 ```{r}
@@ -32,7 +34,8 @@ description <- pharrell_parts %>%
 
 item_number <- pharrell_parts %>% 
   html_elements(".IV_ITEM td:nth-child(3)") %>% 
-  html_text()
+  html_text() %>% 
+  str_trim()
 
 link <- pharrell_parts %>% 
   html_elements(".IV_ITEM a:nth-child(1)") %>% 
@@ -49,6 +52,34 @@ pharrell_lists <- list(Description = description, ItemNo = item_number, Link = l
 pharrell_table <- as_tibble(pharrell_lists)
 ```
 
+```{r}
+# obtain minifigs in the set
+pharrell_minifigs <- pharrell_table %>% 
+  filter(grepl("3626", ItemNo)) 
+  
+pharrell_minifigs <- rbind(pharrell_minifigs, list("Medium Nougat Minifigure, Head Female Black Eyebrows, Eyes and Eyelashes, Reddish Brown Lips, Neutral Pattern", "3626pb3719", "https://www.bricklink.com/v2/catalog/catalogitem.page?P=3626pb3719&idColor=150", 1))
+
+pharrell_minifigs <- rbind(pharrell_minifigs, list("Dark Orange Minifigure, Head Black Eyebrows, Reddish Brown Cheek Lines, Chin Dimple and Dots under Eyes, Neutral Pattern", "3626pb3718", "https://www.bricklink.com/v2/catalog/catalogitem.page?P=3626pb3718&idColor=68", 1))
+```
+
+```{r}
+# test <- map("https://www.bricklink.com/v2/catalog/catalogitem.page?P=3626pb3280&idColor=90#T=C&C=90", scrape_appearance)
+pharrell_minifigs <- pharrell_minifigs %>% 
+  mutate(NumberApp = map(pharrell_minifigs$Link, scrape_appearance)) %>% 
+  mutate(NumberSets = str_extract(NumberApp, "\\d+"))
+
+pharrell_minifigs <- pharrell_minifigs %>% 
+  mutate(ColorID = case_when(str_sub(Link, -3, -3) == "="  ~ str_sub(Link, -2), 
+                             str_sub(Link, -3, -3) != "=" ~ str_sub(Link, -3))) %>%
+  mutate(PriceLink = paste0("https://www.bricklink.com/catalogPG.asp?P=", ItemNo, "&ColorID=", ColorID))
+
+heads_prices <- map(pharrell_minifigs$PriceLink, get_price) 
+
+heads_prices <- heads_prices |>
+  plyr::ldply(bind_rows)
+```
+
+
 ## Update of Minifigs Head (2022-2024)
 ```{r}
 # link of 2022-2024
@@ -56,7 +87,7 @@ links_year <- c("https://www.bricklink.com/catalogList.asp?itemYear=2022&catStri
                 "https://www.bricklink.com/catalogList.asp?itemYear=2023&catString=238&catType=P", 
                 "https://www.bricklink.com/catalogList.asp?itemYear=2024&catString=238&catType=P")
 
-pages_year <- map(links_year, get_pages)
+pages_year <- map(links_year, get_pages_year)
 
 links_all <- map2(pages_year, links_year, generate_page_links)
 
@@ -70,7 +101,58 @@ write.csv(new_year_data, file = "new_years.csv")
 # worked to scrape data (quota limit doesn't apply??)
 data_new <- purrr::map2(new_year_data$link, new_year_data$category, scrape_minifigs_data)
 data_bind <- plyr::ldply(data_new, rbind)
-write.csv(data_bind, file = "minifigs_data_2025.csv")
+write.csv(data_bind, file = "minifigs_heads_2025.csv")
+
+data_bind <- data_bind |>
+  mutate(item_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?P=", item_number),
+         minifigs_link = paste0("https://www.bricklink.com/catalogItemIn.asp?P=", item_number, "&in=M"))
+
+new_human_heads <- data_bind %>% 
+  filter(!grepl("Alien|Skull|Balaclava|Clown|Baby|Robot|without Face|Statue|Green Eyes|SW|Joker|Pumpkin|Face Paint|Green Cheek|Metallic|Magenta|Fangs|Silver Face|Azure Eyes|Fur|Pixelated", description))
+
+# Vector to store scraped minifigure ids (no description for the whole minifig)
+mini_info <- map(new_human_heads$minifigs_link, scrape_mini_id)
+
+# Add minifig ids to sets_data and unnest so that each row is a minifig
+new_human_heads <- new_human_heads |>
+  mutate(mini_id = mini_info) |>
+  unnest(cols = mini_id)
+
+# Add parts_link for each minifig
+new_human_heads <- new_human_heads %>% 
+  mutate(
+    parts_link = paste0("https://www.bricklink.com/catalogItemInv.asp?M=", mini_id),
+    minifig_link = paste0("https://www.bricklink.com/v2/catalog/catalogitem.page?M=", mini_id),
+    color_link = paste0(item_link, "#T=C"))
+
+mini_description <- map(new_human_heads$minifig_link, scrape_mini_description)
+
+new_human_heads <- new_human_heads %>% 
+  mutate(color = map(color_link, scrape_color))
+
+new_human_heads <- new_human_heads %>% 
+         mutate(color_fin = case_when((str_sub(color, 1, 2) == "c(") ~ as.character(color[2]),
+                           .default = as.character(color)))
+
+new_human_heads_color <- new_human_heads %>%
+  filter(!grepl("Azure|Lavender|Trans|White|Blue|Black|Green|Lime|Gold|Dark Tan|Orange|Umber", color_fin)) %>% 
+  filter(color_fin != "character(0)")
+
+table(new_human_heads_color$color_fin)
+
+color_skin_summary <- new_human_heads_color %>%
+  group_by(color_fin, category) %>%
+  summarise(count = n())
+
+color_skin_summary %>% 
+  ggplot(aes(x = reorder(color_fin, -count), y = count, fill = color_fin)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  scale_fill_skintones() + 
+  labs(title = "Distribution of Flesh Tones of Minifigurine Heads (2022-2024)",
+       x = "Flesh Tones",
+       y = "Count")
+  
 ```
  
  
@@ -115,9 +197,20 @@ categories_subset4 <- new_minifigs_data[61:64, ]
 data_sub4 <- purrr::map2(categories_subset4$link, categories_subset4$category, scrape_minifigs_data)
 data_bind_s4 <- plyr::ldply(data_sub4, rbind)
 
-data_all_minifigs_new <- list(data_bind_s, data_bind_s2, data_bind_s3, data_bind_s4, data_bind_s5) |>
+data_all_minifigs_new <- list(data_bind_s, data_bind_s2, data_bind_s3, data_bind_s4) |>
   plyr::ldply(rbind)
-
-write.csv(data_all_minifigs_new_file = "minifigs_full_data_2025.csv")
 ```
+```{r}
+# add links to each item to minifigs data
+data_all_minifigs_new <- data_all_minifigs_new |>
+  mutate(item_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?M=", item_number))
+
+write_csv(data_all_minifigs_new, "minifigs_full_data_2025.csv")
+minifigs_data <- read_csv("../data/minifigs_data.csv")
+
+#bind tables (up until 2024)
+#category and year are in one column (fix that later??)
+minifigs_data_2025 <- unique(rbind(data_all_minifigs_new, minifigs_data))
+```
+
 

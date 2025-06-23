@@ -33,8 +33,8 @@ add_logo <- function(plot) {
 
 # create named vector assigning skin tone colors to hex code colors
 skin_colors <- c("Dark Brown", "Dark Orange", "Dark Tan", "Light Nougat", "Medium Nougat", "Nougat",
-            "Reddish Brown", "Tan", "Yellow")
-hexcodes <- c("#300000", "#ad5300", "#8d744e", "#faccae", "#dd9f55", "#f8ae79", "#843419", "#dbc69a", "#f3d000")
+            "Reddish Brown", "Tan", "Yellow", "Medium Brown", "Medium Tan", "Sienna")
+hexcodes <- c("#300000", "#ad5300", "#8d744e", "#faccae", "#dd9f55", "#f8ae79", "#843419", "#dbc69a", "#f3d000", "#a16c42", "#d9c594",  "#915C3C" )
 
 skin_tones <- setNames(hexcodes, skin_colors)
 
