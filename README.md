@@ -1,17 +1,20 @@
 # WBI
-Repository to host code relating to my work with the [Women's Brick Initiative](https://womensbrickinitiative.com/) Summer 2022
+Repository to host code relating to my work with the [Women's Brick Initiative](https://womensbrickinitiative.com/) Summer 2025 - cloned from 2022 research as continuation of the project
 
-The Women's Brick Initiative Advocates for diversity, equity, and inclusion within LEGO products. My work as an intern in summer 2022 included conducting research on various aspects of diversity and representation in LEGO products, especially [minifigures](https://en.wikipedia.org/wiki/Lego_minifigure), and writing blog posts to share our findings which are posted on the WBI [website](https://womensbrickinitiative.com/). This work will also be shared with the broader LEGO community and with representatives from The LEGO Group in order to highlight opportunities for improvement and advocate for broader representation. 
+The Women's Brick Initiative Advocates for diversity, equity, and inclusion within LEGO products. My work as an intern in summer 2025 included conducting research on various aspects of diversity and representation in LEGO products, especially [minifigures](https://en.wikipedia.org/wiki/Lego_minifigure), and writing blog posts to share our findings which are posted on the WBI [website](https://womensbrickinitiative.com/). This work will also be shared with the broader LEGO community and with representatives from The LEGO Group in order to highlight opportunities for improvement and advocate for broader representation. 
 
 This repository contains all of the data used in our analyses as well as the R code used to wrangle and visualize the data. There are several different sub-projects within this repository, which I will outline below.
 
-## Contributers (WBI Interns Summer 2022)
-
+## Contributers 
+### (WBI Interns Summer 2025)
+- [Tseegi Nyamdorj](https://www.linkedin.com/in/tsengelmaa-nyamdorj/)
+- [Katie Wilson](https://www.linkedin.com/in/katie-carrington-wilson-21304b24a/)
+### (WBI Interns Summer 2022)
 - [Rose Porta](https://www.linkedin.com/in/rose-porta-40ba7719a/)
 - [Yutong Zhang](https://www.linkedin.com/in/yutong-zhang-a557b1196/)
 - [Kira Seshaiah](https://www.linkedin.com/in/kira-seshaiah-120835229/)
 
-## Projects
+## Projects 2022
 
 ### Analysis of Gender and Flesh Tone Equity in LUGBULK parts
 
