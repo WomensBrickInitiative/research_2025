@@ -87,6 +87,20 @@ heads_prices_ten <- map(pharrell_minifigs[41:44, ]$PriceLink, get_price)
 heads_prices_ele <- map(pharrell_minifigs[45:48, ]$PriceLink, get_price)
 heads_prices_twe <- map(pharrell_minifigs[49:51, ]$PriceLink, get_price)
 
+heads_prices_table$ItemNo <- pharrell_minifigs$ItemNo[1:4]
+heads_prices_table_one$ItemNo <- pharrell_minifigs$ItemNo[5:8]
+heads_prices_table_two$ItemNo <- pharrell_minifigs$ItemNo[9:12]
+heads_prices_table_thr$ItemNo <- pharrell_minifigs$ItemNo[13:16]
+heads_prices_table_fou$ItemNo <- pharrell_minifigs$ItemNo[17:20]
+heads_prices_table_fiv$ItemNo <- pharrell_minifigs$ItemNo[21:24]
+heads_prices_table_six$ItemNo <- pharrell_minifigs$ItemNo[25:28]
+heads_prices_table_sev$ItemNo <- pharrell_minifigs$ItemNo[29:32]
+heads_prices_table_eig$ItemNo <- pharrell_minifigs$ItemNo[33:36]
+heads_prices_table_nin$ItemNo <- pharrell_minifigs$ItemNo[37:40]
+heads_prices_table_ten$ItemNo <- pharrell_minifigs$ItemNo[41:44]
+heads_prices_table_ele$ItemNo <- pharrell_minifigs$ItemNo[45:48]
+heads_prices_table_twe$ItemNo <- pharrell_minifigs$ItemNo[49:51]
+
 heads_prices_table <- heads_prices |>
   plyr::ldply(bind_rows)
 heads_prices_table_one <- heads_prices_one |>
@@ -114,7 +128,14 @@ heads_prices_table_ele <- heads_prices_ele |>
 heads_prices_table_twe <- heads_prices_twe |>
   plyr::ldply(bind_rows)
 
-data_prices_pharrell <- list(heads_prices_table, heads_prices_table_two, heads_prices_table_one, heads_prices_table_thr, heads_prices_table_fou, heads_prices_table_fiv, heads_prices_table_six, heads_prices_table_sev, heads_prices_table_eig, heads_prices_table_nin, heads_prices_table_ten, heads_prices_table_ele, heads_prices_table_twe)
+data_prices_pharrell <- list(heads_prices_table, heads_prices_table_two, heads_prices_table_one, heads_prices_table_thr, heads_prices_table_fou, heads_prices_table_fiv, heads_prices_table_six, heads_prices_table_sev, heads_prices_table_eig, heads_prices_table_nin, heads_prices_table_ten, heads_prices_table_ele, heads_prices_table_twe) %>%
+  plyr::ldply(rbind)
+
+pharrell_full_price <-left_join(pharrell_minifigs, data_prices_pharrell, by = "ItemNo") %>% 
+  select(!NumberApp)
+
+write.csv(pharrell_full_price, file = "pharrell_price.csv")
+
 ```
 
 # Color Catalogue
@@ -227,6 +248,8 @@ flesh_hex_table <- tibble(Name = skin_colors, hexCode = skin_tones)
 
 heads_flesh_new <- heads_flesh_new[!duplicated(heads_flesh_new[, "item_number"]), ] %>% 
   left_join(flesh_hex_table, by = "Name")
+
+write.csv(heads_flesh_new, "heads_flesh_unique.csv")
 
 table(heads_flesh_new$Name)
 
