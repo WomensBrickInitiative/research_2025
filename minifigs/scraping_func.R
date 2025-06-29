@@ -128,6 +128,9 @@ get_price <- function(url) {
   current_new_avg <- safe_extract("td:nth-child(3) tr:nth-child(4) b")
   current_new_min <- safe_extract("td:nth-child(3) tr:nth-child(3) b")
   current_new_max <- safe_extract("td:nth-child(3) tr:nth-child(6) b")
+  past_new_min <- safe_extract(".fv td:nth-child(1) td tr:nth-child(3) b")
+  past_new_avg <- safe_extract(".fv td:nth-child(1) td tr:nth-child(4) b")
+  past_new_max <- safe_extract(".fv td:nth-child(1) td tr:nth-child(6) b")
 
   # Close and pause
   closeAllConnections()
@@ -137,7 +140,10 @@ get_price <- function(url) {
   tibble(
     current_new_avg = current_new_avg,
     current_new_min = current_new_min,
-    current_new_max = current_new_max
+    current_new_max = current_new_max,
+    past_new_avg = past_new_avg,
+    past_new_min = past_new_min,
+    past_new_max = past_new_max
   )
 }
 

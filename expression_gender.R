@@ -1,5 +1,7 @@
 expression <- c("Angry", "Annoyed", "Evil", "Frown", "Happy", "Sad", "Scared", "Sleepy", "Smile", "Smirk", "Surprised", "Sinister", "Laugh", "Neutral", "Sneer", "Fierce", "Scowl", "Asleep", "Terrified", "Firm", "Worried", "Grin", "Grimmace", "Confused", "Eating", "Disgust", "Gritted", "Stressed", "Roaring", "Wink", "Licking", "Blowing")
 
+other_att <- c("scar, vitiligo, hearing aid, ")
+
 female_keywords <- c(
   "mom", "ballerina", "barista", "female", "woman", "girl", "lady", "ponytail", "little red",
   "sally", "madison", "necklace"
