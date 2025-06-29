@@ -110,87 +110,39 @@ avoid_empty <- function(missing) {
   missing
 }
 
-get_price <- function(url){
-  if (!robotstxt::paths_allowed(paths = c(url))) stop("scraping not allowed, cannot proceed")
+get_price <- function(url) {
+  # Read the page
   item_page <- rvest::read_html(url)
-  # past_used_avg <- item_page |>
-  #   html_elements("td:nth-child(2) tr:nth-child(4) b") |>
-  #   html_text()
-  # past_used_avg <- avoid_empty(past_used_avg)
 
-  # past_used_min <- item_page |>
-  #   html_elements("td:nth-child(2) tr:nth-child(3) b") |>
-  #   html_text()
-  # past_used_min <- avoid_empty(past_used_min)
-  #
-  # past_used_max <- item_page |>
-  #   html_elements("td:nth-child(2) tr:nth-child(6) b") |>
-  #   html_text()
-  # past_used_max <- avoid_empty(past_used_max)
+  # Safe element extractor
+  safe_extract <- function(selector) {
+    result <- html_elements(item_page, selector) |> html_text()
+    if (length(result) == 0) {
+      return(NA_character_)
+    } else {
+      return(result[1])
+    }
+  }
 
-  # current_used_avg <- item_page |>
-  #   html_elements("td:nth-child(4) tr:nth-child(4) b") |>
-  #   html_text()
-  # current_used_avg <- avoid_empty(current_used_avg)
+  # Extract values
+  current_new_avg <- safe_extract("td:nth-child(3) tr:nth-child(4) b")
+  current_new_min <- safe_extract("td:nth-child(3) tr:nth-child(3) b")
+  current_new_max <- safe_extract("td:nth-child(3) tr:nth-child(6) b")
 
-  # current_used_min <- item_page |>
-  #   html_elements("td:nth-child(4) tr:nth-child(3) b") |>
-  #   html_text()
-  # current_used_min <- avoid_empty(current_used_min)
-  #
-  # current_used_max <- item_page |>
-  #   html_elements("td:nth-child(4) tr:nth-child(6) b") |>
-  #   html_text()
-  # current_used_max <- avoid_empty(current_used_max)
+  # Close and pause
+  closeAllConnections()
+  Sys.sleep(0.5)
 
-#  past_new_avg <- item_page |>
-#    # html_elements(".fv td:nth-child(1) td tr:nth-child(4) b") |>
-#    html_elements(".fv td:nth-child(1) table:nth-child(1) .fv tr:nth-child(4) b") |>
-#    html_text()
-#  past_new_avg <- avoid_empty(past_new_avg)
-
-  # past_new_min <- item_page |>
-  #   html_elements(".fv td:nth-child(1) td tr:nth-child(3) b") |>
-  #   html_text()
-  # past_new_min <- avoid_empty(past_new_min)
-  #
-  # past_new_max <- item_page |>
-  #   html_elements(".fv td:nth-child(1) table:nth-child(1) .fv tr:nth-child(6) b") |>
-  #   html_text()
-  # past_new_max <- avoid_empty(past_new_max)
-
- current_new_avg <- item_page |>
-   html_elements("td:nth-child(3) tr:nth-child(4) b") |>
-   html_text()
- current_new_avg <- avoid_empty(current_new_avg)
-
-#  current_new_min <- item_page |>
-#    html_elements("td:nth-child(3) tr:nth-child(3) b") |>
-#    html_text()
-#  current_new_min <- avoid_empty(current_new_min)
-
-#  current_new_max <- item_page |>
-#    html_elements("td:nth-child(3) tr:nth-child(6) b") |>
-#    html_text()
-#  current_new_max <- avoid_empty(current_new_max)
-  # lengths <- sapply(list(past_used_avg, past_used_min, past_used_max,
-  #                        current_used_avg, current_used_min, current_used_max,
-  #                        past_new_avg, past_new_min, past_new_max,
-  #                        current_new_avg, current_new_min, current_new_max), length)
-  # for(i in lengths){
-  #   print(lengths[i])}
-  # Error: Tibble columns must have compatible sizes
-#  tibble(past_new_avg,
-#         current_new_avg, current_new_min, current_new_max)
-    current_new_avg
-  # list(past_used_avg, past_used_min, past_used_max,
-  #      current_used_avg, current_used_min, current_used_max,
-  #      past_new_avg, past_new_min, past_new_max,
-  #      current_new_avg, current_new_min, current_new_max)
+  # Return tibble
+  tibble(
+    current_new_avg = current_new_avg,
+    current_new_min = current_new_min,
+    current_new_max = current_new_max
+  )
 }
 
 get_price_one <- function(url){
-  if (!robotstxt::paths_allowed(paths = c(url))) stop("scraping not allowed, cannot proceed")
+  #f (!robotstxt::paths_allowed(paths = c(url))) stop("scraping not allowed, cannot proceed")
   item_page <- rvest::read_html(url)
   current_new_avg <- item_page |>
     html_elements("td:nth-child(3) tr:nth-child(4) b") |>
@@ -204,6 +156,8 @@ get_price_one <- function(url){
     html_elements("td:nth-child(3) tr:nth-child(6) b") |>
     html_text()
   current_new_max <- current_new_max[1]
+  closeAllConnections()
+  Sys.sleep(0.5)
   # Error: Tibble columns must have compatible sizes
   tibble(current_new_avg, current_new_min, current_new_max)
   # list(past_used_avg, past_used_min, past_used_max,

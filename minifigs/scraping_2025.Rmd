@@ -10,7 +10,7 @@ library(rvest)
 library(tidyverse)
 library(purrr)
 library(stringi)
-library(waffle)
+library(plotrix)
 source("scraping_func.R")
 source("../wbi_colors.R")
 ```
@@ -73,10 +73,89 @@ pharrell_minifigs <- pharrell_minifigs %>%
                              str_sub(Link, -3, -3) != "=" ~ str_sub(Link, -3))) %>%
   mutate(PriceLink = paste0("https://www.bricklink.com/catalogPG.asp?P=", ItemNo, "&ColorID=", ColorID))
 
-heads_prices <- map(pharrell_minifigs$PriceLink, get_price) 
+heads_prices <- map(pharrell_minifigs[1:4, ]$PriceLink, get_price) 
+heads_prices_one <- map(pharrell_minifigs[5:8, ]$PriceLink, get_price)
+heads_prices_two <- map(pharrell_minifigs[9:12, ]$PriceLink, get_price)
+heads_prices_thr <- map(pharrell_minifigs[13:16, ]$PriceLink, get_price)
+heads_prices_fou <- map(pharrell_minifigs[17:20, ]$PriceLink, get_price)
+heads_prices_fiv <- map(pharrell_minifigs[21:24, ]$PriceLink, get_price)
+heads_prices_six <- map(pharrell_minifigs[25:28, ]$PriceLink, get_price)
+heads_prices_sev <- map(pharrell_minifigs[29:32, ]$PriceLink, get_price)
+heads_prices_eig <- map(pharrell_minifigs[33:36, ]$PriceLink, get_price)
+heads_prices_nin <- map(pharrell_minifigs[37:40, ]$PriceLink, get_price)
+heads_prices_ten <- map(pharrell_minifigs[41:44, ]$PriceLink, get_price)
+heads_prices_ele <- map(pharrell_minifigs[45:48, ]$PriceLink, get_price)
+heads_prices_twe <- map(pharrell_minifigs[49:51, ]$PriceLink, get_price)
 
-heads_prices <- heads_prices |>
+heads_prices_table <- heads_prices |>
   plyr::ldply(bind_rows)
+heads_prices_table_one <- heads_prices_one |>
+  plyr::ldply(bind_rows)
+heads_prices_table_two <- heads_prices_two |>
+  plyr::ldply(bind_rows)
+heads_prices_table_thr <- heads_prices_thr |>
+  plyr::ldply(bind_rows)
+heads_prices_table_fou <- heads_prices_fou |>
+  plyr::ldply(bind_rows)
+heads_prices_table_fiv <- heads_prices_fiv |>
+  plyr::ldply(bind_rows)
+heads_prices_table_six <- heads_prices_six |>
+  plyr::ldply(bind_rows)
+heads_prices_table_sev <- heads_prices_sev |>
+  plyr::ldply(bind_rows)
+heads_prices_table_eig <- heads_prices_eig |>
+  plyr::ldply(bind_rows)
+heads_prices_table_nin <- heads_prices_nin |>
+  plyr::ldply(bind_rows)
+heads_prices_table_ten <- heads_prices_ten |>
+  plyr::ldply(bind_rows)
+heads_prices_table_ele <- heads_prices_ele |>
+  plyr::ldply(bind_rows)
+heads_prices_table_twe <- heads_prices_twe |>
+  plyr::ldply(bind_rows)
+
+data_prices_pharrell <- list(heads_prices_table, heads_prices_table_two, heads_prices_table_one, heads_prices_table_thr, heads_prices_table_fou, heads_prices_table_fiv, heads_prices_table_six, heads_prices_table_sev, heads_prices_table_eig, heads_prices_table_nin, heads_prices_table_ten, heads_prices_table_ele, heads_prices_table_twe)
+```
+
+# Color Catalogue
+
+```{r}
+color_page <- rvest::read_html("https://www.bricklink.com/catalogColors.asp")
+
+ID <- color_page %>% 
+  html_elements("tr+ tr td:nth-child(1) font") %>% 
+  html_text() %>% 
+  str_trim
+
+Name <- color_page %>% 
+  html_elements("tr+ tr td:nth-child(4) font") %>% 
+  html_text() %>% 
+  str_trim
+
+Year <- color_page %>% 
+  html_elements("tr+ tr td:nth-child(9) font") %>% 
+  html_text() %>% 
+  str_trim()
+
+Parts <- color_page %>% 
+  html_elements("tr+ tr td:nth-child(5) font") %>% 
+  html_text() %>% 
+  str_trim()
+
+Sets <- color_page %>% 
+  html_elements("tr+ tr td:nth-child(6) font") %>% 
+  html_text() %>% 
+  str_trim()
+
+# table format
+color_lists <- list(ID = ID, Name = Name, Year = Year, Parts = Parts, Sets = Sets)
+color_table <- as_tibble(color_lists)
+
+color_table <- color_table %>% 
+  mutate(link = paste0("https://www.bricklink.com/catalogList.asp?v=2&colorID=", ID))
+
+color_table_ID <- color_table %>% 
+  select(ID, Name)
 ```
 
 
@@ -108,7 +187,7 @@ data_bind <- data_bind |>
          minifigs_link = paste0("https://www.bricklink.com/catalogItemIn.asp?P=", item_number, "&in=M"))
 
 new_human_heads <- data_bind %>% 
-  filter(!grepl("Alien|Skull|Balaclava|Clown|Baby|Robot|without Face|Statue|Green Eyes|SW|Joker|Pumpkin|Face Paint|Green Cheek|Metallic|Magenta|Fangs|Silver Face|Azure Eyes|Fur|Pixelated", description))
+  filter(!grepl("Alien|Skull|Balaclava|Clown|Baby|Robot|without Face|Statue|Green Eyes|SW|Joker|Pumpkin|Face Paint|Green Cheek|Metallic|Magenta|Fangs|Silver Face|Azure Eyes|Fur|Pixelated|Electricity", description))
 
 # Vector to store scraped minifigure ids (no description for the whole minifig)
 mini_info <- map(new_human_heads$minifigs_link, scrape_mini_id)
@@ -130,29 +209,121 @@ mini_description <- map(new_human_heads$minifig_link, scrape_mini_description)
 new_human_heads <- new_human_heads %>% 
   mutate(color = map(color_link, scrape_color))
 
-new_human_heads <- new_human_heads %>% 
-         mutate(color_fin = case_when((str_sub(color, 1, 2) == "c(") ~ as.character(color[2]),
-                           .default = as.character(color)))
+new_human_heads_unnested <- new_human_heads %>% 
+  unnest(color) %>% 
+  rename(Name = color)
 
-new_human_heads_color <- new_human_heads %>%
-  filter(!grepl("Azure|Lavender|Trans|White|Blue|Black|Green|Lime|Gold|Dark Tan|Orange|Umber", color_fin)) %>% 
-  filter(color_fin != "character(0)")
+new_human_heads_color <- new_human_heads_unnested %>%
+  filter(!grepl("Azure|Lavender|Trans|White|Blue|Black|Green|Lime|Gold|Dark Tan|Orange|Umber|View|Not|Light Brown", Name)) %>% 
+  filter(Name != "character(0)")
 
-table(new_human_heads_color$color_fin)
+heads_flesh_new <- new_human_heads_color %>% 
+  left_join(color_table_ID, by = "Name")
 
-color_skin_summary <- new_human_heads_color %>%
-  group_by(color_fin, category) %>%
-  summarise(count = n())
+heads_flesh_new <- heads_flesh_new %>% 
+  mutate(PriceLink = paste0("https://www.bricklink.com/catalogPG.asp?P=", item_number, "&ColorID=", ID))
 
-color_skin_summary %>% 
-  ggplot(aes(x = reorder(color_fin, -count), y = count, fill = color_fin)) +
+flesh_hex_table <- tibble(Name = skin_colors, hexCode = skin_tones)
+
+heads_flesh_new <- heads_flesh_new[!duplicated(heads_flesh_new[, "item_number"]), ] %>% 
+  left_join(flesh_hex_table, by = "Name")
+
+table(heads_flesh_new$Name)
+
+color_skin_summary <- heads_flesh_new %>%
+  group_by(Name, category, ID, hexCode) %>%
+  summarise(count = n()) %>% 
+  mutate(spectrum = case_when(Name == "Yellow" ~ 1,
+                              Name == "Light Nougat" ~ 2,
+                              Name == "Nougat" ~ 3,
+                              Name == "Tan" ~ 4,
+                              Name == "Medium Tan" ~ 5,
+                              Name == "Medium Nougat" ~ 6,
+                              Name == "Medium Brown" ~ 7,
+                              Name == "Sienna" ~ 8,
+                              Name == "Reddish Brown" ~ 9))
+
+color_skin_sum_wide <- color_skin_summary %>% 
+  pivot_wider(names_from = category, values_from = count, values_fill =0) %>% 
+  mutate(total = sum(`2022`, `2023`, `2024`))
+
+color_skin_sum_wide %>% 
+  ggplot(aes(x = reorder(Name, -total), y = total, fill = Name)) +
   geom_col(show.legend = FALSE) +
   coord_flip() +
   scale_fill_skintones() + 
   labs(title = "Distribution of Flesh Tones of Minifigurine Heads (2022-2024)",
        x = "Flesh Tones",
+       y = "Count") +
+   geom_text(aes(label =total), hjust = 1.5, fontface = "bold")
+
+color_skin_summary %>% 
+  ggplot(aes(x = category, y = count, fill = Name)) +
+  geom_col(color = "black", linewidth = 0.1) +
+  scale_fill_skintones() + 
+  labs(title = "Distribution of Flesh Tones of Minifigurine Heads by Year(2022-2024)",
+       x = "Flesh Tones",
        y = "Count")
-  
+
+color_skin_summary %>% 
+  ggplot(aes(x = category, y = count, fill = reorder(Name, -spectrum))) +
+  geom_col(color = "black", linewidth = 0.1, width = 0.6) +
+  scale_fill_skintones() + 
+  labs(title = "Distribution of Flesh Tones of Minifigurine Heads by Year(2022-2024)",
+       x = "Flesh Tones",
+       y = "Count",
+       fill = "Flesh Tone Names") +
+   geom_text(aes(label = case_when((count > 5) ~ count,
+                                   (count <= 5) ~ NA)),
+    position = position_stack(vjust = 1),
+    vjust = 1.5,
+    color = "white",
+    fontface = "bold")
+
+pie(x = color_skin_sum_wide$total, labels = color_skin_sum_wide$total, 
+    main="Distribution of Flesh Tones of Minifigurine Heads (2022-2024)", 
+    col = color_skin_sum_wide$hexCode, radius = 1) +legend("topright", legend = color_skin_sum_wide$Name, cex = 0.8, 
+           fill = color_skin_sum_wide$hexCode)
+
+pie(x = color_skin_sum_wide$total, labels = paste0(color_skin_sum_wide$Name, "\n", color_skin_sum_wide$total), 
+    main="Distribution of Flesh Tones of Minifigurine Heads (2022-2024)", 
+    col = color_skin_sum_wide$hexCode, radius = 1)
+
+par(mfrow = c(1, 3))
+pie(x = color_skin_sum_wide$`2022`, labels = "",
+    main="2022", 
+    col = color_skin_sum_wide$hexCode, radius = 1) 
+pie(x = color_skin_sum_wide$`2023`, labels = "",
+    main="2023", 
+    col = color_skin_sum_wide$hexCode, radius = 1) 
+pie(x = color_skin_sum_wide$`2024`, labels = "",
+    main="2024", 
+    col = color_skin_sum_wide$hexCode, radius = 1)
+par(mfrow = c(1, 1))
+legend(x = -1.2, y = -1.2, legend = color_skin_sum_wide$Name, cex = 0.5, 
+           fill = color_skin_sum_wide$hexCode, ncol = 5)
+```
+
+
+```{r}
+heads_subset <- heads_flesh_new[1:20, ]
+data_sub_heads <- map_dfr(heads_subset$PriceLink, get_price_one)
+
+heads_prices_new <- map(heads_flesh_new$PriceLink, get_price_one) 
+
+heads_prices_new <- heads_prices_new |>
+  plyr::ldply(bind_rows)
+```
+ 
+```{r}
+#facial expression
+heads_flesh_new <- heads_flesh_new %>% 
+  mutate(facialApp = sapply(expression, function(char) str_count(description, fixed(char)))) %>% 
+  pivot_longer(
+    cols = starts_with("facialApp"),
+    names_to = "expression",
+    names_prefix = "facialApp",
+    values_to = "app")
 ```
  
  
