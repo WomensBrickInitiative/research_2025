@@ -1,0 +1,123 @@
+---
+title: "pharrell"
+output: html_document
+date: "2025-07-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rvest)
+library(tidyverse)
+library(purrr)
+library(stringi)
+library(plotrix)
+source("scraping_func.R")
+source("../wbi_colors.R")
+```
+
+```{r}
+pharrell_set <- read.csv("pharrell_price.csv")
+color_table <- read.csv("color_table.csv")
+```
+
+```{r}
+pharrell_set <- pharrell_set %>% 
+  mutate(cur_new_avg = as.numeric(gsub("[^0-9.]", "", current_new_avg)),
+         cur_new_min = as.numeric(gsub("[^0-9.]", "", current_new_min)),
+         cur_new_max = as.numeric(gsub("[^0-9.]", "", current_new_max)),
+         past_new_avg = as.numeric(gsub("[^0-9.]", "", past_new_avg)),
+         past_new_min = as.numeric(gsub("[^0-9.]", "", past_new_min)),
+         past_new_max = as.numeric(gsub("[^0-9.]", "", past_new_max)))
+
+flesh_hex_table <- tibble(Name = skin_colors, hexCode = skin_tones)
+
+color_table_info <- color_table %>% 
+  left_join(flesh_hex_table, by = "Name") %>% 
+  select(ID, Name, Sets, hexCode)
+
+colnames(pharrell_set)[7] <- "ID"
+
+pharrell_set <- pharrell_set %>% 
+  left_join(color_table_info, by = "ID") %>% 
+   mutate(spectrum = case_when(Name == "Yellow" ~ 1,
+                              Name == "Light Nougat" ~ 2,
+                              Name == "Nougat" ~ 3,
+                              Name == "Tan" ~ 4,
+                              Name == "Medium Tan" ~ 5,
+                              Name == "Medium Nougat" ~ 6,
+                              Name == "Medium Brown" ~ 7,
+                              Name == "Dark Orange" ~ 8,
+                              Name == "Sienna" ~ 9,
+                              Name == "Reddish Brown" ~ 10))
+```
+
+```{r}
+pharrell_set %>% ggplot(aes(x = reorder(Name, -spectrum), fill = reorder(Name, -spectrum))) +
+  geom_bar(color = "black", linewidth = 0.1, width = 0.6) +
+  scale_fill_skintones() + 
+  coord_flip() +
+  labs(title = "Distribution of Flesh Tones of Minifigurine Heads in \n Over the Moon set 2025",
+       x = "Flesh Tones",
+       y = "Count",
+       fill = "Flesh Tone Names") +
+   geom_text(aes(label = after_stat(count)), stat = "count", hjust = -0.5)
+
+pharrell_grpd_color <- pharrell_set %>% 
+  group_by(Name, hexCode) %>% 
+  summarise(count = n())
+
+pie(x = pharrell_grpd_color$count, 
+    labels = paste0(pharrell_grpd_color$Name, "\n", pharrell_grpd_color$count), 
+    main="Distribution of Flesh Tones of Minifigurine Heads in \n Over the Moon set 2025", 
+    col = pharrell_grpd_color$hexCode, radius = 1)
+
+pharrell_col_price <- pharrell_set %>% 
+  group_by(Name) %>% 
+  mutate(count = n(),
+         total_sets = sum(NumberSets)) %>% 
+  ungroup() %>% 
+  pivot_longer(
+    cols = starts_with(c("past", "cur_")),
+    names_to = "type",
+    values_to = "price")
+
+pharrell_col_price %>% 
+  filter(grepl("past", type)) %>% 
+  ggplot(aes(x = reorder(Name, -spectrum), y = price, fill = reorder(Name, -spectrum))) +
+  geom_boxplot() +
+  coord_flip() +
+  scale_fill_skintones() +
+  labs(title = "Price Across Flesh Tones of Minifigurine Heads in \n Over the Moon set 2025",
+       x = "Flesh Tones",
+       y = "Price ($)",
+       fill = "Flesh Tones") 
+
+pharrell_col_price %>% 
+  filter(grepl("past", type)) %>% 
+  ggplot(aes(x = reorder(Name, -spectrum), y = price)) +
+  geom_point(aes(size = NumberSets, color = Name), fill ="white", position = "jitter") +
+  scale_color_skintones() +
+  coord_flip() +
+  labs(title = "Price Across Flesh Tones of Minifigurine Heads in \n Over the Moon set 2025",
+       x = "Flesh Tones",
+       y = "Price ($)",
+       fill = "Flesh Tones") 
+```
+
+```{r}
+pharrell_set %>% 
+  select(Name, NumberSets, past_new_max, past_new_avg, ItemNo) %>% 
+  arrange(desc(past_new_max))
+
+pharrell_set %>% 
+  group_by(Name) %>%
+  summarise(past_avg = mean(past_new_avg),
+            past_max = mean(past_new_max),
+            past_min = mean(past_new_min),
+            cur_avg = mean(cur_new_avg),
+            cur_max = mean(cur_new_max),
+            cur_min = mean(cur_new_min),
+            total_sets = sum(NumberSets)) %>% 
+  arrange(desc(total_sets), desc(past_avg))
+```
+
