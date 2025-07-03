@@ -49,6 +49,12 @@ pharrell_set <- pharrell_set %>%
                               Name == "Dark Orange" ~ 8,
                               Name == "Sienna" ~ 9,
                               Name == "Reddish Brown" ~ 10))
+
+pharrell_set <- pharrell_set %>% 
+  mutate(gender = case_when(
+    grepl(paste(female_keywords, collapse = "|"), tolower(Description)) == TRUE ~ "feminine",
+    grepl(paste(male_keywords, collapse = "|"), tolower(Description)) == FALSE ~ "masculine",
+    .default = "neutral"))
 ```
 
 ```{r}
@@ -62,14 +68,48 @@ pharrell_set %>% ggplot(aes(x = reorder(Name, -spectrum), fill = reorder(Name, -
        fill = "Flesh Tone Names") +
    geom_text(aes(label = after_stat(count)), stat = "count", hjust = -0.5)
 
+pharrell_set %>% ggplot(aes(x = factor(gender), 
+                            fill = reorder(Name, -spectrum))) +
+  geom_bar(aes(group = Name),
+           color = "black", linewidth = 0.1, width = 0.6, 
+           position = position_dodge(0.85)) +
+  scale_fill_skintones() + 
+  labs(title = "Distribution of Flesh Tones, Gender of Minifigurine Heads in \n Over the Moon set 2025",
+       x = "Female/Male Coded",
+       y = "Count",
+       fill = "Flesh Tone Names")
+
 pharrell_grpd_color <- pharrell_set %>% 
   group_by(Name, hexCode) %>% 
   summarise(count = n())
+
+pharrell_grpd_col_gender <- pharrell_set %>% 
+  group_by(Name, hexCode, gender) %>% 
+  summarise(count = n())
+
+pharrell_grpd_female <- pharrell_grpd_col_gender %>% 
+  filter(gender == "feminine")
+
+pharrell_grpd_male <- pharrell_grpd_col_gender %>% 
+  filter(gender == "masculine")
 
 pie(x = pharrell_grpd_color$count, 
     labels = paste0(pharrell_grpd_color$Name, "\n", pharrell_grpd_color$count), 
     main="Distribution of Flesh Tones of Minifigurine Heads in \n Over the Moon set 2025", 
     col = pharrell_grpd_color$hexCode, radius = 1)
+
+par(mfrow = c(1, 2))
+pie(x = pharrell_grpd_female$count, 
+    labels = pharrell_grpd_female$count, 
+    main="Female Flesh Tones", 
+    col = pharrell_grpd_female$hexCode, radius = 0.8)
+pie(x = pharrell_grpd_male$count, 
+    labels = pharrell_grpd_male$count, 
+    main="Male Flesh Tones", 
+    col = pharrell_grpd_male$hexCode, radius = 0.8)
+par(mfrow = c(1, 1))
+legend(x = -1, y = -1, legend = pharrell_grpd_female$Name, cex = 0.5, 
+           fill = pharrell_grpd_female$hexCode, ncol = 5)
 
 pharrell_col_price <- pharrell_set %>% 
   group_by(Name) %>% 
@@ -111,13 +151,43 @@ pharrell_set %>%
 
 pharrell_set %>% 
   group_by(Name) %>%
-  summarise(past_avg = mean(past_new_avg),
-            past_max = mean(past_new_max),
-            past_min = mean(past_new_min),
-            cur_avg = mean(cur_new_avg),
-            cur_max = mean(cur_new_max),
-            cur_min = mean(cur_new_min),
-            total_sets = sum(NumberSets)) %>% 
+  summarise(past_avg = round(mean(past_new_avg), 2),
+            past_max = round(mean(past_new_max), 2),
+            cur_avg = round(mean(cur_new_avg), 2),
+            cur_max = round(mean(cur_new_max), 2),
+            count = n(),
+            total_sets = round((sum(NumberSets)/count), 2)) %>% 
   arrange(desc(total_sets), desc(past_avg))
+```
+
+```{r}
+data_sub_qty <- map(pharrell_set$PriceLink[1:10], scrape_qty)
+data_bind_s_qty <- plyr::ldply(data_sub_qty, rbind)
+
+data_sub2_qty <- map(pharrell_set$PriceLink[11:20], scrape_qty)
+data_bind_s2_qty <- plyr::ldply(data_sub2_qty, rbind)
+
+data_sub3_qty <- map(pharrell_set$PriceLink[21:25], scrape_qty)
+data_bind_s3_qty <- plyr::ldply(data_sub3_qty, rbind)
+
+data_sub4_qty <- map(pharrell_set$PriceLink[26:30], scrape_qty)
+data_bind_s4_qty <- plyr::ldply(data_sub4_qty, rbind)
+
+data_sub5_qty <- map(pharrell_set$PriceLink[31:35], scrape_qty)
+data_bind_s5_qty <- plyr::ldply(data_sub5_qty, rbind)
+
+data_sub6_qty <- map(pharrell_set$PriceLink[36:40], scrape_qty)
+data_bind_s6_qty <- plyr::ldply(data_sub5_qty, rbind)
+
+data_sub7_qty <- map(pharrell_set$PriceLink[41:45], scrape_qty)
+data_bind_s7_qty <- plyr::ldply(data_sub5_qty, rbind)
+
+data_sub8_qty <- map(pharrell_set$PriceLink[46:51], scrape_qty)
+data_bind_s8_qty <- plyr::ldply(data_sub5_qty, rbind)
+
+data_qty <- list(data_bind_s_qty, data_bind_s2_qty, data_bind_s3_qty, data_bind_s4_qty, data_bind_s5_qty, data_bind_s6_qty, data_bind_s7_qty, data_bind_s8_qty) |>
+  plyr::ldply(rbind)
+
+write.csv(data_qty, file = "availability.csv")
 ```
 
