@@ -177,6 +177,8 @@ color_table <- color_table %>%
 
 color_table_ID <- color_table %>% 
   select(ID, Name)
+
+write.csv(color_table, file = "color_table.csv")
 ```
 
 
@@ -269,7 +271,9 @@ color_skin_summary <- heads_flesh_new %>%
 color_skin_sum_wide <- color_skin_summary %>% 
   pivot_wider(names_from = category, values_from = count, values_fill =0) %>% 
   mutate(total = sum(`2022`, `2023`, `2024`))
+```
 
+```{r}
 color_skin_sum_wide %>% 
   ggplot(aes(x = reorder(Name, -total), y = total, fill = Name)) +
   geom_col(show.legend = FALSE) +

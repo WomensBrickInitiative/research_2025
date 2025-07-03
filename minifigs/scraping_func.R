@@ -198,3 +198,13 @@ scrape_color <- function(url){
     rvest::html_text()
   color
 }
+
+scrape_qty <- function(url){
+  item_page <- rvest::read_html(url)
+  qty <- item_page |>
+    rvest::html_elements("td:nth-child(3) tr:nth-child(2) b") |>
+    rvest::html_text()
+  closeAllConnections()
+  Sys.sleep(0.3)
+  qty
+}
