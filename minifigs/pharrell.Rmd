@@ -11,8 +11,11 @@ library(tidyverse)
 library(purrr)
 library(stringi)
 library(plotrix)
+library(gridExtra)
+library(insight)
 source("scraping_func.R")
 source("../wbi_colors.R")
+source("../expression_gender.R")
 ```
 
 ```{r}
@@ -58,7 +61,7 @@ pharrell_set <- pharrell_set %>%
 ```
 
 ```{r}
-pharrell_set %>% ggplot(aes(x = reorder(Name, -spectrum), fill = reorder(Name, -spectrum))) +
+bar_flesh <- pharrell_set %>% ggplot(aes(x = reorder(Name, -spectrum), fill = reorder(Name, -spectrum))) +
   geom_bar(color = "black", linewidth = 0.1, width = 0.6) +
   scale_fill_skintones() + 
   coord_flip() +
@@ -68,7 +71,7 @@ pharrell_set %>% ggplot(aes(x = reorder(Name, -spectrum), fill = reorder(Name, -
        fill = "Flesh Tone Names") +
    geom_text(aes(label = after_stat(count)), stat = "count", hjust = -0.5)
 
-pharrell_set %>% ggplot(aes(x = factor(gender), 
+bar_flesh_gender <- pharrell_set %>% ggplot(aes(x = factor(gender), 
                             fill = reorder(Name, -spectrum))) +
   geom_bar(aes(group = Name),
            color = "black", linewidth = 0.1, width = 0.6, 
@@ -93,7 +96,7 @@ pharrell_grpd_female <- pharrell_grpd_col_gender %>%
 pharrell_grpd_male <- pharrell_grpd_col_gender %>% 
   filter(gender == "masculine")
 
-pie(x = pharrell_grpd_color$count, 
+pie_flesh <- pie(x = pharrell_grpd_color$count, 
     labels = paste0(pharrell_grpd_color$Name, "\n", pharrell_grpd_color$count), 
     main="Distribution of Flesh Tones of Minifigurine Heads in \n Over the Moon set 2025", 
     col = pharrell_grpd_color$hexCode, radius = 1)
@@ -121,7 +124,7 @@ pharrell_col_price <- pharrell_set %>%
     names_to = "type",
     values_to = "price")
 
-pharrell_col_price %>% 
+box_price <- pharrell_col_price %>% 
   filter(grepl("past", type)) %>% 
   ggplot(aes(x = reorder(Name, -spectrum), y = price, fill = reorder(Name, -spectrum))) +
   geom_boxplot() +
@@ -132,7 +135,7 @@ pharrell_col_price %>%
        y = "Price ($)",
        fill = "Flesh Tones") 
 
-pharrell_col_price %>% 
+point_price <- pharrell_col_price %>% 
   filter(grepl("past", type)) %>% 
   ggplot(aes(x = reorder(Name, -spectrum), y = price)) +
   geom_point(aes(size = NumberSets, color = Name), fill ="white", position = "jitter") +
@@ -142,52 +145,159 @@ pharrell_col_price %>%
        x = "Flesh Tones",
        y = "Price ($)",
        fill = "Flesh Tones") 
+
+pharrell_grpd_sets <- pharrell_set %>% 
+  group_by(NumberSets, Name) %>% 
+  summarise(avg_price = mean(past_new_avg))
+
+pharrell_set %>% 
+  summarise(avg_price = mean(past_new_avg)) 
+
+price_sets_line <- pharrell_grpd_sets %>% 
+  #filter(avg_price < 3) %>% 
+  ggplot(aes(x = NumberSets, y = avg_price)) +
+  geom_line(aes(color = Name), size = 1.5) +
+  geom_point(aes(color = Name), size = 3) +
+  scale_color_skintones() +
+  labs(title = "Price Across Flesh Tones of Minifigurine Heads in Over the Moon set 2025",
+       x = "Number of Sets",
+       y = "Price ($)",
+       fill = "Flesh Tones") 
 ```
 
 ```{r}
-pharrell_set %>% 
-  select(Name, NumberSets, past_new_max, past_new_avg, ItemNo) %>% 
-  arrange(desc(past_new_max))
+ggsave(bar_flesh, 
+       filename = "bar_flesh.pdf",
+       device = "pdf",
+       height = 4, width = 7, units = "in")
 
-pharrell_set %>% 
+ggsave(bar_flesh_gender, 
+       filename = "bar_flesh_gender.pdf",
+       device = "pdf",
+       height = 4, width = 7, units = "in")
+
+ggsave(pie_flesh, 
+       filename = "pie_flesh.pdf",
+       device = "pdf",
+       height = 6, width = 6, units = "in")
+
+ggsave(box_price, 
+       filename = "box_price.pdf",
+       device = "pdf",
+       height = 4, width = 7, units = "in")
+
+ggsave(point_price, 
+       filename = "point_price.pdf",
+       device = "pdf",
+       height = 4, width = 7, units = "in")
+
+ggsave(price_sets_line, 
+       filename = "price_sets_line.pdf",
+       device = "pdf",
+       height = 4, width = 7, units = "in")
+
+ggsave(price_qty_point, 
+       filename = "price_qty_point.pdf",
+       device = "pdf",
+       height = 4, width = 7, units = "in")
+
+export_table(table_price, format = "html")
+export_table(table_price_sets, format = "html")
+```
+
+
+```{r}
+table_price <- pharrell_set %>% 
+  select(Name, NumberSets, past_new_max, past_new_avg) %>% 
+  arrange(desc(past_new_avg)) %>% 
+  head(10)
+
+table_price_sets <- pharrell_set %>% 
   group_by(Name) %>%
   summarise(past_avg = round(mean(past_new_avg), 2),
-            past_max = round(mean(past_new_max), 2),
             cur_avg = round(mean(cur_new_avg), 2),
-            cur_max = round(mean(cur_new_max), 2),
             count = n(),
-            total_sets = round((sum(NumberSets)/count), 2)) %>% 
-  arrange(desc(total_sets), desc(past_avg))
+            sets_per_head = round((sum(NumberSets)/count), 2)) %>% 
+  select(Name, past_avg, cur_avg, sets_per_head) %>% 
+  arrange(desc(sets_per_head), desc(past_avg))
 ```
 
 ```{r}
-data_sub_qty <- map(pharrell_set$PriceLink[1:10], scrape_qty)
+data_sub_qty <- map(pharrell_set$PriceLink[1:4], scrape_qty)
 data_bind_s_qty <- plyr::ldply(data_sub_qty, rbind)
 
-data_sub2_qty <- map(pharrell_set$PriceLink[11:20], scrape_qty)
+data_sub2_qty <- map(pharrell_set$PriceLink[5:8], scrape_qty)
 data_bind_s2_qty <- plyr::ldply(data_sub2_qty, rbind)
 
-data_sub3_qty <- map(pharrell_set$PriceLink[21:25], scrape_qty)
+data_sub3_qty <- map(pharrell_set$PriceLink[9:12], scrape_qty)
 data_bind_s3_qty <- plyr::ldply(data_sub3_qty, rbind)
 
-data_sub4_qty <- map(pharrell_set$PriceLink[26:30], scrape_qty)
+data_sub4_qty <- map(pharrell_set$PriceLink[13:16], scrape_qty)
 data_bind_s4_qty <- plyr::ldply(data_sub4_qty, rbind)
 
-data_sub5_qty <- map(pharrell_set$PriceLink[31:35], scrape_qty)
+data_sub5_qty <- map(pharrell_set$PriceLink[17:20], scrape_qty)
 data_bind_s5_qty <- plyr::ldply(data_sub5_qty, rbind)
 
-data_sub6_qty <- map(pharrell_set$PriceLink[36:40], scrape_qty)
-data_bind_s6_qty <- plyr::ldply(data_sub5_qty, rbind)
+data_sub6_qty <- map(pharrell_set$PriceLink[21:24], scrape_qty)
+data_bind_s6_qty <- plyr::ldply(data_sub6_qty, rbind)
 
-data_sub7_qty <- map(pharrell_set$PriceLink[41:45], scrape_qty)
-data_bind_s7_qty <- plyr::ldply(data_sub5_qty, rbind)
+data_sub7_qty <- map(pharrell_set$PriceLink[25:28], scrape_qty)
+data_bind_s7_qty <- plyr::ldply(data_sub7_qty, rbind)
 
-data_sub8_qty <- map(pharrell_set$PriceLink[46:51], scrape_qty)
-data_bind_s8_qty <- plyr::ldply(data_sub5_qty, rbind)
+data_sub8_qty <- map(pharrell_set$PriceLink[29:32], scrape_qty)
+data_bind_s8_qty <- plyr::ldply(data_sub8_qty, rbind)
 
-data_qty <- list(data_bind_s_qty, data_bind_s2_qty, data_bind_s3_qty, data_bind_s4_qty, data_bind_s5_qty, data_bind_s6_qty, data_bind_s7_qty, data_bind_s8_qty) |>
+data_sub9_qty <- map(pharrell_set$PriceLink[33:36], scrape_qty)
+data_bind_s9_qty <- plyr::ldply(data_sub9_qty, rbind)
+data_sub10_qty <- map(pharrell_set$PriceLink[37:40], scrape_qty)
+data_bind_s10_qty <- plyr::ldply(data_sub10_qty, rbind)
+data_sub11_qty <- map(pharrell_set$PriceLink[41:44], scrape_qty)
+data_bind_s11_qty <- plyr::ldply(data_sub11_qty, rbind)
+data_sub12_qty <- map(pharrell_set$PriceLink[45:48], scrape_qty)
+data_bind_s12_qty <- plyr::ldply(data_sub12_qty, rbind)
+data_sub13_qty <- map(pharrell_set$PriceLink[49:51], scrape_qty)
+data_bind_s13_qty <- plyr::ldply(data_sub13_qty, rbind)
+
+data_bind_s_qty$ItemNo <- pharrell_set$ItemNo[1:4]
+data_bind_s2_qty$ItemNo <- pharrell_set$ItemNo[5:8]
+data_bind_s3_qty$ItemNo <- pharrell_set$ItemNo[9:12]
+data_bind_s4_qty$ItemNo <- pharrell_set$ItemNo[13:16]
+data_bind_s5_qty$ItemNo <- pharrell_set$ItemNo[17:20]
+data_bind_s6_qty$ItemNo <- pharrell_set$ItemNo[21:24]
+data_bind_s7_qty$ItemNo <- pharrell_set$ItemNo[25:28]
+data_bind_s8_qty$ItemNo <- pharrell_set$ItemNo[29:32]
+data_bind_s9_qty$ItemNo <- pharrell_set$ItemNo[33:36]
+data_bind_s10_qty$ItemNo <- pharrell_set$ItemNo[37:40]
+data_bind_s11_qty$ItemNo <- pharrell_set$ItemNo[41:44]
+data_bind_s12_qty$ItemNo <- pharrell_set$ItemNo[45:48]
+data_bind_s13_qty$ItemNo <- pharrell_set$ItemNo[49:51]
+
+data_qty <- list(data_bind_s_qty, data_bind_s2_qty, data_bind_s3_qty, data_bind_s4_qty, data_bind_s5_qty, data_bind_s6_qty, data_bind_s7_qty, data_bind_s8_qty, data_bind_s9_qty, data_bind_s10_qty, data_bind_s11_qty, data_bind_s12_qty, data_bind_s13_qty) |>
   plyr::ldply(rbind)
 
 write.csv(data_qty, file = "availability.csv")
+```
+
+
+```{r}
+avail_pharrell <- read.csv("availability.csv")
+full_pharrell <- left_join(pharrell_set, data_qty, by= "ItemNo")
+
+names(full_pharrell)[23] <- "qty"
+
+full_pharrell$qty_num <- as.numeric(full_pharrell$qty)
+  
+
+price_qty_point <- full_pharrell %>% 
+  ggplot(aes(x = qty_num, y = past_new_avg)) +
+  geom_point(aes(color = Name, size = NumberSets), position = "jitter") +
+  #geom_line(aes(color = Name)) +
+  scale_color_skintones() +
+  coord_flip() +
+  labs(title = "Relationship of Price and Availability Across Flesh Tones of \nMinifigurine Heads in Over the Moon set 2025",
+       x = "Quantity Available on BL",
+       y = "Price ($)",
+       color = "Flesh Tones",
+       size = "Number of Sets") 
 ```
 
