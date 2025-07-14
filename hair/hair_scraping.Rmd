@@ -1,0 +1,52 @@
+---
+title: "hair_scraping"
+output: html_document
+date: "2025-07-14"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rvest)
+library(tidyverse)
+library(purrr)
+library(stringi)
+library(plotrix)
+source("../minifigs/scraping_func.R")
+source("../wbi_colors.R")
+```
+
+```{r}
+link <- "https://www.bricklink.com/catalogList.asp?catType=P&catString=847"
+pages_hair <- map(link, get_pages)
+links_hair <- map2(pages_hair, link, generate_page_links)
+
+hair_link_data <- tibble(link = links_hair, category = "Minifigure, Hair", num_pages = unlist(pages_hair)) |>
+  tidyr::unnest(cols = c(link)) |>
+  dplyr::mutate(link = as.character(link))
+
+# scraping data
+data_hair <- purrr::map2(hair_link_data$link, hair_link_data$category, scrape_minifigs_data)
+data_hair_bind <- plyr::ldply(data_hair, rbind)
+
+#add link to hair
+data_hair_bind <- data_hair_bind |>
+  mutate(item_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?P=", item_number),
+         minifigs_link = paste0("https://www.bricklink.com/catalogItemIn.asp?P=", item_number, "&in=M"),
+         color_link = paste0(item_link, "#T=C"))
+
+#scrape color
+data_hair_bind <- data_hair_bind %>% 
+  mutate(color = map(color_link, scrape_color))
+
+data_hair_unnested <- data_hair_bind %>% 
+  unnest(color) %>% 
+  rename(Name = color)
+
+#filter non-human hair and NA
+data_hair_unnested <- data_hair_unnested %>%
+  filter(!grepl("(Not Applicable)|View All Colors", Name)) %>% 
+  filter(!grepl("Crown|Conehead|SW|Bat|Molded|Elf|Pointed Ears|Batman|Space|Wings|Tiara|Snakes|Faun|Antennae|Cat Ears|Horns|Mane|Wreath|Trolls", description))
+
+write.csv(data_hair_unnested, file = "hair.csv")
+```
+
