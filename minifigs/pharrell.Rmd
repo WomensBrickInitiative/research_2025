@@ -166,42 +166,42 @@ price_sets_line <- pharrell_grpd_sets %>%
 ```
 
 ```{r}
-ggsave(bar_flesh, 
-       filename = "bar_flesh.pdf",
-       device = "pdf",
-       height = 4, width = 7, units = "in")
-
-ggsave(bar_flesh_gender, 
-       filename = "bar_flesh_gender.pdf",
-       device = "pdf",
-       height = 4, width = 7, units = "in")
-
-ggsave(pie_flesh, 
-       filename = "pie_flesh.pdf",
-       device = "pdf",
-       height = 6, width = 6, units = "in")
-
-ggsave(box_price, 
-       filename = "box_price.pdf",
-       device = "pdf",
-       height = 4, width = 7, units = "in")
-
-ggsave(point_price, 
-       filename = "point_price.pdf",
-       device = "pdf",
-       height = 4, width = 7, units = "in")
-
-ggsave(price_sets_line, 
-       filename = "price_sets_line.pdf",
-       device = "pdf",
-       height = 4, width = 7, units = "in")
-
-ggsave(price_qty_point, 
-       filename = "price_qty_point.pdf",
-       device = "pdf",
-       height = 4, width = 7, units = "in")
-
-export_table(table_price, format = "html")
+# ggsave(bar_flesh, 
+#        filename = "bar_flesh.pdf",
+#        device = "pdf",
+#        height = 4, width = 7, units = "in")
+# 
+# ggsave(bar_flesh_gender, 
+#        filename = "bar_flesh_gender.pdf",
+#        device = "pdf",
+#        height = 4, width = 7, units = "in")
+# 
+# ggsave(pie_flesh, 
+#        filename = "pie_flesh.pdf",
+#        device = "pdf",
+#        height = 6, width = 6, units = "in")
+# 
+# ggsave(box_price, 
+#        filename = "box_price.pdf",
+#        device = "pdf",
+#        height = 4, width = 7, units = "in")
+# 
+# ggsave(point_price, 
+#        filename = "point_price.pdf",
+#        device = "pdf",
+#        height = 4, width = 7, units = "in")
+# 
+# ggsave(price_sets_line, 
+#        filename = "price_sets_line.pdf",
+#        device = "pdf",
+#        height = 4, width = 7, units = "in")
+# 
+# ggsave(price_qty_point, 
+#        filename = "price_qty_point.pdf",
+#        device = "pdf",
+#        height = 4, width = 7, units = "in")
+# 
+# export_table(table_price, format = "html")
 export_table(table_price_sets, format = "html")
 ```
 
@@ -215,67 +215,67 @@ table_price <- pharrell_set %>%
 table_price_sets <- pharrell_set %>% 
   group_by(Name) %>%
   summarise(past_avg = round(mean(past_new_avg), 2),
-            cur_avg = round(mean(cur_new_avg), 2),
             count = n(),
             sets_per_head = round((sum(NumberSets)/count), 2)) %>% 
-  select(Name, past_avg, cur_avg, sets_per_head) %>% 
-  arrange(desc(sets_per_head), desc(past_avg))
+  select(Name, past_avg, sets_per_head) %>% 
+  arrange(desc(sets_per_head), desc(past_avg)) %>% 
+  rename(Price = past_avg, Sets_appeared = sets_per_head, Flesh_tone = Name)
 ```
 
 ```{r}
-data_sub_qty <- map(pharrell_set$PriceLink[1:4], scrape_qty)
-data_bind_s_qty <- plyr::ldply(data_sub_qty, rbind)
-
-data_sub2_qty <- map(pharrell_set$PriceLink[5:8], scrape_qty)
-data_bind_s2_qty <- plyr::ldply(data_sub2_qty, rbind)
-
-data_sub3_qty <- map(pharrell_set$PriceLink[9:12], scrape_qty)
-data_bind_s3_qty <- plyr::ldply(data_sub3_qty, rbind)
-
-data_sub4_qty <- map(pharrell_set$PriceLink[13:16], scrape_qty)
-data_bind_s4_qty <- plyr::ldply(data_sub4_qty, rbind)
-
-data_sub5_qty <- map(pharrell_set$PriceLink[17:20], scrape_qty)
-data_bind_s5_qty <- plyr::ldply(data_sub5_qty, rbind)
-
-data_sub6_qty <- map(pharrell_set$PriceLink[21:24], scrape_qty)
-data_bind_s6_qty <- plyr::ldply(data_sub6_qty, rbind)
-
-data_sub7_qty <- map(pharrell_set$PriceLink[25:28], scrape_qty)
-data_bind_s7_qty <- plyr::ldply(data_sub7_qty, rbind)
-
-data_sub8_qty <- map(pharrell_set$PriceLink[29:32], scrape_qty)
-data_bind_s8_qty <- plyr::ldply(data_sub8_qty, rbind)
-
-data_sub9_qty <- map(pharrell_set$PriceLink[33:36], scrape_qty)
-data_bind_s9_qty <- plyr::ldply(data_sub9_qty, rbind)
-data_sub10_qty <- map(pharrell_set$PriceLink[37:40], scrape_qty)
-data_bind_s10_qty <- plyr::ldply(data_sub10_qty, rbind)
-data_sub11_qty <- map(pharrell_set$PriceLink[41:44], scrape_qty)
-data_bind_s11_qty <- plyr::ldply(data_sub11_qty, rbind)
-data_sub12_qty <- map(pharrell_set$PriceLink[45:48], scrape_qty)
-data_bind_s12_qty <- plyr::ldply(data_sub12_qty, rbind)
-data_sub13_qty <- map(pharrell_set$PriceLink[49:51], scrape_qty)
-data_bind_s13_qty <- plyr::ldply(data_sub13_qty, rbind)
-
-data_bind_s_qty$ItemNo <- pharrell_set$ItemNo[1:4]
-data_bind_s2_qty$ItemNo <- pharrell_set$ItemNo[5:8]
-data_bind_s3_qty$ItemNo <- pharrell_set$ItemNo[9:12]
-data_bind_s4_qty$ItemNo <- pharrell_set$ItemNo[13:16]
-data_bind_s5_qty$ItemNo <- pharrell_set$ItemNo[17:20]
-data_bind_s6_qty$ItemNo <- pharrell_set$ItemNo[21:24]
-data_bind_s7_qty$ItemNo <- pharrell_set$ItemNo[25:28]
-data_bind_s8_qty$ItemNo <- pharrell_set$ItemNo[29:32]
-data_bind_s9_qty$ItemNo <- pharrell_set$ItemNo[33:36]
-data_bind_s10_qty$ItemNo <- pharrell_set$ItemNo[37:40]
-data_bind_s11_qty$ItemNo <- pharrell_set$ItemNo[41:44]
-data_bind_s12_qty$ItemNo <- pharrell_set$ItemNo[45:48]
-data_bind_s13_qty$ItemNo <- pharrell_set$ItemNo[49:51]
-
-data_qty <- list(data_bind_s_qty, data_bind_s2_qty, data_bind_s3_qty, data_bind_s4_qty, data_bind_s5_qty, data_bind_s6_qty, data_bind_s7_qty, data_bind_s8_qty, data_bind_s9_qty, data_bind_s10_qty, data_bind_s11_qty, data_bind_s12_qty, data_bind_s13_qty) |>
-  plyr::ldply(rbind)
-
-write.csv(data_qty, file = "availability.csv")
+# data_sub_qty <- map(pharrell_set$PriceLink[1:4], scrape_qty)
+# data_bind_s_qty <- plyr::ldply(data_sub_qty, rbind)
+# 
+# data_sub2_qty <- map(pharrell_set$PriceLink[5:8], scrape_qty)
+# data_bind_s2_qty <- plyr::ldply(data_sub2_qty, rbind)
+# 
+# data_sub3_qty <- map(pharrell_set$PriceLink[9:12], scrape_qty)
+# data_bind_s3_qty <- plyr::ldply(data_sub3_qty, rbind)
+# 
+# data_sub4_qty <- map(pharrell_set$PriceLink[13:16], scrape_qty)
+# data_bind_s4_qty <- plyr::ldply(data_sub4_qty, rbind)
+# 
+# data_sub5_qty <- map(pharrell_set$PriceLink[17:20], scrape_qty)
+# data_bind_s5_qty <- plyr::ldply(data_sub5_qty, rbind)
+# 
+# data_sub6_qty <- map(pharrell_set$PriceLink[21:24], scrape_qty)
+# data_bind_s6_qty <- plyr::ldply(data_sub6_qty, rbind)
+# 
+# data_sub7_qty <- map(pharrell_set$PriceLink[25:28], scrape_qty)
+# data_bind_s7_qty <- plyr::ldply(data_sub7_qty, rbind)
+# 
+# data_sub8_qty <- map(pharrell_set$PriceLink[29:32], scrape_qty)
+# data_bind_s8_qty <- plyr::ldply(data_sub8_qty, rbind)
+# 
+# data_sub9_qty <- map(pharrell_set$PriceLink[33:36], scrape_qty)
+# data_bind_s9_qty <- plyr::ldply(data_sub9_qty, rbind)
+# data_sub10_qty <- map(pharrell_set$PriceLink[37:40], scrape_qty)
+# data_bind_s10_qty <- plyr::ldply(data_sub10_qty, rbind)
+# data_sub11_qty <- map(pharrell_set$PriceLink[41:44], scrape_qty)
+# data_bind_s11_qty <- plyr::ldply(data_sub11_qty, rbind)
+# data_sub12_qty <- map(pharrell_set$PriceLink[45:48], scrape_qty)
+# data_bind_s12_qty <- plyr::ldply(data_sub12_qty, rbind)
+# data_sub13_qty <- map(pharrell_set$PriceLink[49:51], scrape_qty)
+# data_bind_s13_qty <- plyr::ldply(data_sub13_qty, rbind)
+# 
+# data_bind_s_qty$ItemNo <- pharrell_set$ItemNo[1:4]
+# data_bind_s2_qty$ItemNo <- pharrell_set$ItemNo[5:8]
+# data_bind_s3_qty$ItemNo <- pharrell_set$ItemNo[9:12]
+# data_bind_s4_qty$ItemNo <- pharrell_set$ItemNo[13:16]
+# data_bind_s5_qty$ItemNo <- pharrell_set$ItemNo[17:20]
+# data_bind_s6_qty$ItemNo <- pharrell_set$ItemNo[21:24]
+# data_bind_s7_qty$ItemNo <- pharrell_set$ItemNo[25:28]
+# data_bind_s8_qty$ItemNo <- pharrell_set$ItemNo[29:32]
+# data_bind_s9_qty$ItemNo <- pharrell_set$ItemNo[33:36]
+# data_bind_s10_qty$ItemNo <- pharrell_set$ItemNo[37:40]
+# data_bind_s11_qty$ItemNo <- pharrell_set$ItemNo[41:44]
+# data_bind_s12_qty$ItemNo <- pharrell_set$ItemNo[45:48]
+# data_bind_s13_qty$ItemNo <- pharrell_set$ItemNo[49:51]
+# 
+# data_qty <- list(data_bind_s_qty, data_bind_s2_qty, data_bind_s3_qty, data_bind_s4_qty, data_bind_s5_qty, data_bind_s6_qty, data_bind_s7_qty, data_bind_s8_qty, data_bind_s9_qty, data_bind_s10_qty, data_bind_s11_qty, data_bind_s12_qty, data_bind_s13_qty) |>
+#   plyr::ldply(rbind)
+# 
+# write.csv(data_qty, file = "availability.csv")
 ```
 
 
