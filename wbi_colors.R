@@ -9,7 +9,7 @@ scale_color_wbi <- function(...) {
 scale_fill_wbi <- function(...) {
   ggplot2::scale_fill_manual(
     ...,
-    values = c("#f43b93", "#8cc63f", "#f77f08", "#999999")
+    values = c("#f43b93", "#8cc63f", "#f77f08", "#46bdc6", "#34a853", "#b77e22", "#b97295", "#9966fc")
   )
 }
 
@@ -23,8 +23,8 @@ scale_y_continuous_wbi <- function(...){
 
 # function to add logo and socials to plot
 add_logo <- function(plot) {
-  logo <- magick::image_read("logo.png")
-  socials <- magick::image_read("socials.png")
+  logo <- magick::image_read("../wbi_pics/logo.png")
+  socials <- magick::image_read("../wbi_pics/socials.png")
   cowplot::ggdraw() +
     cowplot::draw_plot(plot, x = 0, y = 0.15, width = 1, height = 0.85) +
     cowplot::draw_image(logo, x = 0.85, y = 0, width = 0.15, height = 0.15) +

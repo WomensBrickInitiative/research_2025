@@ -1,0 +1,103 @@
+---
+title: "bdp_series"
+output: html_document
+date: "2025-07-21"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rvest)
+library(tidyverse)
+library(purrr)
+library(stringi)
+library(plotrix)
+library(gridExtra)
+library(insight)
+library(cowplot)
+source("../minifigs/scraping_func.R")
+source("../wbi_colors.R")
+```
+
+```{r}
+bdp_og <- read.csv("BDP.csv")
+```
+
+```{r}
+bdp_og <- bdp_og %>% 
+  mutate(gender_diff = Male.coded - Female.coded) %>% 
+  slice(1:40)
+
+bdp_grpd <- bdp_og %>% 
+  group_by(N) %>% 
+  summarise(female = sum(Female.coded, na.rm = TRUE),
+            male = sum(Male.coded, na.rm = TRUE),
+            diff_total = sum(gender_diff, na.rm=TRUE),
+            avg_age = mean(Age)) 
+
+bdp_grpd %>%  
+  ggplot(aes(y = diff_total, x = factor(N))) +
+  geom_col(aes(fill = factor(N))) +
+  scale_fill_wbi() +
+  labs(title = "F/M-coded Minifig Difference in Each Set Featured in BDP (Series 1-8)",
+       x = "Series",
+       y = "Difference", 
+       fill = "Series") +
+   geom_text(aes(label = paste0("M - ", male, "\n F - ", female), vjust = 0.5), 
+             color = "#300000")
+
+bdp_long <- bdp_grpd %>% 
+  pivot_longer(cols = ends_with("ale"), names_to = "gender", 
+               values_to = "count_by_gender", values_drop_na = TRUE)
+
+gender_series <- bdp_long %>%  
+  ggplot(aes(y = count_by_gender, x = factor(N), fill = gender)) +
+  geom_col(position = position_dodge(width = 0.9)) +
+  scale_fill_wbi() +
+  labs(title = "F/M-coded Minifig Difference in Each Set Featured in BDP (Series 1-8)",
+       x = "Series",
+       y = "Count of Minifigs", 
+       fill = "Gender") +
+   geom_text(aes(label = count_by_gender), 
+             position= position_dodge(width=0.9),
+             vjust = -0.2,
+             color = "black")
+```
+
+```{r}
+bdp_og %>% group_by(Gender) %>% summarise(n())
+```
+
+```{r}
+bdp_sliced <- bdp_grpd %>% 
+  drop_na(avg_age) %>% 
+  mutate(age_diff = avg_age-34.58)
+
+age <- bdp_sliced %>%  
+  ggplot(aes(y = age_diff, x = factor(N))) +
+  geom_col(aes(fill = factor(N)), width = 0.5) +
+  geom_hline(aes(yintercept = 0), linetype = "dashed", 
+             color = "#b97295", size = 1, show.legend = TRUE) +
+  scale_fill_wbi() +
+  labs(title = "Average Age of Final 5 Designers in BDP (Series 1-4)",
+       x = "Series",
+       y = "Age", 
+       fill = "Series") +
+   geom_text(aes(label = avg_age, vjust = 1.2), 
+             color = "black") +
+  theme(axis.text.y = element_blank()) +
+  annotate("text", x = 0.75, y = -0.08, label = "Aggregate", size = 4.5, color = "#b97295") +
+  annotate("text", x = 4.45, y = -0.08, label = "34.58", size = 4.5, color = "#b97295")
+```
+
+```{r}
+ggsave(gender_series, 
+       filename = "gender_series.pdf",
+       device = "pdf",
+       height = 4, width = 7, units = "in")
+
+ggsave(age, 
+       filename = "age.pdf",
+       device = "pdf",
+       height = 4, width = 7, units = "in")
+```
+
