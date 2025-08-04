@@ -1,15 +1,9 @@
-expression <- c("Angry", "Annoyed", "Evil", "Frown", "Happy", "Sad", "Scared", "Sleepy", "Smile", "Smirk", "Surprised", "Sinister", "Laugh", "Neutral", "Sneer", "Fierce", "Scowl", "Asleep", "Terrified", "Firm", "Worried", "Grin", "Grimmace", "Confused", "Eating", "Disgust", "Gritted", "Stressed", "Roaring", "Wink", "Licking", "Blowing")
+expression <- c("angry", "annoyed", "evil", "frown", "happy", "sad", "scared", "sleepy", "smile", "smirk", "surprised", "sinister", "laugh", "neutral", "sneer", "fierce", "scowl", "asleep", "terrified", "firm", "worried", "grin", "grimmace", "confused", "eating", "disgust", "gritted", "stressed", "roaring", "wink", "licking", "blowing")
 
-other_att <- c("Vitiligo", "Glasses", "Goggles", "Freckles", "Hearing Aid", "Mask", "Visor", "Chin Strap", "Beauty Mark", "Wrinkles", "Tattoo", "Facepaint")
+other_att <- c("vitiligo", "glasses", "goggles", "freckles", "hearing Aid", "mask", "visor", "chin strap", "beauty mark", "tattoo", "facepaint")
 
-female_keywords <- c(
-  "mom", "ballerina", "barista", "female", "woman", "girl", "lady", "ponytail", "little red",
-  "sally", "madison", "necklace", "eyelashes", "eye shadow"
-)
-male_keywords <- c(
-  "Male", "Beard", "Goatee", "Sideburns", "Moustache", "Stubble", "Man", "Son", "Dad", "Guy",
-  "Father", "Uncle", "Salesman", "Businessman", "Dareth", "Chad", "Rocky", "Si", "Ronny",
-  "Chan Kong-Sang", "Jia", "Groom", "Chase McCain", "Hans Christian Andersen", "Merman", "Santa",
-  "Billy", "Lil' Nelson", "Tito", "Jack", "Robin", "Tommy", "Wade", "Lee", "Paul", "Duke", "Wizard",
-  "Boy"
-)
+female_keywords <- c("female", "girl")
+male_keywords <- c("male", "beard", "goatee", "sideburns", "moustache", "stubble", "whiskers", "bushy")
+
+child <- c("child")
+old <- c("wrinkles", "crow's feet", "creases")
