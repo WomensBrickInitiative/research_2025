@@ -65,7 +65,7 @@ bar_flesh <- pharrell_set %>% ggplot(aes(x = reorder(Name, -spectrum), fill = re
   geom_bar(color = "black", linewidth = 0.1, width = 0.6) +
   scale_fill_skintones() + 
   coord_flip() +
-  labs(title = "Distribution of Flesh Tones of Minifigurine Heads in \n Over the Moon set 2025",
+  labs(title = "Distribution of Flesh Tones of Minifigure Heads in \n Over the Moon set 2025",
        x = "Flesh Tones",
        y = "Count",
        fill = "Flesh Tone Names") +
@@ -77,7 +77,7 @@ bar_flesh_gender <- pharrell_set %>% ggplot(aes(x = factor(gender),
            color = "black", linewidth = 0.1, width = 0.6, 
            position = position_dodge(0.85)) +
   scale_fill_skintones() + 
-  labs(title = "Distribution of Flesh Tones, Gender of Minifigurine Heads in \n Over the Moon set 2025",
+  labs(title = "Distribution of Flesh Tones, Gender of Minifigure Heads in \n Over the Moon set 2025",
        x = "Female/Male Coded",
        y = "Count",
        fill = "Flesh Tone Names")
@@ -98,7 +98,7 @@ pharrell_grpd_male <- pharrell_grpd_col_gender %>%
 
 pie_flesh <- pie(x = pharrell_grpd_color$count, 
     labels = paste0(pharrell_grpd_color$Name, "\n", pharrell_grpd_color$count), 
-    main="Distribution of Flesh Tones of Minifigurine Heads in \n Over the Moon set 2025", 
+    main="Distribution of Flesh Tones of Minifigure Heads in \n Over the Moon set 2025", 
     col = pharrell_grpd_color$hexCode, radius = 1)
 
 par(mfrow = c(1, 2))
@@ -130,7 +130,7 @@ box_price <- pharrell_col_price %>%
   geom_boxplot() +
   coord_flip() +
   scale_fill_skintones() +
-  labs(title = "Price Across Flesh Tones of Minifigurine Heads in \n Over the Moon set 2025",
+  labs(title = "Price Across Flesh Tones of Minifigure Heads in \n Over the Moon set 2025",
        x = "Flesh Tones",
        y = "Price ($)",
        fill = "Flesh Tones") 
@@ -141,7 +141,7 @@ point_price <- pharrell_col_price %>%
   geom_point(aes(size = NumberSets, color = Name), fill ="white", position = "jitter") +
   scale_color_skintones() +
   coord_flip() +
-  labs(title = "Price Across Flesh Tones of Minifigurine Heads in \n Over the Moon set 2025",
+  labs(title = "Price Across Flesh Tones of Minifigure Heads in \n Over the Moon set 2025",
        x = "Flesh Tones",
        y = "Price ($)",
        fill = "Flesh Tones") 

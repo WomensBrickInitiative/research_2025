@@ -11,6 +11,7 @@ library(tidyverse)
 library(purrr)
 library(stringi)
 library(plotrix)
+library(insight)
 source("scraping_func.R")
 source("../wbi_colors.R")
 source("../expression_gender.R")
@@ -346,10 +347,10 @@ heads_flesh_new_standard <- subset(heads_flesh_new, select = -c(X.1, X))
 
 heads_flesh_old <- heads_flesh_old %>% 
    mutate(gender = case_when(
+     str_detect(tolower(description), paste(female_keywords, collapse = "|"))
+    ~ "female",
      str_detect(tolower(description), paste(male_keywords, collapse = "|"))
     ~ "male",
-    str_detect(tolower(description), paste(female_keywords, collapse = "|"))
-    ~ "female",
     TRUE ~ "no tag"),
     age = case_when(
     str_detect(tolower(description), paste(child, collapse = "|"))
@@ -397,10 +398,87 @@ summary_total <- heads_total %>% group_by(Name, gender) %>%
   summarize(total = n()) %>% 
   arrange(desc(total))
 
+write.csv(summary_total, "summary_head.csv")
+
 heads_total %>% filter(Name == "Reddish Brown") %>% 
   select(item_number, item_link, gender, category, description)
+
+summary_total <- summary_total %>% 
+  filter(str_detect(Name, "Sienna|Medium Brown|Yellow|Nougat|Tan")) %>% 
+  mutate(flesh_tone = case_when(Name == "Yellow" ~ "Yellow",
+                                Name == "Light Nougat" ~ "Light Nougat",
+                                TRUE ~ "Darker Tones"))
+summary_total_others <- summary_total %>% 
+  group_by(flesh_tone, gender) %>% 
+  summarise(count = sum(total))
+
+summary_total_others %>% 
+  ggplot(aes(x = factor(flesh_tone), y = count, fill = flesh_tone)) +
+  geom_col(aes(group = gender), 
+           position = position_dodge2(preserve = "single", width = 0.9)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+  facet_wrap(~gender) +
+  scale_fill_manual(values = c("Yellow" = "#f3d000", 
+                               "Light Nougat" = "#faccae",
+                               "Darker Tones" = "#843419")) +
+  labs(title = "Total Minfig Heads by Gender and Flesh Tone (2003 - 2024)",
+       x = "",
+       y = "Count of Minifig Heads", 
+       fill = "Flesh Tone") +
+  geom_text(aes(label = count), 
+             position= position_dodge(width=0.9),
+             vjust = -0.2,
+             color = "black")
 ```
 
+```{r}
+summary_final <- summary_total %>% 
+  select(Name, gender, total) %>% 
+  pivot_wider(names_from = gender, values_from = total)
+  
+export_table(summary_final, format = "html")
+```
+
+
+```{r}
+heads_total <- read.csv("heads_total.csv")
+
+heads_total <- heads_total %>% 
+  mutate(gender = case_when(
+     str_detect(tolower(description), paste(female_keywords, collapse = "|"))
+    ~ "female",
+     str_detect(tolower(description), paste(male_keywords, collapse = "|"))
+    ~ "male",
+    TRUE ~ "no tag"),
+    age = case_when(
+    str_detect(tolower(description), paste(child, collapse = "|"))
+    ~ "child",
+    str_detect(tolower(description), paste(old, collapse = "|"))
+    ~ "old",
+    TRUE ~ "no tag"))
+
+heads_total_year <- heads_total %>% group_by(category, gender) %>% 
+  summarise(count = n()) %>% 
+  mutate(total = sum(count))
+
+heads_wide <- heads_total_year %>% 
+  pivot_wider(names_from = gender, values_from = count)
+
+heads_long <- heads_wide %>% 
+  pivot_longer(cols = contains("al"), names_to = "name", 
+                values_to = "count", values_drop_na = TRUE)
+
+heads_long %>% 
+  filter(name != "male") %>% 
+  ggplot(aes(y = count, x = factor(category), fill = name)) +
+  geom_col(position = position_dodge(width = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+  scale_fill_wbi() +
+  labs(title = "Total Heads vs. Total Female-coded Heads by Year (2003 - 2024)",
+       x = "Year Released",
+       y = "Count of Minifig Heads", 
+       fill = "Category") 
+```
 
 ```{r}
 update_heads <- color_skin_sum_wide %>% 
@@ -408,7 +486,7 @@ update_heads <- color_skin_sum_wide %>%
   geom_col(show.legend = FALSE) +
   coord_flip() +
   scale_fill_skintones() + 
-  labs(title = "Distribution of Flesh Tones of Minifigurine Heads (2022-2024)",
+  labs(title = "Distribution of Flesh Tones of Minifigure Heads (2022-2024)",
        x = "Flesh Tones",
        y = "Count") +
    geom_text(aes(label =total), hjust = 1.5, fontface = "bold")
