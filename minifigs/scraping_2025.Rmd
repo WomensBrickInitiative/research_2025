@@ -209,6 +209,7 @@ data_bind <- plyr::ldply(data_new, rbind)
 write.csv(data_bind, file = "minifigs_heads_2025.csv")
 
 
+#start point
 data_bind <- read.csv("minifigs_heads_2025.csv")
 data_bind <- data_bind |>
   mutate(item_link = paste0("https://bricklink.com/v2/catalog/catalogitem.page?P=", item_number),
@@ -257,7 +258,9 @@ flesh_hex_table <- tibble(Name = skin_colors, hexCode = skin_tones)
 heads_flesh_new <- heads_flesh_new[!duplicated(heads_flesh_new[, "item_number"]), ] %>% 
   left_join(flesh_hex_table, by = "Name")
 
-write.csv(heads_flesh_new, "heads_flesh_unique.csv")
+write.csv(heads_flesh_new, file = "heads_flesh_unique.csv")
+
+#start?
 heads_flesh_new <- read.csv("heads_flesh_unique.csv")
 table(heads_flesh_new$Name)
 
@@ -347,10 +350,10 @@ heads_flesh_new_standard <- subset(heads_flesh_new, select = -c(X.1, X))
 
 heads_flesh_old <- heads_flesh_old %>% 
    mutate(gender = case_when(
-     str_detect(tolower(description), paste(female_keywords, collapse = "|"))
-    ~ "female",
      str_detect(tolower(description), paste(male_keywords, collapse = "|"))
-    ~ "male",
+    ~ "male-coded",
+     str_detect(tolower(description), paste(female_keywords, collapse = "|"))
+    ~ "female-coded",
     TRUE ~ "no tag"),
     age = case_when(
     str_detect(tolower(description), paste(child, collapse = "|"))
@@ -367,10 +370,10 @@ heads_flesh_old <- heads_flesh_old %>%
 ```{r}
 heads_flesh_new <- heads_flesh_new %>% 
    mutate(gender = case_when(
-     str_detect(tolower(description), paste(female_keywords, collapse = "|"))
-    ~ "female",
      str_detect(tolower(description), paste(male_keywords, collapse = "|"))
-    ~ "male",
+    ~ "male-coded",
+     str_detect(tolower(description), paste(female_keywords, collapse = "|"))
+    ~ "female-coded",
     TRUE ~ "no tag"),
     age = case_when(
     str_detect(tolower(description), paste(child, collapse = "|"))
@@ -394,6 +397,16 @@ heads_total <- rbind(heads_flesh_old, heads_flesh_new_standard)
 
 write.csv(heads_total, "heads_total.csv")
 
+heads_total <- read.csv("heads_total.csv")
+
+heads_total <- heads_total[, -12] %>% 
+  mutate(gender = case_when(str_detect(tolower(description), paste(male_keywords, collapse = "|"))
+    ~ "male-coded",
+     str_detect(tolower(description), paste(female_keywords, collapse = "|"))
+    ~ "female-coded",
+    TRUE ~ "no tag")) %>% 
+  filter(str_detect(Name, "Sienna|Brown|Yellow|Nougat|Tan|Orange|Umber")) 
+
 summary_total <- heads_total %>% group_by(Name, gender) %>% 
   summarize(total = n()) %>% 
   arrange(desc(total))
@@ -403,12 +416,10 @@ write.csv(summary_total, "summary_head.csv")
 heads_total %>% filter(Name == "Reddish Brown") %>% 
   select(item_number, item_link, gender, category, description)
 
-summary_total <- summary_total %>% 
-  filter(str_detect(Name, "Sienna|Medium Brown|Yellow|Nougat|Tan")) %>% 
+summary_total_others <- summary_total %>% 
   mutate(flesh_tone = case_when(Name == "Yellow" ~ "Yellow",
                                 Name == "Light Nougat" ~ "Light Nougat",
-                                TRUE ~ "Darker Tones"))
-summary_total_others <- summary_total %>% 
+                                TRUE ~ "Darker Tones")) %>% 
   group_by(flesh_tone, gender) %>% 
   summarise(count = sum(total))
 
@@ -432,11 +443,16 @@ summary_total_others %>%
 ```
 
 ```{r}
-summary_final <- summary_total %>% 
+summary_total_wide <- summary_total %>% 
   select(Name, gender, total) %>% 
-  pivot_wider(names_from = gender, values_from = total)
+  pivot_wider(names_from = gender, values_from = total) 
+
+totals <- colSums(summary_total_wide[, -1], na.rm = TRUE)
+total_row <- data.frame(Name = "Total")
+total_row[2:4] <- as.list(totals)
+summary_total_final <- rbind(summary_total_wide, total_row)
   
-export_table(summary_final, format = "html")
+export_table(summary_total_final, format = "html")
 ```
 
 
@@ -469,7 +485,7 @@ heads_long <- heads_wide %>%
                 values_to = "count", values_drop_na = TRUE)
 
 heads_long %>% 
-  filter(name != "male") %>% 
+  filter(name != "male-coded") %>% 
   ggplot(aes(y = count, x = factor(category), fill = name)) +
   geom_col(position = position_dodge(width = 1)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
@@ -479,6 +495,27 @@ heads_long %>%
        y = "Count of Minifig Heads", 
        fill = "Category") 
 ```
+```{r}
+color_skin_summary <- heads_total %>%
+  group_by(Name, category, ID, hexCode) %>%
+  summarise(count = n()) %>% 
+  filter(grepl("Reddish Brown|Tan|Nougat|Yellow|Sienna|Medium Brown", Name)) %>% 
+  mutate(spectrum = case_when(Name == "Yellow" ~ 1,
+                              Name == "Light Nougat" ~ 2,
+                              Name == "Nougat" ~ 3,
+                              Name == "Tan" ~ 4,
+                              Name == "Medium Tan" ~ 5,
+                              Name == "Medium Nougat" ~ 6,
+                              Name == "Medium Brown" ~ 7,
+                              Name == "Sienna" ~ 8,
+                              Name == "Reddish Brown" ~ 9))
+
+color_skin_sum_wide <- color_skin_summary %>% 
+  pivot_wider(names_from = category, values_from = count, values_fill =0) %>% 
+  mutate(total = sum(`2003`, `2004`, `2005`, `2006`, `2007`, `2008`, `2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`, `2020`, `2021`, `2022`, `2023`, `2024`))
+```
+
+
 
 ```{r}
 update_heads <- color_skin_sum_wide %>% 
@@ -486,7 +523,7 @@ update_heads <- color_skin_sum_wide %>%
   geom_col(show.legend = FALSE) +
   coord_flip() +
   scale_fill_skintones() + 
-  labs(title = "Distribution of Flesh Tones of Minifigure Heads (2022-2024)",
+  labs(title = "Distribution of Flesh Tones of Minifigure Heads (2003-2024)",
        x = "Flesh Tones",
        y = "Count") +
    geom_text(aes(label =total), hjust = 1.5, fontface = "bold")
@@ -495,7 +532,7 @@ color_skin_summary %>%
   ggplot(aes(x = category, y = count, fill = Name)) +
   geom_col(color = "black", linewidth = 0.1) +
   scale_fill_skintones() + 
-  labs(title = "Distribution of Flesh Tones of Minifigurine Heads by Year(2022-2024)",
+  labs(title = "Distribution of Flesh Tones of Minifigure Heads by Year(2003-2024)",
        x = "Flesh Tones",
        y = "Count")
 
@@ -503,7 +540,7 @@ color_skin_summary %>%
   ggplot(aes(x = category, y = count, fill = reorder(Name, -spectrum))) +
   geom_col(color = "black", linewidth = 0.1, width = 0.6) +
   scale_fill_skintones() + 
-  labs(title = "Distribution of Flesh Tones of Minifigurine Heads by Year(2022-2024)",
+  labs(title = "Distribution of Flesh Tones of Minifigurine Heads by Year(2003-2024)",
        x = "Flesh Tones",
        y = "Count",
        fill = "Flesh Tone Names") +
@@ -515,12 +552,12 @@ color_skin_summary %>%
     fontface = "bold")
 
 pie(x = color_skin_sum_wide$total, labels = color_skin_sum_wide$total, 
-    main="Distribution of Flesh Tones of Minifigurine Heads (2022-2024)", 
+    main="Distribution of Flesh Tones of Minifigurine Heads (2003-2024)", 
     col = color_skin_sum_wide$hexCode, radius = 1) +legend("topright", legend = color_skin_sum_wide$Name, cex = 0.8, 
            fill = color_skin_sum_wide$hexCode)
 
 pie(x = color_skin_sum_wide$total, labels = paste0(color_skin_sum_wide$Name, "\n", color_skin_sum_wide$total), 
-    main="Distribution of Flesh Tones of Minifigurine Heads (2022-2024)", 
+    main="Distribution of Flesh Tones of Minifigurine Heads (2003-2024)", 
     col = color_skin_sum_wide$hexCode, radius = 1)
 
 par(mfrow = c(1, 3))
@@ -539,11 +576,35 @@ legend(x = -1.2, y = -1.2, legend = color_skin_sum_wide$Name, cex = 0.5,
 
 color_skin_summary %>% 
   ggplot(aes(x = category, y = count, fill = reorder(Name, -spectrum))) +
-  geom_area(show.legend = FALSE) +
+  geom_area(show.legend = TRUE) +
   scale_fill_skintones() + 
-  labs(title = "Distribution of Flesh Tones of Minifigurine Heads (2022-2024)",
-       x = "Flesh Tones",
-       y = "Count")
+  labs(title = "Trend of Flesh Tones of Minifigure Heads (2003-2024)",
+       x = "Year",
+       y = "Number of Heads",
+       fill = "Flesh Tone")
+
+color_skin_summary %>% 
+  ggplot(aes(x = category, y = count, color = reorder(Name, -spectrum))) +
+  geom_line(show.legend = TRUE, size = 1.2) +
+  scale_color_skintones() +
+  labs(title = "Distribution of Flesh Tones of Minifigurine Heads (2003-2024)",
+       x = "Year",
+       y = "Number of Heads",
+       color = "Flesh Tone")
+
+color_skin_sum_gender <- heads_total %>%
+  group_by(gender, category) %>%
+  summarise(count = n())
+
+color_skin_sum_gender %>% 
+  ggplot(aes(x = category, y = count, color = reorder(gender, -count))) +
+  geom_line(show.legend = TRUE, size = 1.2) +
+  scale_color_wbi() + 
+  labs(title = "Trend of Minifigure Heads Gender (2003-2024)",
+       x = "Year",
+       y = "Number of Heads",
+       color = "Gender")
+
 ```
 
 ```{r}
@@ -578,6 +639,81 @@ heads_flesh_new <- heads_flesh_new %>%
     names_to = "expression",
     names_prefix = "facialApp",
     values_to = "app")
+
+heads_expression_all <- heads_total
+pattern <- "(Annoyed|Evil|Frown|Happy|Sad|Scared|Sleepy|Smile|Smirk|Surprised|Sinister|Laugh|Neutral|Sneer|Fierce|Scowl|Asleep|Terrified|Firm|Worried|Grin|Confused|Barred|Grimace|Crooked|Eating|Disgust|Gritted|Stressed|Roaring|Wink|Licking|Blowing|Determined|Stern|Shocked)"
+
+other_attr <- "(Vitiligo|Glasses|Goggles|Freckles|Hearing Aid|Mask|visor|Chin Strap|Beauty Mark|Tattoo|Facepaint)"
+
+heads_expression_all <- heads_expression_all %>%
+  mutate(
+    matches = str_extract_all(description, pattern),  # list column
+    expressionOne = sapply(matches, function(x) ifelse(length(x) >= 1, x[1], "none")),
+    expressionTwo = sapply(matches, function(x) ifelse(length(x) >= 2, x[2], "none"))
+  ) %>%
+  select(-matches)
+
+heads_expression_all <- heads_expression_all %>%
+  mutate(
+    matches = str_extract_all(description, other_attr),  # list column
+    otherAttr = sapply(matches, function(x) ifelse(length(x) >= 1, x[1], "none"))
+  ) %>%
+  select(-matches)
+
+heads_expression_all <- heads_expression_all %>% 
+  mutate(expressionDivOne =case_when(grepl("Grin|Laugh|Happy|Smile", expressionOne) ~ "Happy", 
+                                     grepl("Frown|Grimace|Angry|Gritted|Stressed|Roaring|Determined|Stern|Firm|Barred|Crooked|Scowl|Disgust|Annoyed|Sneer|Fierce", expressionOne) ~ "Angry", 
+                                     grepl("Sad", expressionOne) ~ "Sad", 
+                                     grepl("Neutral", expressionOne) ~ "Neutral", 
+                                     grepl("Scared|Terrified|Worried", expressionOne) ~ "Scared", 
+                                     grepl("Confused|Shocked|Surprised", expressionOne) ~ "Surprised",
+                                     grepl("Sinister|Smirk|Evil", expressionOne) ~ "Evil", 
+                                     grepl("none", expressionOne) ~ "NA", 
+                                     TRUE ~ "others"),
+         expressionDivTwo =case_when(grepl("Grin|Laugh|Happy|Smile", expressionTwo) ~ "Happy", 
+                                     grepl("Frown|Grimace|Angry|Gritted|Stressed|Roaring|Determined|Stern|Firm|Barred|Crooked|Scowl|Disgust|Annoyed|Sneer|Fierce", expressionTwo) ~ "Angry", 
+                                     grepl("Sad", expressionTwo) ~ "Sad", 
+                                     grepl("Neutral", expressionTwo) ~ "Neutral", 
+                                     grepl("Scared|Terrified|Worried", expressionTwo) ~ "Scared", 
+                                     grepl("Confused|Shocked|Surprised", expressionTwo) ~ "Surprised",
+                                     grepl("Sinister|Smirk|Evil", expressionTwo) ~ "Evil", 
+                                     grepl("none", expressionTwo) ~ "NA", 
+                                     TRUE ~ "others"))
+write.csv(heads_expression_all, "heads_expression.csv")
+
+head_expr_filtered <- heads_expression_all %>% 
+  select(category, gender, Name, expressionDivOne, expressionDivTwo, otherAttr) %>% 
+  filter((expressionDivOne != "NA"&expressionDivTwo != "NA")|otherAttr != "none") %>% 
+  pivot_longer(cols = contains("expression"), names_to = "side", 
+                values_to = "expression", values_drop_na = TRUE)
+
+head_expr_gender <- head_expr_filtered %>% 
+  group_by(gender, expression) %>% 
+  summarise(count = n()) 
+
+head_expr_gender %>% 
+  filter(expression != "NA") %>% 
+  ggplot(aes(x = reorder(expression, -count), y = count, fill = gender)) +
+  geom_col(color = "black", linewidth = 0.1) +
+  scale_fill_wbi() + 
+  labs(title = "Distribution of Expression of Minifigure Heads by Gender(2003-2024)",
+       x = "Expression",
+       y = "Count", 
+       fill = "Gender")
+
+head_expr_flesh <- head_expr_filtered %>% 
+  group_by(Name, expression) %>% 
+  summarise(count = n()) 
+
+head_expr_flesh %>% 
+  filter(expression != "NA") %>% 
+  ggplot(aes(x = reorder(expression, -count), y = count, fill = reorder(Name, -count))) +
+  geom_col(color = "black", linewidth = 0.1) +
+  scale_fill_skintones() + 
+  labs(title = "Distribution of Expression of Minifigure Heads by Flesh Tones(2003-2024)",
+       x = "Expression",
+       y = "Count", 
+       fill = "Flesh Tone")
 ```
  
  
